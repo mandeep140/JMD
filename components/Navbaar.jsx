@@ -27,16 +27,18 @@ const Navbaar = () => {
     }
 
     return (
-        <nav className={`flex justify-between items-center p-4 border-b-1 text-white fixed top-0 px-[8%] z-50 ${scrolled? " bg-black/15 backdrop-blur-md" : "bg-transparent"} transition-all duration-300`} style={scrolledNav}>
+        <nav className={`flex justify-between items-center p-4 border-b-1 text-white fixed top-0 px-[8%] z-50 ${scrolled ? " bg-black/15 backdrop-blur-md" : "bg-transparent"} transition-all duration-300`} style={scrolledNav}>
             <div className='logo'>
-                <img src="images/jmd_logo.png" alt="" />
+                <Link href="/">
+                    <img src="images/jmd_logo.png" alt="" />
+                </Link>
             </div>
             <div className='nav-links gap-4 flex items-center'>
-                <Link href="/about" className={`${scrolled? "": "text-xl"} hover:underline duration-300`}>About us</Link>
-                <Link href="/#services" className={`${scrolled? "": "text-xl"} hover:underline duration-300`}>Services</Link>
-                <Link href="/about" className={`${scrolled? "": "text-xl"} hover:underline duration-300`}>Cities</Link>
-                <Link href="/about" className={`${scrolled? "": "text-xl"} hover:underline duration-300`}>Clients</Link>
-                <Link href="/about" className={`${scrolled? "": "text-xl"} hover:underline duration-300`}>Videos</Link>
+                <Link href="/about" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>About us</Link>
+                <Link href="/#services" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Services</Link>
+                <Link href="/#city" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Cities</Link>
+                <Link href="/#clients" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Clients</Link>
+                <Link href="/about" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Videos</Link>
             </div>
             <Link href="/about" className='text-xl px-3 py-2 border-3 rounded-xl hover:border-red-600 duration-200'>Contact us</Link>
 

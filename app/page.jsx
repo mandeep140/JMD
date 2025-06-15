@@ -1,11 +1,12 @@
 "use client";
-import React from 'react'
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 
 const Home = () => {
   const [imgnav, setImgnav] = useState(0);
   const [citynav, setCitynav] = useState(0);
+  const [companiesnav, setCompaniesnav] = useState(0);
+  const [videoNav, setVideoNav] = useState(0);
+  const [activeVideo, setActiveVideo] = useState(null);
 
   const serviceCards = [
     { title: "Hoardings", link: "svg/hoardings.svg", image: "images/billboard.png" },
@@ -23,6 +24,8 @@ const Home = () => {
 
   const location = ["images/location/l1.png", "images/location/l2.png", "images/location/l3.png", "images/location/l4.png", "images/location/l5.png", "images/location/l6.png", "images/location/l7.png", "images/location/l8.png", "images/location/l9.png", "images/location/l10.png", "images/location/l11.png", "images/location/l12.png", "images/location/l13.png", "images/location/l14.png", "images/location/l15.png", "images/location/l16.png", "images/location/l17.png", "images/location/l18.png", "images/location/l19.png"];
 
+  const companyLogos = ["images/companies/c1.png", "images/companies/c2.png", "images/companies/c3.png", "images/companies/c4.png", "images/companies/c5.png", "images/companies/c6.png", "images/companies/c7.png", "images/companies/c8.png", "images/companies/c9.png", "images/companies/c10.png", "images/companies/c11.png", "images/companies/c12.png", "images/companies/c13.png", "images/companies/c14.png", "images/companies/c15.png", "images/companies/c16.png", "images/companies/c17.png", "images/companies/c18.png", "images/companies/c19.png", "images/companies/c20.png", "images/companies/c21.png", "images/companies/c22.png", "images/companies/c23.png", "images/companies/c24.png", "images/companies/c25.png", "images/companies/c26.png", "images/companies/c27.png", "images/companies/c28.png", "images/companies/c29.png", "images/companies/c30.png", "images/companies/c31.png", "images/companies/c32.png"];
+
   const incImgNav = () => {
     if (imgnav >= serviceCards.length - 3) {
       setImgnav(0);
@@ -30,7 +33,6 @@ const Home = () => {
       setImgnav(imgnav + 1);
     }
   }
-
   const decImgNav = () => {
     if (imgnav == 0) {
       setImgnav(serviceCards.length - 3);
@@ -46,7 +48,6 @@ const Home = () => {
       setCitynav(citynav + 1);
     }
   }
-
   const decCityNav = () => {
     if (citynav == 0) {
       setCitynav(location.length - 1);
@@ -55,6 +56,38 @@ const Home = () => {
     }
   }
 
+  const incVideoNav = () => {
+    if (videoNav >= videoCards.length - 3) {
+      setVideoNav(0);
+    }
+    else {
+      setVideoNav(videoNav + 1);
+    }
+  }
+  const decVideoNav = () => {
+    if (videoNav == 0) {
+      setVideoNav(videoCards.length - 3);
+    } else {
+      setVideoNav(videoNav - 1);
+    }
+  }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCompaniesnav((prev) =>
+        prev + 2 >= companyLogos.length ? 0 : prev + 2
+      );
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
+
+  const videoCards = [
+    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 1" },
+    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 2" },
+    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 3" },
+    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 4" },
+    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 4" },
+  ];
 
   return (
     <>
@@ -144,21 +177,88 @@ const Home = () => {
       <div className='w-full h-[20vh] bg-red-400 rounded-t-[100%] -mt-20'></div>
 
       {/* Section 4 */}
-      <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex flex-col items-center justify-center'>
+      <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex flex-col items-center justify-center' id='city'>
         <img src="svg/red-city.svg" alt="" className='w-[40%] bg-cover absolute left-0 ' />
         <div className='w-full h-[30%] mt-25 mb-auto flex flex-col items-center justify-center text-center z-1'>
           <h1 className='text-red-500 text-4xl font-extrabold'>Explore Your City Listing</h1>
           <p className='text-black/70 tracking-wide mt-4 w-[30%]'>Discover premium outdoor ad spaces across India's major cities and boost your brand visibility where it matters most.</p>
         </div>
         <div className='z-1 flex flex-row items-center justify-center gap-4'>
-          <button className='mb-auto mt-18 me-3' onClick={decCityNav}><img src="svg/left-arr.svg" alt="" /></button>
+          <button className='mb-auto mt-18 me-3 cursor-pointer' onClick={decCityNav}><img src="svg/left-arr.svg" alt="" /></button>
           <div className='bg-[#FF4646] border-red border-1 flex flex-row items-center gap-4 overflow-hidden rounded-2xl h-[32vh] w-[60vw] mb-35 px-2'>
             {location.map((loc, index) => (
-              <img key={index} src={loc} alt={`Location ${index + 1}`} className='w-[35%]  object-cover rounded-lg m-2 duration-200 transition-transform' style={{ transform: `translateX(-${citynav * 105}%)` }}/>
+              <img key={index} src={loc} alt={`Location ${index + 1}`} className='w-[35%]  object-cover rounded-lg m-2 duration-200 transition-transform' style={{ transform: `translateX(-${citynav * 110}%)` }} />
             ))}
           </div>
-          <button className='mb-auto mt-18 ms-3' onClick={incCityNav}><img src="svg/right-arr.svg" alt="" /></button>
+          <button className='mb-auto mt-18 ms-3 cursor-pointer' onClick={incCityNav}><img src="svg/right-arr.svg" alt="" /></button>
         </div>
+      </div>
+
+      {/* Section 5 */}
+      <div id='clients' className='w-full h-[70vh] bg-red-500 flex flex-col items-center justify-center '>
+        <h1 className='text-4xl font-extrabold text-white'>Meet Our Happy Clients</h1>
+        <div className='h-1 w-[13vw] bg-white/50 rounded-md mx-auto mt-10'></div>
+        <div className='w-[70vw] h-[25vh] bg-white/50 border-2 mt-10 rounded-2xl flex items-center overflow-hidden flex-row gap-4 scrollbar-hide scroll-smooth'>
+          {companyLogos.map((logo, logoIndex) =>
+            <img
+              key={logoIndex}
+              src={companyLogos[logoIndex]}
+              alt={`Company Logo ${logoIndex + 1}`}
+              className='w-[10%] h-[80%] object-contain rounded-lg duration-200 transition-transform'
+              style={{ transform: `translateX(-${companiesnav * 100}%)` }}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Section 6 */}
+      <div className='w-full min-h-[200vh] bg-gradient-to-b flex flex-col items-center from-red-500 to-white relative'>
+        <div className='opacity-40 absolute'>
+          <img src="svg/Videos.svg" className='w-full' alt="" />
+        </div>
+        <div className='z-1 w-full min-h-[40vh] mt-30 flex flex-col items-center justify-center text-center'>
+          <h1 className='text-4xl font-extrabold text-white'>Videos</h1>
+          <div className='flex flex-row'>
+            <button className='mb-auto mt-35 me-3 cursor-pointer' onClick={decVideoNav}><img src="svg/left-arr.svg" alt="" /></button>
+            <div className='w-[70vw] min-h-[40vh] mt-10 rounded-2xl bg-white/60 flex flex-row px-10 overflow-x-hidden gap-6 items-center py-8 scrollbar-hide scroll-smooth'>
+              {videoCards.map((video, idx) => (
+                <div
+                  key={idx}
+                  className="w-[220px] h-[140px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0"
+                  onClick={() => setActiveVideo(video)}
+                  style={{ transform: `translateX(-${videoNav * 110 }%)` }}
+                >
+                  <img src={video.thumb} alt={video.title} className="w-full object-cover" />
+                  <span className="text-white text-sm font-semibold mt-auto">{video.title}</span>
+                </div>
+              ))}
+            </div>
+            <button className='mb-auto mt-35 ms-3 cursor-pointer' onClick={incVideoNav}><img src="svg/right-arr.svg" alt="" /></button>
+          </div>
+        </div>
+
+
+        {/* Video Modal */}
+        {activeVideo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="relative bg-white/0 rounded-2xl flex flex-col items-center justify-center">
+              <button
+                className="absolute top-2 right-2 text-white text-3xl font-bold z-10 cursor-pointer"
+                onClick={() => setActiveVideo(null)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              <video
+                src={activeVideo.src}
+                controls
+                className="w-[90vw] max-w-3xl h-[60vh] rounded-2xl shadow-2xl bg-black"
+                style={{ objectFit: 'contain' }}
+              />
+              <div className="text-white text-lg font-semibold mt-4 text-center drop-shadow">{activeVideo.title}</div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )
