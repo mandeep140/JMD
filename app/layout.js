@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import Navbaar from "@/components/Navbaar";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,9 +40,10 @@ export default function RootLayout({ children }) {
       >
         <NextTopLoader/>
         <Navbaar />
-        <div className="container min-h-full min-w-full">
+        <div className="container min-h-[100vh] min-w-full">
           {children}
         </div>
+        <Footer />
       </body>
     </html>
   );

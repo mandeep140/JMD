@@ -92,9 +92,9 @@ const Home = () => {
   return (
     <>
       {/* Section 1 */}
-      <div className='h-[120vh]'>
-        <div className='absolute z-[-1] opacity-70'>
-          <video src="videos/lander_bg.mp4" className='h-full w-full' autoPlay muted loop></video>
+      <div className='h-[120vh] w-full'>
+        <div className='absolute z-[-1] w-full h-full opacity-70'>
+          <video src="videos/lander_bg.mp4" className=' w-full' autoPlay muted loop></video>
         </div>
         <div className='w-[40vw] absolute top-44 left-31 text-white '>
           <span><h1 className='text-2xl font-bold'><span className='text-red-500'>India's </span>Fastest Growing</h1></span>
@@ -178,7 +178,7 @@ const Home = () => {
 
       {/* Section 4 */}
       <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex flex-col items-center justify-center' id='city'>
-        <img src="svg/red-city.svg" alt="" className='w-[40%] bg-cover absolute left-0 ' />
+        <img src="svg/red-city.svg" alt="" className='w-[40%] bg-cover absolute left-0' />
         <div className='w-full h-[30%] mt-25 mb-auto flex flex-col items-center justify-center text-center z-1'>
           <h1 className='text-red-500 text-4xl font-extrabold'>Explore Your City Listing</h1>
           <p className='text-black/70 tracking-wide mt-4 w-[30%]'>Discover premium outdoor ad spaces across India's major cities and boost your brand visibility where it matters most.</p>
@@ -198,7 +198,7 @@ const Home = () => {
       <div id='clients' className='w-full h-[70vh] bg-red-500 flex flex-col items-center justify-center '>
         <h1 className='text-4xl font-extrabold text-white'>Meet Our Happy Clients</h1>
         <div className='h-1 w-[13vw] bg-white/50 rounded-md mx-auto mt-10'></div>
-        <div className='w-[70vw] h-[25vh] bg-white/50 border-2 mt-10 rounded-2xl flex items-center overflow-hidden flex-row gap-4 scrollbar-hide scroll-smooth'>
+        <div className='w-[80vw] h-[25vh] bg-white/50 border-2 mt-10 rounded-2xl flex items-center overflow-hidden flex-row gap-6 scrollbar-hide scroll-smooth'>
           {companyLogos.map((logo, logoIndex) =>
             <img
               key={logoIndex}
@@ -212,7 +212,7 @@ const Home = () => {
       </div>
 
       {/* Section 6 */}
-      <div className='w-full min-h-[200vh] bg-gradient-to-b flex flex-col items-center from-red-500 to-white relative'>
+      <div className='w-full min-h-[100vh] bg-gradient-to-b flex flex-col items-center from-red-500 to-white relative' id='videos'>
         <div className='opacity-40 absolute'>
           <img src="svg/Videos.svg" className='w-full' alt="" />
         </div>
@@ -226,7 +226,7 @@ const Home = () => {
                   key={idx}
                   className="w-[220px] h-[140px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0"
                   onClick={() => setActiveVideo(video)}
-                  style={{ transform: `translateX(-${videoNav * 110 }%)` }}
+                  style={{ transform: `translateX(-${videoNav * 110}%)` }}
                 >
                   <img src={video.thumb} alt={video.title} className="w-full object-cover" />
                   <span className="text-white text-sm font-semibold mt-auto">{video.title}</span>
@@ -252,6 +252,7 @@ const Home = () => {
               <video
                 src={activeVideo.src}
                 controls
+                autoPlay
                 className="w-[90vw] max-w-3xl h-[60vh] rounded-2xl shadow-2xl bg-black"
                 style={{ objectFit: 'contain' }}
               />
@@ -259,6 +260,54 @@ const Home = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* section 7 */}
+      <div className='w-full min-h-[100vh] bg-white flex items-center justify-center' id='contact-us'>
+        <div className='w-[100%] mb-auto text-center'>
+          <span className='flex flex-col items-center gap-2 mt-23'>
+            <h1 className='text-4xl font-extrabold text-black/70'><span className='text-red-500/80'>Connect</span> With Us!</h1>
+          </span>
+          <div className='h-[70vh] w-[80%] mx-auto flex flex-row items-center justify-center mt-8 bg-[#E2CFCF] rounded-4xl'>
+            <div className='w-[35%] h-full flex flex-col p-5 items-center justify-center text-start bg-red-500 rounded-4xl me-auto'>
+              <h1 className='text-lg text-white font-extrabold'>What can JMD Advertisement help you with?</h1>
+              <div className='h-[3px] w-[13vw] bg-white rounded-md me-auto mt-6'></div>
+              <p className='mt-10 tracking-wide'>Whether you’re launching a new product, boosting brand awareness, or driving local footfall — JMD Advertisement helps you connect with your audience through impactful outdoor media. From strategic billboard placements to dynamic transit advertising, we make sure your message is seen, remembered, and acted upon.</p>
+            </div>
+            <div className='w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-15 mt-6 p-5'>
+              <p className='text-[10px] me-auto mb-auto'>*Please fill all the details</p>
+              <div className='w-[90%] mb-auto me-auto'>
+                <form action="">
+                  <span className='flex flex-col items-center gap-2 mb-4'>
+                    <label htmlFor="name" className='me-auto'>Name</label>
+                    <input type="text" name='name' id='name' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Full Name' />
+                  </span>
+                  <span className='flex flex-row items-center gap-2 mb-4'>
+                    <span className='flex flex-col items-center gap-2'>
+                      <label htmlFor="email" className='me-auto'>Email</label>
+                      <input type="text" name='email' id='email' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500'  required placeholder='email' />
+                    </span>
+                    <span className='flex flex-col items-center gap-2 ms-6'>
+                      <label htmlFor="phone" className='me-auto'>Phone</label>
+                      <input type="text" name='phone' id='phone' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500'  required placeholder='01 2345 6789' />
+                    </span>
+                  </span>
+                  <span className='flex flex-col items-center gap-2 mb-2'>
+                    <label htmlFor="message" className='me-auto'>message</label>
+                    <textarea rows={1} type="text" name='message' id='message' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500'  required placeholder='Full Name' />
+                  </span>
+                  <span className='flex flex-row justify-between items-center gap-2 mt-8'>
+                    <span className='flex flex-row items-center gap-2'>
+                      <input type="checkbox" name='checkbox' id='checkbox' className='' required />
+                      <label htmlFor="checkbox" className='me-auto'>Request Callback</label>
+                    </span>
+                    <button className='me-12 bg-red-500 px-9 py-3 text-white font-bold text-lg rounded-lg cursor-pointer hover:bg-red-800 duration-200' type='submit'>Send Message</button>
+                  </span>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   )

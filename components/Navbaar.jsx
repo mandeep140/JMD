@@ -38,9 +38,9 @@ const Navbaar = () => {
                 <Link href="/#services" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Services</Link>
                 <Link href="/#city" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Cities</Link>
                 <Link href="/#clients" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Clients</Link>
-                <Link href="/about" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Videos</Link>
+                <Link href="/#videos" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Videos</Link>
             </div>
-            <Link href="/about" className='text-xl px-3 py-2 border-3 rounded-xl hover:border-red-600 duration-200'>Contact us</Link>
+            <Link href="/#contact-us" className={`text-xl px-3 py-2 border-3 rounded-xl ${scrolled? "hover:bg-white hover:text-red-500 bg-red-500 border-red-500" : "hover:border-red-500"} duration-200`}>Contact us</Link>
 
         </nav>
     )
