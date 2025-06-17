@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 const Home = () => {
   const [imgnav, setImgnav] = useState(0);
@@ -111,8 +112,12 @@ const Home = () => {
             </span>
           </span>
           <span className='flex items-center gap-4 mt-6 text-lg font-semibold'>
-            <a href="#" className='flex gap-16 border-2 rounded-4xl px-6 py-3 hover:border-red-500 duration-200'>Find Hoardings <img src="svg/Arrow.svg" alt="Arrow svg" /></a>
-            <a href="#" className='scale-80 hover:scale-100 duration-100'><img src="svg/dialer.svg" alt="" /></a>
+            <Link href="find-hoardings" className="relative group overflow-hidden flex gap-16 border-2 rounded-4xl px-6 py-3 hover:border-red-500 duration-200">
+              <span className="absolute inset-0 bg-red-500 scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0"></span>
+              <span className="relative z-10 text-red-500 group-hover:text-white transition-colors duration-300">Find Hoardings</span>
+              <img src="svg/Arrow.svg" alt="Arrow svg" className="relative z-10" />
+            </Link>
+            <a href="#contact-us" className='scale-80 hover:scale-100 duration-100'><img src="svg/dialer.svg" alt="" /></a>
           </span>
         </div>
       </div>
@@ -285,16 +290,16 @@ const Home = () => {
                   <span className='flex flex-row items-center gap-2 mb-4'>
                     <span className='flex flex-col items-center gap-2'>
                       <label htmlFor="email" className='me-auto'>Email</label>
-                      <input type="text" name='email' id='email' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500'  required placeholder='email' />
+                      <input type="text" name='email' id='email' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='email' />
                     </span>
                     <span className='flex flex-col items-center gap-2 ms-6'>
                       <label htmlFor="phone" className='me-auto'>Phone</label>
-                      <input type="text" name='phone' id='phone' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500'  required placeholder='01 2345 6789' />
+                      <input type="text" name='phone' id='phone' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='01 2345 6789' />
                     </span>
                   </span>
                   <span className='flex flex-col items-center gap-2 mb-2'>
                     <label htmlFor="message" className='me-auto'>message</label>
-                    <textarea rows={1} type="text" name='message' id='message' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500'  required placeholder='Full Name' />
+                    <textarea rows={1} type="text" name='message' id='message' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Full Name' />
                   </span>
                   <span className='flex flex-row justify-between items-center gap-2 mt-8'>
                     <span className='flex flex-row items-center gap-2'>
