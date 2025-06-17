@@ -7,7 +7,7 @@ import { FaLinkedin } from "react-icons/fa6";
 const Footer = () => {
     return (
         <footer>
-            <div className='w-full min-h-[60vh] bg-red-500 mt-20 overflow-hidden relative'>
+            <div className='w-full min-h-[60vh] bg-red-500  overflow-hidden relative'>
                 <img src="svg/JMD.svg" className="w-full h-full absolute opacity-20" alt="JMD" />
                 <div className='flex flex-row items-center justify-evenly min-h-full z-1'>
                     <div className='h-[17rem] w-[16rem] mt-15 z-1 flex items-center justify-center flex-col'>

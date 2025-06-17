@@ -93,7 +93,7 @@ const Home = () => {
     <>
       {/* Section 1 */}
       <div className='h-[120vh] w-full'>
-        <div className='absolute z-[-1] w-full h-full opacity-70'>
+        <div className='absolute z-[-1] w-full h-full'>
           <video src="videos/lander_bg.mp4" className=' w-full' autoPlay muted loop></video>
         </div>
         <div className='w-[40vw] absolute top-44 left-31 text-white '>
