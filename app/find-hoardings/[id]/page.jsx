@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useParams, redirect } from 'next/navigation';
+import Link from 'next/link';
 
 const Page = () => {
   const params = useParams();
@@ -18,6 +19,7 @@ const Page = () => {
 
   let sd = { /* sample data */
     id: id,
+    mediacode: "NH-45-ANDHERI-UNIPOLE",
     title: "NH - 45 andheri unipole",
     type: "Billboard",
     description: "Details of the hoarding lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
@@ -51,7 +53,7 @@ const Page = () => {
           <div className="right w-[50%] h-fit flex flex-col justify-between p-5 tracking-widest mt-5">
             <h2 className='text-5xl font-bold'>{sd.type}</h2>
             <h1 className='text-3xl font-extrabold mt-3'>{sd.title}</h1>
-            <h4 className='text-xs'>CODE: {sd.id}</h4>
+            <h4 className='text-xs'>CODE: {sd.mediacode}</h4>
             <span className='flex flex-row items-center gap-2 justify-between w-[80%] text-xl mt-4'>
               <h2><b>SIZE:</b> {sd.size}</h2>
               <h2><b>AREA:</b> {sd.area}</h2>
@@ -69,7 +71,7 @@ const Page = () => {
 
             <span className='flex flex-row items-center justify-between w-[80%] mt-20'>
               <button className=' px-6 py-2 bg-white/10 border-2 hover:bg-black/10 rounded-2xl transition-all duration-200 cursor-pointer' onClick={() => setOpen(!open)}>Expand {open ? "Map" : "Photo"}</button>
-              <a href='#' className=' px-6 py-2 bg-red-500 border-2 hover:bg-white hover:text-red-500 rounded-2xl transition-all duration-200 cursor-pointer'>Book Now</a>
+              <Link href={`/find-hoardings/${id}/#contact-us`} className=' px-6 py-2 bg-red-500 border-2 hover:bg-white hover:text-red-500 rounded-2xl transition-all duration-200 cursor-pointer'>Book Now</Link>
             </span>
           </div>
         </div>
@@ -83,9 +85,18 @@ const Page = () => {
           </span>
           <div className='h-[70vh] w-[80%] mx-auto flex flex-row items-center justify-center mt-8 bg-[#E2CFCF] rounded-4xl'>
             <div className='w-[35%] h-full flex flex-col p-5 items-center justify-center text-start bg-red-500 rounded-4xl me-auto'>
-              <h1 className='text-lg text-white font-extrabold'>What can JMD Advertisement help you with?</h1>
-              <div className='h-[3px] w-[13vw] bg-white rounded-md me-auto mt-6'></div>
-              <p className='mt-10 tracking-wide'>Whether you’re launching a new product, boosting brand awareness, or driving local footfall — JMD Advertisement helps you connect with your audience through impactful outdoor media. From strategic billboard placements to dynamic transit advertising, we make sure your message is seen, remembered, and acted upon.</p>
+              <h1 className='md:text-2xl text-lg text-white font-extrabold'>Why Chosse JMD?</h1>
+              <div className='h-[3px] w-[13vw] bg-white rounded-md mx-auto mt-6'></div>
+              <ul className='list-disc text-white mt-6 text-lg px-5 ms-3'>
+                <li>19+ Years of Outdoor Advertising Excellence</li>
+                <li>1000+ Successful Campaigns Executed</li>
+                <li>Coverage Across 7+ East Indian States</li>
+                <li>Trusted by Top Brands & Local Businesses</li>
+              </ul>
+              <span className='flex flex-col items-center mt-6 pt-10 text-2xl font-extrabold'>
+                <h2>Thinking of Branding</h2>
+                <h2>Think JMD</h2>
+              </span>
             </div>
             <div className='w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-15 mt-6 p-5'>
               <p className='text-[10px] me-auto mb-auto'>*Please fill all the details</p>
@@ -111,7 +122,7 @@ const Page = () => {
                   </span>
                   <span className='flex flex-row justify-between items-center gap-2 mt-8'>
                     <span className='flex flex-row items-center gap-2'>
-                      <input type="checkbox" name='checkbox' id='checkbox' className='' required />
+                      <input type="checkbox" defaultChecked name='checkbox' id='checkbox' className='' required />
                       <label htmlFor="checkbox" className='me-auto'>Request Callback</label>
                     </span>
                     <button className='me-12 bg-red-500 px-9 py-3 text-white font-bold text-lg rounded-lg cursor-pointer hover:bg-red-800 duration-200' type='submit'>Send Message</button>

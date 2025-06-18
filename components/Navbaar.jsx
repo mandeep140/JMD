@@ -1,8 +1,12 @@
 "use client"
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const Navbaar = () => {
+    const path = usePathname();
+    if (path.includes("/admin")) return null;
+
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
 

@@ -3,6 +3,7 @@ import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import Navbaar from "@/components/Navbaar";
 import Footer from "@/components/Footer";
+import SessionWrapper from "./component/SessionWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,13 +29,14 @@ export const metadata = {
     "Marketing Solutions",
   ],
   icons: {
-    icon: "favicon.svg"
+    icon: "/favicon.svg"
   }
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <SessionWrapper>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -45,6 +47,7 @@ export default function RootLayout({ children }) {
         </div>
         <Footer />
       </body>
+      </SessionWrapper>
     </html>
   );
 }

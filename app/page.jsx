@@ -10,22 +10,43 @@ const Home = () => {
   const [activeVideo, setActiveVideo] = useState(null);
 
   const serviceCards = [
-    { title: "Hoardings", link: "svg/hoardings.svg", image: "images/billboard.png" },
-    { title: "Digital Hoardings", link: "svg/digital.svg", image: "images/digital_billboard.png" },
-    { title: "transit media", link: "svg/bus_shelter.svg", image: "images/transit_media.png" },
-    { title: "Airport Branding", link: "svg/kiosk.svg", image: "images/airport_branding.png" },
-    { title: "Mall Media", link: "svg/mobile_van.svg", image: "images/mall_media.png" }
+    { title: "Hoardings", link: "/svg/hoardings.svg", image: "/images/billboard.png" },
+    { title: "Digital Hoardings", link: "/svg/digital.svg", image: "/images/digital_billboard.png" },
+    { title: "transit media", link: "/svg/bus_shelter.svg", image: "/images/transit_media.png" },
+    { title: "Airport Branding", link: "/svg/kiosk.svg", image: "/images/airport_branding.png" },
+    { title: "Mall Media", link: "/svg/mobile_van.svg", image: "/images/mall_media.png" }
   ];
 
   const s3cards = [
-    { img: "svg/city.svg", text: "Prime Locations Across Major Cities" },
-    { img: "svg/targeted.svg", text: "High Footfall & Targeted Reach" },
-    { img: "svg/ete.svg", text: "End-To-End Campaign Execuation and Support" },
+    { img: "/svg/city.svg", text: "Prime Locations Across Major Cities" },
+    { img: "/svg/targeted.svg", text: "High Footfall & Targeted Reach" },
+    { img: "/svg/ete.svg", text: "End-To-End Campaign Execuation and Support" },
   ];
 
-  const location = ["images/location/l1.png", "images/location/l2.png", "images/location/l3.png", "images/location/l4.png", "images/location/l5.png", "images/location/l6.png", "images/location/l7.png", "images/location/l8.png", "images/location/l9.png", "images/location/l10.png", "images/location/l11.png", "images/location/l12.png", "images/location/l13.png", "images/location/l14.png", "images/location/l15.png", "images/location/l16.png", "images/location/l17.png", "images/location/l18.png", "images/location/l19.png"];
+  const location = [
+    "/images/location/l1.png", "/images/location/l2.png", "/images/location/l3.png", "/images/location/l4.png", "/images/location/l5.png",
+    "/images/location/l6.png", "/images/location/l7.png", "/images/location/l8.png", "/images/location/l9.png", "/images/location/l10.png",
+    "/images/location/l11.png", "/images/location/l12.png", "/images/location/l13.png", "/images/location/l14.png", "/images/location/l15.png",
+    "/images/location/l16.png", "/images/location/l17.png", "/images/location/l18.png", "/images/location/l19.png"
+  ];
 
-  const companyLogos = ["images/companies/c1.png", "images/companies/c2.png", "images/companies/c3.png", "images/companies/c4.png", "images/companies/c5.png", "images/companies/c6.png", "images/companies/c7.png", "images/companies/c8.png", "images/companies/c9.png", "images/companies/c10.png", "images/companies/c11.png", "images/companies/c12.png", "images/companies/c13.png", "images/companies/c14.png", "images/companies/c15.png", "images/companies/c16.png", "images/companies/c17.png", "images/companies/c18.png", "images/companies/c19.png", "images/companies/c20.png", "images/companies/c21.png", "images/companies/c22.png", "images/companies/c23.png", "images/companies/c24.png", "images/companies/c25.png", "images/companies/c26.png", "images/companies/c27.png", "images/companies/c28.png", "images/companies/c29.png", "images/companies/c30.png", "images/companies/c31.png", "images/companies/c32.png"];
+  const companyLogos = [
+    "/images/companies/c1.png", "/images/companies/c2.png", "/images/companies/c3.png", "/images/companies/c4.png", "/images/companies/c5.png",
+    "/images/companies/c6.png", "/images/companies/c7.png", "/images/companies/c8.png", "/images/companies/c9.png", "/images/companies/c10.png",
+    "/images/companies/c11.png", "/images/companies/c12.png", "/images/companies/c13.png", "/images/companies/c14.png", "/images/companies/c15.png",
+    "/images/companies/c16.png", "/images/companies/c17.png", "/images/companies/c18.png", "/images/companies/c19.png", "/images/companies/c20.png",
+    "/images/companies/c21.png", "/images/companies/c22.png", "/images/companies/c23.png", "/images/companies/c24.png", "/images/companies/c25.png",
+    "/images/companies/c26.png", "/images/companies/c27.png", "/images/companies/c28.png", "/images/companies/c29.png", "/images/companies/c30.png",
+    "/images/companies/c31.png", "/images/companies/c32.png"
+  ];
+
+  const videoCards = [
+    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 1" },
+    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 2" },
+    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 3" },
+    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 4" },
+    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 4" },
+  ];
 
   const incImgNav = () => {
     if (imgnav >= serviceCards.length - 3) {
@@ -82,20 +103,12 @@ const Home = () => {
   }, []);
 
 
-  const videoCards = [
-    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 1" },
-    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 2" },
-    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 3" },
-    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 4" },
-    { src: "videos/lander_bg.mp4", thumb: "images/jmd_logo.png", title: "Brand Campaign 4" },
-  ];
-
   return (
     <>
       {/* Section 1 */}
       <div className='h-[120vh] w-full'>
         <div className='absolute z-[-1] w-full h-full'>
-          <video src="videos/lander_bg.mp4" className=' w-full' autoPlay muted loop></video>
+          <video src="/videos/lander_bg.mp4" className=' w-full' autoPlay muted loop></video>
         </div>
         <div className='w-[40vw] absolute top-44 left-31 text-white '>
           <span><h1 className='text-2xl font-bold'><span className='text-red-500'>India's </span>Fastest Growing</h1></span>
@@ -113,8 +126,8 @@ const Home = () => {
           </span>
           <span className='flex items-center gap-4 mt-6 text-lg font-semibold'>
             <Link href="find-hoardings" className="relative group overflow-hidden flex gap-16 border-2 rounded-4xl px-6 py-3 hover:border-red-500 duration-200">
-              <span className="absolute inset-0 bg-red-500 scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0"></span>
-              <span className="relative z-10 text-red-500 group-hover:text-white transition-colors duration-300">Find Hoardings</span>
+              <span className="absolute inset-0 bg-white scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0"></span>
+              <span className="relative z-10 text-white group-hover:text-red-500 transition-colors duration-300">Find Hoardings</span>
               <img src="svg/Arrow.svg" alt="Arrow svg" className="relative z-10" />
             </Link>
             <a href="#contact-us" className='scale-80 hover:scale-100 duration-100'><img src="svg/dialer.svg" alt="" /></a>

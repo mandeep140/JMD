@@ -10,7 +10,7 @@ const page = () => {
           <div className='w-full max-w-[800px] me-auto text-white z-10 p-4 ps-0 sm:ps-30 mb-auto mt-20 sm:mt-40'>
             <h1 className='text-3xl sm:text-6xl font-extrabold mb-4'>About Us</h1>
             <span className='flex items-center gap-2 mt-8 sm:mt-14'>
-              <img src="svg/Rectangle.svg" alt="" className="w-6 sm:w-auto" />
+              <img src="svg/Rectangle.svg" alt="" className="w-auto" />
               <span className='text-base sm:text-xl font-bold'>
                 <h1>Welcome To East India's Fastest Growing</h1>
                 <h1>Outdoor Advertisement Agency</h1>
@@ -77,7 +77,7 @@ const page = () => {
             <li>We have the vision to make it unforgettable.</li>
           </ul>
           {/* Mobile Image */}
-          <img src="images/about/target.png" className='block sm:hidden w-2/3 mx-auto mt-6 opacity-80' alt="" />
+          <img src="images/about/target.png" className='block sm:hidden w-2/3 mx-auto mt-6 opacity-80 z-11' alt="" />
         </div>
       </div>
       <div className='w-full h-[10vh] sm:h-[20vh] bg-red-400 rounded-t-[100%] -mt-10 sm:-mt-20 relative z-10'></div>
