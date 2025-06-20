@@ -1,11 +1,10 @@
 "use client"
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AdminNav from '@/app/component/AdminNav';
-
 
 const initialForm = {
   mediacode: "",
@@ -24,19 +23,44 @@ const initialForm = {
   longitude: "",
   latitude: "",
   message: "",
-  imageUrl: "", // Add this field
+  imageUrl: "",
 };
 
-const page = () => {
+const Page = () => {
   const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const mediacode = searchParams.get("mediacode");
 
   const [form, setForm] = useState(initialForm);
-  const [loading, setLoading] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [remove, setRemove] = useState(null);
-  const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch ad data on mount
+  useEffect(() => {
+    if (!mediacode) {
+      alert("No mediacode provided");
+      router.push("/admin/inventory");
+      return;
+    }
+    const fetchAd = async () => {
+      try {
+        const res = await fetch(`/api/ads/update?mediacode=${encodeURIComponent(mediacode)}`);
+        if (!res.ok) throw new Error("Failed to fetch ad");
+        const ad = await res.json();
+        setForm({
+          ...ad,
+          longitude: ad.codinates?.lng || "",
+          latitude: ad.codinates?.lat || "",
+        });
+      } catch (err) {
+        alert("Error fetching ad");
+        router.push("/admin/inventory");
+      }
+      setLoading(false);
+    };
+    fetchAd();
+  }, [mediacode, router]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -49,58 +73,27 @@ const page = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle image file selection
-  const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
-  };
-
-  // Upload image to ImageKit and return the URL
-  const uploadImage = async (file) => {
-    if (!file) return "";
-    // 1. Get auth params
-    const authRes = await fetch("/api/imagekit/auth");
-    const auth = await authRes.json();
-    // 2. Prepare form data
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("publicKey", auth.publicKey);
-    formData.append("signature", auth.signature);
-    formData.append("expire", auth.expire);
-    formData.append("token", auth.token);
-    formData.append("fileName", file.name);
-    formData.append("folder", "/uploads");
-    // 3. Upload
-    const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    return data.url || "";
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // 1. Upload image and get URL
-      let imageUrl = "";
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
-      }
-      // 2. Send form data with imageUrl
-      const res = await fetch("/api/ads", {
-        method: "POST",
+      const payload = {
+        ...form,
+        codinates: {
+          lat: Number(form.latitude),
+          lng: Number(form.longitude),
+        },
+      };
+      const res = await fetch("/api/ads/update", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, imageUrl }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Failed to upload");
-      setForm(initialForm);
-      setImageFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      alert("Media listing added!");
+      if (!res.ok) throw new Error("Failed to update");
+      alert("Ad updated!");
       router.push("/admin/inventory");
     } catch (err) {
-      alert("Error uploading data");
+      alert("Error updating ad");
     }
     setLoading(false);
   };
@@ -108,7 +101,7 @@ const page = () => {
   if (status === "loading" || loading) {
     return (
       <div className="w-full h-screen flex items-center justify-center text-black text-center">
-        {loading ? "Uploading data, please wait..." : "Hold on While we fetching data - JMD \nShowa.online"}
+        Loading...
       </div>
     );
   }
@@ -120,8 +113,8 @@ const page = () => {
         <div className='w-full h-auto bg-white flex flex-col md:flex-row items-center justify-center rounded-md overflow-hidden'>
           <Link href="/admin/inventory/manage" className="w-full md:w-1/2">
             <span className={`block w-full py-2 text-center font-bold text-lg md:text-2xl cursor-pointer transition rounded-none md:rounded-md
-              ${pathname === "/admin/inventory/manage" ? "bg-blue-200 text-blue-500 shadow-md" : "bg-transparent text-black"}`}>
-              New Media Listing
+              bg-blue-200 text-blue-500 shadow-md`}>
+              Update Media Listing
             </span>
           </Link>
           <Link href="/admin/inventory" className="w-full md:w-1/2">
@@ -135,7 +128,9 @@ const page = () => {
         {/* main */}
         <div className="bg-white w-full h-full min-h-0 flex flex-col items-center justify-start text-black rounded-lg shadow p-3 md:p-8 overflow-y-auto">
           <form className="w-full h-auto flex flex-col gap-3" onSubmit={handleSubmit}>
-            {/* Row 1 */}
+            {/* All input fields, prefilled with form values */}
+            {/* ...repeat your input fields, using value={form.field} and onChange={handleChange} ... */}
+            {/* Example for Media Code (readonly) */}
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Media Code*</label>
@@ -143,10 +138,8 @@ const page = () => {
                   type="text"
                   name="mediacode"
                   value={form.mediacode}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="Media Code"
+                  readOnly
+                  className="w-full bg-gray-200 border border-gray-300 rounded px-2 py-1 md:py-2"
                 />
               </div>
               <div className="flex-1">
@@ -350,36 +343,24 @@ const page = () => {
                 placeholder="Message about media"
               />
             </div>
-            {/* Row 7: Image upload (required) */}
+            {/* Row 7: Show current image only, no upload */}
             <div className="flex flex-col items-center md:items-start">
-              <span className="text-xs text-gray-500 mb-1">Upload Image*</span>
-              <span className="text-xs text-gray-400 mb-2">Only JPG and PNG file supported</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                ref={fileInputRef}
-                required
-                className="block w-full text-xs text-gray-700 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-50 file:text-blue-700"
-              />
-              {imageFile && (
-                <span className="text-xs text-green-600 mt-1">{imageFile.name}</span>
+              <span className="text-xs text-gray-500 mb-1">Current Image</span>
+              {form.imageUrl && (
+                <img src={form.imageUrl} alt="Ad" className="w-40 rounded border mb-2" />
               )}
             </div>
-            {/* Row 8: Actions (full width) */}
+            {/* Actions */}
             <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-center md:justify-between gap-3 mt-2">
-              <button type="button" className="flex items-center justify-center border border-blue-500 text-blue-500 px-4 py-2 rounded font-semibold text-xs md:text-sm hover:bg-blue-50">
-                Import data from Excel
-              </button>
-              <button type="submit" className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold text-xs md:text-sm">
-                <span className="mr-1">➕</span> Add Media in Listing
+              <button type="submit" className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-semibold text-xs md:text-sm">
+                Update Media Listing
               </button>
             </div>
           </form>
         </div>
       </div>
     </AdminNav>
-  )
-}
+  );
+};
 
-export default page
+export default Page;

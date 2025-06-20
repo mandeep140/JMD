@@ -14,27 +14,29 @@ const adSchema = new Schema({
         type: String,
         required: true
     },
-    lightning:{
+    lighting:{
         type: String,
         required: true
     },
-    available:{
-        type: Boolean,
+    status:{
+        type: String,
         required: true
     },
     size:{
         type: String,
         required: true
     },
-    clintname:{
+    clientname:{
         type: String,
-        
+        required: true
     },
     bookedfrom:{
         type: String,
+        required: true
     },
-    bookedto:{
+    bookedtill:{
         type: String,
+        required: true
     },
     type:{
         type: String,
@@ -48,7 +50,7 @@ const adSchema = new Schema({
         type: String,
         required: true
     },
-    location:{
+    locationmap:{ 
         type: String,
         required: true
     },
@@ -64,11 +66,11 @@ const adSchema = new Schema({
             }
         },
     },
-    description:{
+    message:{ 
         type: String,
         required: true
     },
-    image:{
+    imageUrl:{
         type: String,
         required: true
     },

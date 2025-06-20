@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation"
 import { MdDownloading } from "react-icons/md";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { AiOutlineEye } from "react-icons/ai";
+import { FiEdit } from "react-icons/fi";
+import { MdDeleteOutline } from "react-icons/md";
 
 const sampleData = Array.from({ length: 327 }, (_, i) => ({
   status: i === 1 ? "red" : "green",
@@ -25,6 +28,9 @@ const page = () => {
   const pathname = usePathname();
   const [page, setPage] = useState(1);
   const [showAllPages, setShowAllPages] = useState(false);
+  const [data, setData] = useState(sampleData);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [adToDelete, setAdToDelete] = useState(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -32,12 +38,44 @@ const page = () => {
     }
   }, [status, router]);
 
-  const paginated = sampleData.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  const totalPages = Math.ceil(sampleData.length / PER_PAGE);
+  useEffect(() => {
+    fetch("/api/ads")
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }, []);
+
+  const handleDelete = async () => {
+    if (!adToDelete) return;
+    try {
+      const res = await fetch(`/api/ads`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediacode: adToDelete.mediacode }),
+      });
+      if (res.ok) {
+        setData((prev) => prev.filter((ad) => ad.mediacode !== adToDelete.mediacode));
+      } else {
+        alert("Failed to delete ad.");
+      }
+    } catch (err) {
+      alert("Error deleting ad.");
+    }
+    setConfirmDelete(false);
+    setAdToDelete(null);
+  };
+
+  const paginated = data.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const totalPages = Math.ceil(data.length / PER_PAGE);
 
   if (status === "loading") {
     return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
   }
+
 
   if (status === "authenticated") {
     return (
@@ -48,7 +86,7 @@ const page = () => {
             <Link href="/admin/inventory/manage" className="w-full md:w-1/2">
               <span className={`block w-full py-2 text-center font-bold text-lg md:text-2xl cursor-pointer transition rounded-none md:rounded-md
               ${pathname === "/admin/inventory/manage" ? "bg-blue-200 text-blue-500 shadow-md" : "bg-transparent text-black"}`}>
-                Update/New Media Listing
+                New Media Listing
               </span>
             </Link>
             <Link href="/admin/inventory" className="w-full md:w-1/2">
@@ -109,20 +147,31 @@ const page = () => {
                           <span className={`inline-block w-3 h-3 rounded-full ${row.status === "red" ? "bg-red-500" : "bg-green-500"}`}></span>
                         </td>
                         <td className="px-2 py-2">{row.title}</td>
-                        <td className="px-2 py-2">{row.client}</td>
-                        <td className="px-2 py-2">{row.code}</td>
+                        <td className="px-2 py-2">{row.clientname}</td>
+                        <td className="px-2 py-2">{row.mediacode}</td>
                         <td className="px-2 py-2">{row.city}</td>
                         <td className="px-2 py-2">{row.type}</td>
-                        <td className="px-2 py-2">{row.price}</td>
+                        <td className="px-2 py-2">{row.pricepermonth}</td>
                         <td className="px-2 py-2 flex gap-2 justify-center">
+                          <Link href={`/find-hoardings/${row.mediacode}`}>
                           <button className="text-green-600 hover:scale-110 transition" title="View">
-                            <svg width="18" height="18" fill="currentColor"><circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="2" fill="none" /><circle cx="9" cy="9" r="3" /></svg>
+                            <AiOutlineEye />
                           </button>
-                          <button className="text-blue-600 hover:scale-110 transition" title="Edit">
-                            <svg width="18" height="18" fill="currentColor"><rect x="4" y="8" width="10" height="2" rx="1" /></svg>
-                          </button>
-                          <button className="text-red-600 hover:scale-110 transition" title="Delete">
-                            <svg width="18" height="18" fill="currentColor"><rect x="6" y="6" width="6" height="6" rx="1" /></svg>
+                          </Link>
+                          <Link href={`/admin/inventory/manage/update?mediacode=${row.mediacode}`}>
+                            <button className="text-blue-600 hover:scale-110 transition" title="Edit">
+                              <FiEdit />
+                            </button>
+                          </Link>
+                          <button
+                            className="text-red-600 hover:scale-110 transition"
+                            title="Delete"
+                            onClick={() => {
+                              setAdToDelete(row);
+                              setConfirmDelete(true);
+                            }}
+                          >
+                            <MdDeleteOutline />
                           </button>
                         </td>
                       </tr>
@@ -210,6 +259,33 @@ const page = () => {
               )}
             </div>
           </div>
+          {/* Delete Confirmation Dialog */}
+          {confirmDelete && adToDelete && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px]">
+                <div className="mb-4">
+                  <span className="font-bold text-lg">Confirm Delete</span>
+                </div>
+                <div className="mb-4">
+                  Are you sure you want to delete <b>{adToDelete.title || adToDelete.mediacode}</b> ({adToDelete.type})?
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    className="px-4 py-2 rounded bg-gray-200"
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded bg-red-600 text-white"
+                    onClick={handleDelete}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </AdminNav>
     )
