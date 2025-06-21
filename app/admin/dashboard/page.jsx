@@ -1,92 +1,15 @@
 "use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AdminNav from '@/app/component/AdminNav';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-const ads = [
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-  {
-    title: "Unipole at NH 45, Gola Road Vajnenvn...",
-    city: "Jamshedpur",
-    locality: "Gola Road",
-    type: "Digital",
-    dateAdded: "06 June, 2025",
-  },
-];
-
 const Dashboard = () => {
   const { status } = useSession();
   const router = useRouter();
+  const [ads, setAds] = useState([]);
+  const [totalads, setTotalAds] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -94,7 +17,45 @@ const Dashboard = () => {
     }
   }, [status, router]);
 
-  if (status === "loading") {
+  useEffect(() => {
+    if (status === "authenticated") {
+      const fetchAds = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch("/api/ads?date=7");
+          const data = await res.json();
+          setAds(data);
+        } catch (err) {
+          setAds([]);
+        }
+        setLoading(false);
+      };
+      fetchAds();
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      const fetchAds = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch("/api/ads");
+          const data = await res.json();
+          setTotalAds(data);
+        } catch (err) {
+          setTotalAds([]);
+        }
+        setLoading(false);
+      };
+      fetchAds();
+    }
+  }, [status]);
+
+  // Calculate stats from totalads
+  const availableCount = totalads.filter(ad => ad.status === "Available").length;
+  const bookedCount = totalads.filter(ad => ad.status === "Booked").length;
+
+  if (status === "loading" || loading) {
      return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
   }
 
@@ -106,17 +67,17 @@ const Dashboard = () => {
               <h2 className='text-base md:text-lg font-bold text-blue-600'>Media Data</h2>
               <div className='w-full flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4'>
                 <span className='w-full md:w-1/3 flex flex-col items-center justify-center text-yellow-500 rounded-lg p-2'>
-                  <span className='text-2xl md:text-4xl font-bold '>150</span>
+                  <span className='text-2xl md:text-4xl font-bold '>{totalads.length}</span>
                   <h3 className='text-sm md:text-md font-semibold'>Total Media</h3>
                 </span>
                 <div className='hidden md:block w-[2px] h-[90%] bg-black'></div>
                 <span className='w-full md:w-1/3 flex flex-col items-center justify-center text-green-500 rounded-lg p-2'>
-                  <span className='text-2xl md:text-4xl font-bold '>50</span>
+                  <span className='text-2xl md:text-4xl font-bold '>{availableCount}</span>
                   <h3 className='text-sm md:text-md font-semibold '>Available Media</h3>
                 </span>
                 <div className='hidden md:block w-[2px] h-[90%] bg-black'></div>
                 <span className='w-full md:w-1/3 flex flex-col items-center justify-center text-red-500 rounded-lg p-2'>
-                  <span className='text-2xl md:text-4xl font-bold '>100</span>
+                  <span className='text-2xl md:text-4xl font-bold '>{bookedCount}</span>
                   <h3 className='text-sm md:text-md font-semibold '>Booked Media</h3>
                 </span>
               </div>
@@ -137,8 +98,8 @@ const Dashboard = () => {
                   <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>12</h2>
                 </span>
               </div>
-              <div className='w-full lg:w-[70%] bg-white rounded-2xl flex flex-col items-start p-2 md:p-3 justify-start'>
-                <h2 className='text-base md:text-lg font-bold text-blue-600'>Quick summary: Recently added listing</h2>
+              <div className='w-full lg:w-[70%] md:h-full bg-white rounded-2xl flex flex-col items-start p-2 md:p-3 justify-start'>
+                <h2 className='text-base md:text-lg font-bold text-blue-600'>Quick summary: Recently added listing(last 7 days)</h2>
                 <div className="w-full overflow-x-auto text-black mt-2 md:mt-4" style={{ maxHeight: '320px' }}>
                   <div style={{ maxHeight: '100%', overflowY: 'auto', width: '100%' }}>
                     <table className="min-w-[600px] w-full table-fixed border-collapse text-xs md:text-sm">
@@ -146,26 +107,34 @@ const Dashboard = () => {
                         <tr className="bg-white border-y border-black text-left font-semibold">
                           <th className="w-1/4 px-2 md:px-4 py-2 border-r sticky -top-1 bg-white z-10">Title</th>
                           <th className="w-1/5 px-2 md:px-4 py-2 border-r sticky -top-1 bg-white z-10">City</th>
-                          <th className="w-1/5 px-2 md:px-4 py-2 border-r sticky -top-1 bg-white z-10">Locality</th>
+                          <th className="w-1/5 px-2 md:px-4 py-2 border-r sticky -top-1 bg-white z-10">Status</th>
                           <th className="w-1/5 px-2 md:px-4 py-2 border-r sticky -top-1 bg-white z-10">Type</th>
                           <th className="w-1/5 px-2 md:px-4 py-2 sticky -top-1 bg-white z-10">Date Added</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {ads.map((ad, index) => (
-                          <tr
-                            key={index}
-                            className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}
-                          >
-                            <td className="px-2 md:px-4 py-3 border-r truncate max-w-xs">
-                              {ad.title}
-                            </td>
-                            <td className="px-2 md:px-4 py-3 border-r">{ad.city}</td>
-                            <td className="px-2 md:px-4 py-3 border-r">{ad.locality}</td>
-                            <td className="px-2 md:px-4 py-3 border-r">{ad.type}</td>
-                            <td className="px-2 md:px-4 py-3">{ad.dateAdded}</td>
+                        {ads.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="text-center py-4">No ads found for last 7 days.</td>
                           </tr>
-                        ))}
+                        ) : (
+                          ads.map((ad, index) => (
+                            <tr
+                              key={ad._id || index}
+                              className={index % 2 === 0 ? "bg-gray-200" : "bg-white"}
+                            >
+                              <td className="px-2 md:px-4 py-3 border-r truncate max-w-xs">
+                                {ad.title}
+                              </td>
+                              <td className="px-2 md:px-4 py-3 border-r">{ad.city}</td>
+                              <td className="px-2 md:px-4 py-3 border-r">{ad.status || ""}</td>
+                              <td className="px-2 md:px-4 py-3 border-r">{ad.type}</td>
+                              <td className="px-2 md:px-4 py-3">
+                                {ad.date ? new Date(ad.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : ""}
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -176,7 +145,6 @@ const Dashboard = () => {
       </AdminNav>
     );
   }
-
 };
 
 export default Dashboard;

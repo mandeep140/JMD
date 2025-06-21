@@ -100,7 +100,7 @@ const page = () => {
       alert("Media listing added!");
       router.push("/admin/inventory");
     } catch (err) {
-      alert("Error uploading data");
+      alert("Error uploading data", err);
     }
     setLoading(false);
   };
@@ -267,10 +267,10 @@ const page = () => {
                 >
                   <option value="">Select</option>
                   <option>Billboard</option>
-                  <option>Digital</option>
-                  <option>Mall</option>
-                  <option>Airport</option>
-                  <option>Transit</option>
+                  <option>Digital Billboard</option>
+                  <option>Mall Media</option>
+                  <option>Airport Branding</option>
+                  <option>Transit Media</option>
                 </select>
               </div>
               <div className="flex-1">
@@ -309,7 +309,7 @@ const page = () => {
                   onChange={handleChange}
                   required
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="Location map link"
+                  placeholder="Google map link"
                 />
               </div>
               <div className="flex-1">
@@ -368,9 +368,6 @@ const page = () => {
             </div>
             {/* Row 8: Actions (full width) */}
             <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-center md:justify-between gap-3 mt-2">
-              <button type="button" className="flex items-center justify-center border border-blue-500 text-blue-500 px-4 py-2 rounded font-semibold text-xs md:text-sm hover:bg-blue-50">
-                Import data from Excel
-              </button>
               <button type="submit" className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold text-xs md:text-sm">
                 <span className="mr-1">➕</span> Add Media in Listing
               </button>

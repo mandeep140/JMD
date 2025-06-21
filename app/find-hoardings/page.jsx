@@ -1,4 +1,5 @@
-import React from 'react'
+"use client";
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 const categories = [
@@ -9,17 +10,24 @@ const categories = [
     { icon: "/svg/find/transit.svg" },
 ];
 
-const testad = [
-    { photo: "/images/find/test.png", title: 'unipole at mumbai andheri side', link: "1" },
-    { photo: "/images/find/test.png", title: 'unipole at mumbai andheri side', link: "2" },
-    { photo: "/images/find/test.png", title: 'unipole at mumbai andheri side', link: "3" },
-    { photo: "/images/find/test.png", title: 'unipole at mumbai andheri side', link: "4" },
-    { photo: "/images/find/test.png", title: 'unipole at mumbai andheri side', link: "5" },
-    { photo: "/images/find/test.png", title: 'unipole at mumbai andheri side', link: "6" },
-    { photo: "/images/find/test.png", title: 'unipole at mumbai andheri side', link: "7" },
-]
+const Page = () => {
+    const [ads, setAds] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-const page = () => {
+    useEffect(() => {
+        const fetchAds = async () => {
+            try {
+                const res = await fetch('/api/ads');
+                const data = await res.json();
+                setAds(data);
+            } catch (err) {
+                setAds([]);
+            }
+            setLoading(false);
+        };
+        fetchAds();
+    }, []);
+
     return (
         <>
             {/* section 1 */}
@@ -88,20 +96,26 @@ const page = () => {
 
             {/* section 2 */}
             <div className='w-full min-h-[120vh] flex items-center justify-center bg-red-400 py-8 sm:py-0' id='results'>
-                <div className='w-[98vw] sm:w-[80%] h-auto sm:h-[100vh] items-center justify-center bg-white/10 border-1 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-y-auto scrollbar-hide'>
-                    {testad.map((ad, idx) => (
-                        <div key={idx} className='w-full h-[31vh] bg-red-500 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-200'>
-                            <img src={ad.photo} alt={ad.title} className='w-full h-[70%] object-cover rounded-t-lg' />
-                            <div className='w-full h-[30%] flex flex-col text-start justify-center p-4'>
-                                <h2 className='text-base sm:text-lg font-semibold text-white'>{ad.title.slice(0, 25)}...</h2>
-                                <Link href={`/find-hoardings/${ad.link}`} className='mt-2 text-gray-300 hover:underline text-sm sm:text-base'>View Details</Link>
+                <div className='w-[98vw] sm:w-[80%] h-auto sm:h-[100vh] items-start justify-start bg-white/10 border-1 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-y-auto scrollbar-hide'>
+                    {loading ? (
+                        <div className="col-span-full text-center text-black">Loading ads...</div>
+                    ) : ads.length === 0 ? (
+                        <div className="col-span-full text-center text-black">No ads found.</div>
+                    ) : (
+                        ads.map((ad, idx) => (
+                            <div key={ad._id || idx} className='w-full h-[31vh] bg-red-500 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-200'>
+                                <img src={ad.imageUrl || "/images/find/test.png"} alt={ad.title} className='w-full h-[70%] object-cover rounded-t-lg' />
+                                <div className='w-full h-[30%] flex flex-col text-start justify-center p-4'>
+                                    <h2 className='text-base sm:text-lg font-semibold text-white'>{ad.title?.slice(0, 25) || "No Title"}...</h2>
+                                    <Link href={`/find-hoardings/${ad.mediacode || ad._id}`} className='mt-2 text-gray-300 hover:underline text-sm sm:text-base'>View Details</Link>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
         </>
     )
 }
 
-export default page
+export default Page;

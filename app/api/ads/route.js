@@ -24,6 +24,46 @@ function validateAdData(adData) {
 }
 
 export async function GET(request) {
+    const dateParam = request.nextUrl.searchParams.get("date");
+    if (dateParam) {
+        try {
+            await connectDB();
+
+            // If dateParam is a number, treat it as "last N days"
+            if (!isNaN(Number(dateParam))) {
+                const days = Number(dateParam);
+                const now = new Date();
+                const from = new Date();
+                from.setDate(now.getDate() - days + 1); // include today
+
+                // Set from to 00:00:00 and now to 23:59:59 for full day coverage
+                from.setHours(0, 0, 0, 0);
+                now.setHours(23, 59, 59, 999);
+
+                const ads = await Ads.find({
+                    date: { $gte: from, $lte: now }
+                }).sort({ date: -1 });
+
+                return NextResponse.json(ads, { status: 200 });
+            }
+
+            // Otherwise, treat as a specific date (YYYY-MM-DD)
+            const start = new Date(dateParam);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(dateParam);
+            end.setHours(23, 59, 59, 999);
+
+            const ads = await Ads.find({
+                date: { $gte: start, $lt: end }
+            }).sort({ date: -1 });
+
+            return NextResponse.json(ads, { status: 200 });
+        } catch (error) {
+            console.error("Error fetching ads by date:", error);
+            return NextResponse.json({ error: "Failed to fetch ads" }, { status: 500 });
+        }
+    }
+    // Default: return all ads
     try {
         await connectDB();
         const ads = await Ads.find({}).sort({ date: -1 });

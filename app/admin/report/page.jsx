@@ -1,20 +1,14 @@
 "use client";
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import AdminNav from '@/app/component/AdminNav'
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { MdDownloading } from "react-icons/md";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-
-const sampleData = Array.from({ length: 327 }, (_, i) => ({
-    requestid: "R01UID" + (i + 1),
-    name: "Client " + (i + 1),
-    email: "client" + (i + 1) + "@example.com",
-    phone: "123456789" + (i % 10),
-    callback: "yes",
-    message: "This is a sample message from client that your service is next level uffff " + (i + 1),
-}));
+import { AiOutlineEye } from "react-icons/ai";
+import { MdDeleteOutline } from "react-icons/md";
+import ExportToExcel from '@/app/component/ExportToExcel';
 
 const PER_PAGE = 7;
 
@@ -24,23 +18,84 @@ const page = () => {
     const pathname = usePathname();
     const [page, setPage] = useState(1);
     const [showAllPages, setShowAllPages] = useState(false);
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [viewMessage, setViewMessage] = useState(null);
+    const [name, setName] = useState("");
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+
+    // Export states
+    const [showExportPopup, setShowExportPopup] = useState(false);
+    const [exportFromDate, setExportFromDate] = useState("");
+    const [exportToDate, setExportToDate] = useState("");
+    const exportRef = useRef();
 
     useEffect(() => {
         if (status === "unauthenticated") {
             router.push("/admin/login");
         }
+        if (status === "authenticated") {
+            setLoading(true);
+            fetch("/api/contact")
+                .then(res => res.json())
+                .then(resData => {
+                    setData(Array.isArray(resData) ? resData : []);
+                    setLoading(false);
+                })
+                .catch(() => setLoading(false));
+        }
     }, [status, router]);
 
-    const paginated = sampleData.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-    const totalPages = Math.ceil(sampleData.length / PER_PAGE);
+    const handleDelete = async () => {
+        try {
+            await fetch("/api/contact", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reqid: deleteId }),
+            });
+            setData(prev => prev.filter(d => d.reqid !== deleteId));
+        } catch { }
+        setConfirmDelete(false);
+        setDeleteId(null);
+    };
 
-    if (status === "loading") {
+    const handleExportWithDateRange = () => {
+        if (data.length === 0) {
+            alert("No data to export.");
+            return;
+        }
+        // Filter by createdAt date range
+        const exportData = data
+            .filter(d => {
+                if (!d.createdAt) return false;
+                const dDate = new Date(d.createdAt).setHours(0,0,0,0);
+                const from = exportFromDate ? new Date(exportFromDate).setHours(0,0,0,0) : null;
+                const to = exportToDate ? new Date(exportToDate).setHours(0,0,0,0) : null;
+                if (from && dDate < from) return false;
+                if (to && dDate > to) return false;
+                return true;
+            })
+            .map(({ _id, __v, ...rest }) => rest); // Remove unwanted fields
+
+        if (exportData.length === 0) {
+            alert("No data found in selected date range.");
+            return;
+        }
+        exportRef.current.exportData(exportData);
+    };
+
+    const paginated = data.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+    const totalPages = Math.ceil(data.length / PER_PAGE);
+
+    if (status === "loading" || loading) {
         return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
     }
     if (status === "authenticated") {
         return (
             <AdminNav>
                 <div className='w-full md:h-9/10 flex flex-col items-center justify-start gap-4 p-2 md:p-6 bg-[#E9E9E9]'>
+
                     {/* quick analysis */}
                     <div className='w-full flex flex-col md:flex-row gap-3 h-auto md:h-3/10 items-stretch justify-between'>
                         {/* Card 1 */}
@@ -56,7 +111,7 @@ const page = () => {
                             </div>
                             <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2'>
                                 <p>Contact Forms Filled</p>
-                                <p>2056</p>
+                                <p>{data.length}</p>
                             </div>
                         </div>
                         {/* Card 2 */}
@@ -98,9 +153,13 @@ const page = () => {
                         {/* Table */}
                         <div className="overflow-x-auto flex flex-col rounded-2xl bg-[#E9E9E9]">
                             <div className='w-full flex flex-col md:flex-row items-center justify-between mb-2 px-2 md:px-4 pt-2 gap-2'>
-                                <span className="text-base md:text-lg font-bold text-black">All Media List - JMD Advertisement </span>
-                                <button className="mx-auto md:ml-auto md:mx-0 bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-700 px-2 py-1 md:px-3 md:py-1 rounded flex items-center gap-1 duration-200 text-xs md:text-base">
+                                <span className="text-base md:text-lg font-bold text-black">Contact Form List - JMD Advertisement </span>
+                                <button
+                                    className="mx-auto md:ml-auto md:mx-0 bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-700 px-2 py-1 md:px-3 md:py-1 rounded flex items-center gap-1 duration-200 text-xs md:text-base"
+                                    onClick={() => setShowExportPopup(true)}
+                                >
                                     <span className='flex flex-row items-center justify-center text-center gap-1'> <MdDownloading /> Export to Excel</span>
+                                    <ExportToExcel ref={exportRef} />
                                 </button>
                             </div>
                             <div className="w-full overflow-x-auto">
@@ -117,24 +176,42 @@ const page = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {paginated.map((row, i) => (
-                                            <tr key={i} className={`hover:bg-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
-                                                <td className="px-2 py-2">{row.requestid}</td>
-                                                <td className="px-2 py-2">{row.name}</td>
-                                                <td className="px-2 py-2">{row.email}</td>
-                                                <td className="px-2 py-2">{row.phone}</td>
-                                                <td className="px-2 py-2">{row.callback}</td>
-                                                <td className="px-2 py-2 max-w-[200px] truncate" title={row.message}>{row.message}</td>
-                                                <td className="px-2 py-2 flex gap-2 justify-center">
-                                                    <button className="text-green-600 hover:scale-110 transition" title="View">
-                                                        <svg width="18" height="18" fill="currentColor"><circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="2" fill="none" /><circle cx="9" cy="9" r="3" /></svg>
-                                                    </button>
-                                                    <button className="text-red-600 hover:scale-110 transition" title="Delete">
-                                                        <svg width="18" height="18" fill="currentColor"><rect x="6" y="6" width="6" height="6" rx="1" /></svg>
-                                                    </button>
-                                                </td>
+                                        {paginated.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={7} className="text-center py-4">No request found.</td>
                                             </tr>
-                                        ))}
+                                        ) : (
+                                            paginated.map((row, i) => (
+                                                <tr key={row._id || i} className={`hover:bg-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
+                                                    <td className="px-2 py-2">{row.reqid}</td>
+                                                    <td className="px-2 py-2">{row.name}</td>
+                                                    <td className="px-2 py-2">{row.email}</td>
+                                                    <td className="px-2 py-2">{row.phone}</td>
+                                                    <td className="px-2 py-2">{row.callback}</td>
+                                                    <td className="px-2 py-2 max-w-[200px] truncate" title={row.message}>{row.message.slice(0, 20)}...</td>
+                                                    <td className="px-2 py-2 flex gap-2 justify-center">
+                                                        <button
+                                                            className="text-green-600 hover:scale-110 transition"
+                                                            title="View"
+                                                            onClick={() => setViewMessage(row)}
+                                                        >
+                                                            <AiOutlineEye size={20} />
+                                                        </button>
+                                                        <button
+                                                            className="text-red-600 hover:scale-110 transition"
+                                                            title="Delete"
+                                                            onClick={() => {
+                                                                setDeleteId(row.reqid);
+                                                                setName(row.name);
+                                                                setConfirmDelete(true);
+                                                            }}
+                                                        >
+                                                            <MdDeleteOutline size={20} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -218,6 +295,101 @@ const page = () => {
                         </div>
                     </div>
                 </div>
+                {/* Export Popup */}
+                {showExportPopup && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px]">
+                            <div className="mb-4">
+                                <span className="font-bold text-lg">Export Contacts</span>
+                            </div>
+                            <div className="mb-4 flex flex-col gap-2">
+                                <label>
+                                    From Date:
+                                    <input
+                                        type="date"
+                                        className="border rounded px-2 py-1 ml-2"
+                                        value={exportFromDate}
+                                        onChange={e => setExportFromDate(e.target.value)}
+                                    />
+                                </label>
+                                <label>
+                                    To Date:
+                                    <input
+                                        type="date"
+                                        className="border rounded px-2 py-1 ml-2"
+                                        value={exportToDate}
+                                        onChange={e => setExportToDate(e.target.value)}
+                                    />
+                                </label>
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className="px-4 py-2 rounded bg-gray-200"
+                                    onClick={() => setShowExportPopup(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="px-4 py-2 rounded bg-blue-600 text-white"
+                                    onClick={() => {
+                                        handleExportWithDateRange();
+                                        setShowExportPopup(false);
+                                    }}
+                                >
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Popup for viewing message */}
+                {viewMessage && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px] max-w-[90vw]">
+                            <div className="mb-4">
+                                <span className="font-bold text-lg">Full Message</span>
+                            </div>
+                            <div className="mb-4 whitespace-pre-line break-words max-w-[400px]">
+                                {viewMessage.message}
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    className="px-4 py-2 rounded bg-blue-600 text-white"
+                                    onClick={() => setViewMessage(null)}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Popup for delete confirmation */}
+                {confirmDelete && (
+                    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px]">
+                            <div className="mb-4">
+                                <span className="font-bold text-lg">Confirm Delete</span>
+                            </div>
+                            <div className="mb-4">
+                                Are you sure you want to delete this request from {name}?
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className="px-4 py-2 rounded bg-gray-200"
+                                    onClick={() => setConfirmDelete(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="px-4 py-2 rounded bg-red-600 text-white"
+                                    onClick={handleDelete}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </AdminNav>
         )
     }

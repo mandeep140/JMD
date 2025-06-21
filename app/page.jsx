@@ -8,6 +8,14 @@ const Home = () => {
   const [companiesnav, setCompaniesnav] = useState(0);
   const [videoNav, setVideoNav] = useState(0);
   const [activeVideo, setActiveVideo] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+    callback: true,
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   const serviceCards = [
     { title: "Hoardings", link: "/svg/hoardings.svg", image: "/images/billboard.png" },
@@ -102,6 +110,35 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleFormChange = e => {
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    }));
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setSubmitting(true);
+    form.callback = form.callback ? "yes" : "no"
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form), 
+      });
+      if (res.ok) {
+        alert("Message sent!");
+        setForm({ name: "", email: "", phone: "", message: "", callback: true });
+      } else {
+        alert("Failed to send message.");
+      }
+    } catch {
+      alert("Error sending message.");
+    }
+    setSubmitting(false);
+  };
 
   return (
     <>
@@ -295,31 +332,33 @@ const Home = () => {
             <div className='w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-15 mt-6 p-5'>
               <p className='text-[10px] me-auto mb-auto'>*Please fill all the details</p>
               <div className='w-[90%] mb-auto me-auto'>
-                <form action="">
+                <form onSubmit={handleSubmit}>
                   <span className='flex flex-col items-center gap-2 mb-4'>
                     <label htmlFor="name" className='me-auto'>Name</label>
-                    <input type="text" name='name' id='name' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Full Name' />
+                    <input type="text" name='name' id='name' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Full Name' value={form.name} onChange={handleFormChange} />
                   </span>
                   <span className='flex flex-row items-center gap-2 mb-4'>
                     <span className='flex flex-col items-center gap-2'>
                       <label htmlFor="email" className='me-auto'>Email</label>
-                      <input type="text" name='email' id='email' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='email' />
+                      <input type="email" name='email' id='email' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='email' value={form.email} onChange={handleFormChange} />
                     </span>
                     <span className='flex flex-col items-center gap-2 ms-6'>
                       <label htmlFor="phone" className='me-auto'>Phone</label>
-                      <input type="text" name='phone' id='phone' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='01 2345 6789' />
+                      <input type="text" name='phone' id='phone' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='01 2345 6789' value={form.phone} onChange={handleFormChange} />
                     </span>
                   </span>
                   <span className='flex flex-col items-center gap-2 mb-2'>
-                    <label htmlFor="message" className='me-auto'>message</label>
-                    <textarea rows={1} type="text" name='message' id='message' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Full Name' />
+                    <label htmlFor="message" className='me-auto'>Message</label>
+                    <textarea rows={1} type="text" name='message' id='message' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Your message' value={form.message} onChange={handleFormChange} />
                   </span>
                   <span className='flex flex-row justify-between items-center gap-2 mt-8'>
                     <span className='flex flex-row items-center gap-2'>
-                      <input type="checkbox" name='checkbox' id='checkbox' className='' required />
+                      <input type="checkbox" name='callback' id='checkbox' checked={form.callback} onChange={handleFormChange} />
                       <label htmlFor="checkbox" className='me-auto'>Request Callback</label>
                     </span>
-                    <button className='me-12 bg-red-500 px-9 py-3 text-white font-bold text-lg rounded-lg cursor-pointer hover:bg-red-800 duration-200' type='submit'>Send Message</button>
+                    <button className='me-12 bg-red-500 px-9 py-3 text-white font-bold text-lg rounded-lg cursor-pointer hover:bg-red-800 duration-200' type='submit' disabled={submitting}>
+                      {submitting ? "Sending..." : "Send Message"}
+                    </button>
                   </span>
                 </form>
               </div>
