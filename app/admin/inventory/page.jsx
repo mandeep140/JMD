@@ -11,16 +11,6 @@ import { FiEdit } from "react-icons/fi";
 import { MdDeleteOutline } from "react-icons/md";
 import ExportToExcel from '@/app/component/ExportToExcel';
 
-const sampleData = Array.from({ length: 10 }, (_, i) => ({
-  status: i === 1 ? "red" : "green",
-  title: "Fetching...",
-  client: "Fetching...",
-  code: "Fetching...",
-  city: "Fetching...",
-  type: "Fetching...",
-  price: "Fetching...",
-}));
-
 const PER_PAGE = 10;
 
 const page = () => {
@@ -29,7 +19,7 @@ const page = () => {
   const pathname = usePathname();
   const [page, setPage] = useState(1);
   const [showAllPages, setShowAllPages] = useState(false);
-  const [data, setData] = useState(sampleData);
+  const [data, setData] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [adToDelete, setAdToDelete] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -50,6 +40,7 @@ const page = () => {
   }, [status, router]);
 
   useEffect(() => {
+    
     fetch("/api/ads")
       .then((res) => res.json())
       .then((data) => {
@@ -132,9 +123,14 @@ const page = () => {
   const clientOptions = Array.from(new Set(data.map(d => d.clientname).filter(Boolean)));
 
   if (status === "loading") {
-    return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
+    return (
+      <AdminNav>
+        <div className="w-full h-screen flex items-center justify-center text-black text-center">
+          Hold on While we fetching data - JMD <br />Showa.online
+        </div>
+      </AdminNav>
+    );
   }
-
 
   if (status === "authenticated") {
     return (

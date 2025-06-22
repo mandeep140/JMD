@@ -124,7 +124,11 @@ const Dashboard = () => {
   const bookedCount = totalads.filter(ad => ad.status === "Booked").length;
 
   if (status === "loading" || loading) {
-    return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
+    return(
+      <AdminNav>
+        <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
+      </AdminNav>
+    ) 
   }
 
   if (status === "authenticated") {

@@ -81,9 +81,9 @@ const page = () => {
         const exportData = bookings
             .filter(b => {
                 if (!b.date) return false;
-                const bDate = new Date(b.date).setHours(0,0,0,0);
-                const from = exportFromDate ? new Date(exportFromDate).setHours(0,0,0,0) : null;
-                const to = exportToDate ? new Date(exportToDate).setHours(0,0,0,0) : null;
+                const bDate = new Date(b.date).setHours(0, 0, 0, 0);
+                const from = exportFromDate ? new Date(exportFromDate).setHours(0, 0, 0, 0) : null;
+                const to = exportToDate ? new Date(exportToDate).setHours(0, 0, 0, 0) : null;
                 if (from && bDate < from) return false;
                 if (to && bDate > to) return false;
                 return true;
@@ -107,13 +107,17 @@ const page = () => {
                 body: JSON.stringify({ reqid: deleteId }),
             });
             setBookings(prev => prev.filter(b => b.reqid !== deleteId));
-        } catch {}
+        } catch { }
         setConfirmDelete(false);
         setDeleteId(null);
     };
 
     if (status === "loading" || loading) {
-        return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
+        return (
+            <AdminNav>
+                <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
+            </AdminNav>
+        )
     }
 
     if (status === "authenticated") {
