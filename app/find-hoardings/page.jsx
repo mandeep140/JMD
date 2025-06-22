@@ -13,6 +13,8 @@ const categories = [
 const Page = () => {
     const [ads, setAds] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedCity, setSelectedCity] = useState('');
+    const [selectedType, setSelectedType] = useState('');
 
     useEffect(() => {
         const fetchAds = async () => {
@@ -27,6 +29,20 @@ const Page = () => {
         };
         fetchAds();
     }, []);
+
+    // Filter ads on client side
+    const filteredAds = ads.filter(ad => {
+        const cityMatch = selectedCity
+            ? ad.city && ad.city.trim().toLowerCase() === selectedCity.trim().toLowerCase()
+            : true;
+        const typeMatch = selectedType
+            ? ad.type && ad.type.trim().toLowerCase() === selectedType.trim().toLowerCase()
+            : true;
+        return cityMatch && typeMatch;
+    });
+
+    const cityOptions = Array.from(new Set(ads.map(ad => ad.city).filter(Boolean)));
+    const typeOptions = Array.from(new Set(ads.map(ad => ad.type).filter(Boolean)));
 
     return (
         <>
@@ -43,40 +59,36 @@ const Page = () => {
                             name="city"
                             id="city"
                             required
+                            value={selectedCity}
+                            onChange={e => setSelectedCity(e.target.value)}
                             className="px-4 sm:px-6 py-2 sm:py-3 rounded-md text-white font-semibold text-base sm:text-lg border-b-1 focus:outline-none focus:ring-2 focus:ring-red-400 w-full sm:w-auto"
                             style={{
                                 WebkitBackdropFilter: "blur(8px)",
                                 backdropFilter: "blur(8px)",
                             }}
                         >
-                            <option
-                                value=""
-                                className="bg-gray-200/10 text-black font-semibold"
-                                style={{
-                                    background: "rgba(229, 231, 235, 0.8)",
-                                    color: "#111",
-                                    fontWeight: 600,
-                                }}
-                            >
-                                Select city
-                            </option>
-                            <option value="Mumbai" className="bg-gray-200/80 text-black font-semibold" style={{ background: "rgba(229, 231, 235, 0.8)", color: "#111", fontWeight: 600 }}>Mumbai</option>
-                            <option value="Rajasthan" className="bg-gray-200/80 text-black font-semibold" style={{ background: "rgba(229, 231, 235, 0.8)", color: "#111", fontWeight: 600 }}>Rajasthan</option>
+                            <option value="" className='text-black'>Select city</option>
+                            {cityOptions.map(city => (
+                                <option key={city} value={city} className='text-black'>{city}</option>
+                            ))}
                         </select>
 
                         <select
                             name="type"
                             id="type"
                             required
+                            value={selectedType}
+                            onChange={e => setSelectedType(e.target.value)}
                             className="px-4 sm:px-6 py-2 sm:py-3 rounded-md text-white font-semibold text-base sm:text-lg border-b-1 focus:outline-none focus:ring-2 focus:ring-red-400 w-full sm:w-auto"
                             style={{
                                 WebkitBackdropFilter: "blur(8px)",
                                 backdropFilter: "blur(8px)",
                             }}
                         >
-                            <option value="" className="bg-gray-200/80 text-black font-semibold" style={{ background: "rgba(229, 231, 235, 0.8)", color: "#111", fontWeight: 600 }}>Select Advertisement Type</option>
-                            <option value="digital" className="bg-gray-200/80 text-black font-semibold" style={{ background: "rgba(229, 231, 235, 0.8)", color: "#111", fontWeight: 600 }}>Digital</option>
-                            <option value="media" className="bg-gray-200/80 text-black font-semibold" style={{ background: "rgba(229, 231, 235, 0.8)", color: "#111", fontWeight: 600 }}>Media</option>
+                            <option value="" className='text-black'>Select Advertisement Type</option>
+                            {typeOptions.map(type => (
+                                <option key={type} value={type} className='text-black'>{type}</option>
+                            ))}
                         </select>
                     </span>
 
@@ -99,10 +111,10 @@ const Page = () => {
                 <div className='w-[98vw] sm:w-[80%] h-auto sm:h-[100vh] items-start justify-start bg-white/10 border-1 backdrop-blur-md rounded-2xl shadow-lg p-4 sm:p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-y-auto scrollbar-hide'>
                     {loading ? (
                         <div className="col-span-full text-center text-black">Loading ads...</div>
-                    ) : ads.length === 0 ? (
+                    ) : filteredAds.length === 0 ? (
                         <div className="col-span-full text-center text-black">No ads found.</div>
                     ) : (
-                        ads.map((ad, idx) => (
+                        filteredAds.map((ad, idx) => (
                             <div key={ad._id || idx} className='w-full h-[31vh] bg-red-500 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-200'>
                                 <img src={ad.imageUrl || "/images/find/test.png"} alt={ad.title} className='w-full h-[70%] object-cover rounded-t-lg' />
                                 <div className='w-full h-[30%] flex flex-col text-start justify-center p-4'>
