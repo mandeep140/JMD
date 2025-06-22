@@ -9,7 +9,14 @@ const Dashboard = () => {
   const router = useRouter();
   const [ads, setAds] = useState([]);
   const [totalads, setTotalAds] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Lead and booking stats
+  const [todayLeads, setTodayLeads] = useState(0);
+  const [weekLeads, setWeekLeads] = useState(0);
+  const [todayBookings, setTodayBookings] = useState(0);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -27,9 +34,70 @@ const Dashboard = () => {
           setAds(data);
         } catch (err) {
           setAds([]);
+          alert("Failed to fetch ads. Please try again later.");
         }
         setLoading(false);
       };
+
+      const fetchContactsAndBookings = async () => {
+        setLoading(true);
+        try {
+          // Fetch contacts (leads)
+          const resContact = await fetch("/api/contact");
+          const dataContact = await resContact.json();
+          setContacts(dataContact);
+
+          // Calculate today's and last 7 days' leads
+          const today = new Date();
+          const todayStr = today.toISOString().slice(0, 10);
+          const weekAgo = new Date();
+          weekAgo.setDate(today.getDate() - 6);
+
+          let todayLeadCount = 0;
+          let weekLeadCount = 0;
+
+          dataContact.forEach(c => {
+            if (!c.createdAt) return;
+            const contactDate = new Date(c.createdAt);
+            const contactStr = contactDate.toISOString().slice(0, 10);
+
+            // Today
+            if (contactStr === todayStr) todayLeadCount++;
+
+            // Last 7 days (including today)
+            if (contactDate >= weekAgo && contactDate <= today) weekLeadCount++;
+          });
+
+          setTodayLeads(todayLeadCount);
+          setWeekLeads(weekLeadCount);
+
+          // Fetch bookings
+          const resBooking = await fetch("/api/booking");
+          const dataBooking = await resBooking.json();
+          setBookings(dataBooking);
+
+          // Calculate today's bookings
+          let todayBookingCount = 0;
+          dataBooking.forEach(b => {
+            if (!b.date) return;
+            const bookingDate = new Date(b.date);
+            const bookingStr = bookingDate.toISOString().slice(0, 10);
+            if (bookingStr === todayStr) todayBookingCount++;
+          });
+          setTodayBookings(todayBookingCount);
+
+        } catch (err) {
+          setContacts([]);
+          setBookings([]);
+          setTodayLeads(0);
+          setWeekLeads(0);
+          setTodayBookings(0);
+          alert("Failed to fetch data. Please try again later.");
+        }
+        setLoading(false);
+      };
+
+      fetchContactsAndBookings();
       fetchAds();
     }
   }, [status]);
@@ -56,7 +124,7 @@ const Dashboard = () => {
   const bookedCount = totalads.filter(ad => ad.status === "Booked").length;
 
   if (status === "loading" || loading) {
-     return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
+    return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
   }
 
   if (status === "authenticated") {
@@ -87,15 +155,15 @@ const Dashboard = () => {
                 <h2 className='text-base md:text-lg font-bold text-blue-600'>Lead Data</h2>
                 <span className='w-full flex flex-col items-start justify-start'>
                   <h2 className='text-black text-sm md:text-base'>Lead's received today</h2>
-                  <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>56</h2>
+                  <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>{todayLeads}</h2>
                 </span>
                 <span className='w-full flex flex-col items-start justify-start'>
                   <h2 className='text-black text-sm md:text-base'>Lead's received this week</h2>
-                  <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>431</h2>
+                  <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>{weekLeads}</h2>
                 </span>
                 <span className='w-full flex flex-col items-start justify-start'>
                   <h2 className='text-black text-sm md:text-base'>Booking request today</h2>
-                  <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>12</h2>
+                  <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>{todayBookings}</h2>
                 </span>
               </div>
               <div className='w-full lg:w-[70%] md:h-full bg-white rounded-2xl flex flex-col items-start p-2 md:p-3 justify-start'>
