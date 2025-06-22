@@ -31,6 +31,15 @@ const page = () => {
     const [exportToDate, setExportToDate] = useState("");
     const exportRef = useRef();
 
+    // Conversion states
+    const [conversion, setConversion] = useState({ visitor: 0, book: 0 });
+
+    // Top ads state
+    const [topAds, setTopAds] = useState([]);
+
+    // Top cities state
+    const [topCities, setTopCities] = useState([]);
+
     useEffect(() => {
         if (status === "unauthenticated") {
             router.push("/admin/login");
@@ -44,6 +53,29 @@ const page = () => {
                     setLoading(false);
                 })
                 .catch(() => setLoading(false));
+            // Fetch conversion stats
+            fetch("/api/conversion")
+                .then(res => res.json())
+                .then(res => {
+                    if (res && res.doc && res.doc.visitor !== undefined && res.doc.book !== undefined) {
+                        setConversion(res.doc);
+                    }
+                })
+                .catch(() => { });
+            // Fetch top 3 ads by views
+            fetch("/api/ads?topthree=1")
+                .then(res => res.json())
+                .then(res => {
+                    if (Array.isArray(res)) setTopAds(res);
+                })
+                .catch(() => { });
+            // Fetch top 3 cities by traffic
+            fetch("/api/log-visitor?topthree=1")
+                .then(res => res.json())
+                .then(res => {
+                    if (Array.isArray(res)) setTopCities(res);
+                })
+                .catch(() => { });
         }
     }, [status, router]);
 
@@ -69,9 +101,9 @@ const page = () => {
         const exportData = data
             .filter(d => {
                 if (!d.createdAt) return false;
-                const dDate = new Date(d.createdAt).setHours(0,0,0,0);
-                const from = exportFromDate ? new Date(exportFromDate).setHours(0,0,0,0) : null;
-                const to = exportToDate ? new Date(exportToDate).setHours(0,0,0,0) : null;
+                const dDate = new Date(d.createdAt).setHours(0, 0, 0, 0);
+                const from = exportFromDate ? new Date(exportFromDate).setHours(0, 0, 0, 0) : null;
+                const to = exportToDate ? new Date(exportToDate).setHours(0, 0, 0, 0) : null;
                 if (from && dDate < from) return false;
                 if (to && dDate > to) return false;
                 return true;
@@ -103,11 +135,11 @@ const page = () => {
                             <h1 className='text-base md:text-lg font-bold text-black me-auto'>Conversion Funnel:</h1>
                             <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
                                 <p>Total Visitors</p>
-                                <p>5846</p>
+                                <p>{conversion.visitor?.toLocaleString()}</p>
                             </div>
                             <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
                                 <p>Clicked on "Book Now"</p>
-                                <p>1265</p>
+                                <p>{conversion.book?.toLocaleString()}</p>
                             </div>
                             <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2'>
                                 <p>Contact Forms Filled</p>
@@ -117,34 +149,38 @@ const page = () => {
                         {/* Card 2 */}
                         <div className='w-full md:w-1/3 bg-white flex flex-col items-center justify-start rounded-lg gap-2 p-3 md:p-4 mb-3 md:mb-0'>
                             <h1 className='text-base md:text-lg font-bold text-black me-auto'>Most Viewed Media Listings:</h1>
-                            <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
-                                <p>Billboard at baran</p>
-                                <p>8745</p>
-                            </div>
-                            <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
-                                <p>Billboard at kota</p>
-                                <p>15265</p>
-                            </div>
-                            <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2'>
-                                <p>Billboard at jaipur</p>
-                                <p>45897</p>
-                            </div>
+                            {topAds.length === 0 ? (
+                                <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
+                                    <p>No data</p>
+                                    <p>0</p>
+                                </div>
+                            ) : (
+                                topAds.map((ad, idx) => (
+                                    <Link href={`/find-hoardings/${ad.mediacode}`} key={ad._id || idx} className='w-full'>
+                                        <div key={ad._id || idx} className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
+                                            <p>{ad.type} - {ad.title}</p>
+                                            <p>{ad.views?.toLocaleString?.() ?? 0}</p>
+                                        </div>
+                                    </Link>
+                                ))
+                            )}
                         </div>
                         {/* Card 3 */}
                         <div className='w-full md:w-1/3 bg-white flex flex-col items-center justify-start rounded-lg gap-2 p-3 md:p-4'>
                             <h1 className='text-base md:text-lg font-bold text-black me-auto'>Top City by Traffic:</h1>
-                            <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
-                                <p>Rajasthan </p>
-                                <p>102354</p>
-                            </div>
-                            <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
-                                <p>Maharashtra</p>
-                                <p>25146</p>
-                            </div>
-                            <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2'>
-                                <p>Tamo; Nadu</p>
-                                <p>20145</p>
-                            </div>
+                            {topCities.length === 0 ? (
+                                <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
+                                    <p>No data</p>
+                                    <p>0</p>
+                                </div>
+                            ) : (
+                                topCities.map((city, idx) => (
+                                    <div key={city._id || idx} className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
+                                        <p>{city.name}</p>
+                                        <p>{city.count?.toLocaleString?.() ?? 0}</p>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
 

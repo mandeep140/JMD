@@ -1,5 +1,5 @@
 "use client";
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { signOut } from 'next-auth/react';
 import { IoMdArrowDropdown } from "react-icons/io";
 import { MdDashboard } from "react-icons/md";
@@ -7,7 +7,6 @@ import { FaClipboardList } from "react-icons/fa";
 import { IoCalendarOutline, IoSearch } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
 import { IoHomeSharp } from "react-icons/io5";
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -22,7 +21,32 @@ const links = [
 const AdminNav = ({ children }) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (search.trim().length === 0) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const timeout = setTimeout(() => {
+      fetch(`/api/ads?mediacode=${encodeURIComponent(search)}`)
+        .then(res => res.json())
+        .then(res => {
+          setSearchResults(Array.isArray(res) ? res : []);
+          setSearching(false);
+        })
+        .catch(() => {
+          setSearchResults([]);
+          setSearching(false);
+        });
+    }, 400); // debounce
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   return (
     <div className='w-full min-h-screen bg-gray-100 flex flex-col md:flex-row items-stretch justify-center'>
@@ -103,13 +127,39 @@ const AdminNav = ({ children }) => {
       </div>
       {/* main content */}
       <div className='w-full md:w-[80%] h-[100vh] bg-white pt-0 flex flex-col items-center justify-start'>
-        <div className='w-full md:h-1/10 flex flex-row items-center gap-2 md:gap-4 px-2 md:px-4 py-2 text-black'>
+        <div className='w-full md:h-1/10 flex flex-row items-center gap-2 md:gap-4 px-2 md:px-4 py-2 text-black relative'>
           <IoSearch className='text-blue-600' />
           <input
             type="text"
             placeholder="Quick Search ad by media code"
             className="border border-gray-300/10 rounded-2xl w-full md:w-[50%] focus:border-blue-600 focus:outline-none focus:ring-0 focus:border-2 px-2 py-1"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
+          {/* Search Results Dropdown */}
+          {search && (
+            <div className="absolute top-full left-8 md:left-10 w-[90%] md:w-[50%] bg-white border border-gray-200 rounded shadow-lg z-50 mt-1 max-h-60 overflow-y-auto">
+              {searching && (
+                <div className="p-2 text-gray-500 text-sm">Searching...</div>
+              )}
+              {!searching && searchResults.length === 0 && (
+                <div className="p-2 text-gray-500 text-sm">No results found.</div>
+              )}
+              {searchResults.map((ad, idx) => (
+                <Link
+                  key={ad._id || idx}
+                  href={`/find-hoardings/${ad.mediacode}`}
+                  className="block px-4 py-2 hover:bg-blue-100 text-black"
+                  onClick={() => {
+                    setSearch('');
+                    setSearchResults([]);
+                  }}
+                >
+                  <span className="font-bold">{ad.mediacode}</span> - {ad.title}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
         {children}
       </div>

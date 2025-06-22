@@ -24,7 +24,8 @@ const initialForm = {
   longitude: "",
   latitude: "",
   message: "",
-  imageUrl: "", // Add this field
+  imageUrl: "",
+  imageId: ""
 };
 
 const page = () => {
@@ -36,6 +37,7 @@ const page = () => {
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [remove, setRemove] = useState(null);
+  const [mediacodeExists, setMediacodeExists] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -75,7 +77,7 @@ const page = () => {
       body: formData,
     });
     const data = await res.json();
-    return data.url || "";
+    return data || "";
   };
 
   const handleSubmit = async (e) => {
@@ -84,14 +86,18 @@ const page = () => {
     try {
       // 1. Upload image and get URL
       let imageUrl = "";
+      let imageId = "";
+      let data = {};
       if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
+        data = await uploadImage(imageFile);
+        imageUrl = data.url;
+        imageId = data.fileId; 
       }
       // 2. Send form data with imageUrl
       const res = await fetch("/api/ads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, imageUrl }),
+        body: JSON.stringify({ ...form, imageUrl, imageId }),
       });
       if (!res.ok) throw new Error("Failed to upload");
       setForm(initialForm);
@@ -103,6 +109,23 @@ const page = () => {
       alert("Error uploading data", err);
     }
     setLoading(false);
+  };
+
+  // Handler for mediacode input change
+  const handleMediacodeChange = async (e) => {
+    const value = e.target.value;
+    setForm(prev => ({ ...prev, mediacode: value }));
+    if (value.trim().length > 0) {
+      // Check with backend if mediacode exists
+      const res = await fetch(`/api/ads/update?mediacode=${encodeURIComponent(value)}`);
+      if (res.ok) {
+        setMediacodeExists(true);
+      } else {
+        setMediacodeExists(false);
+      }
+    } else {
+      setMediacodeExists(false);
+    }
   };
 
   if (status === "loading" || loading) {
@@ -143,11 +166,14 @@ const page = () => {
                   type="text"
                   name="mediacode"
                   value={form.mediacode}
-                  onChange={handleChange}
+                  onChange={handleMediacodeChange}
                   required
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
                   placeholder="Media Code"
                 />
+                {mediacodeExists && (
+                  <span className="text-red-500 text-xs">A post with this Media Code already exists!</span>
+                )}
               </div>
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Title*</label>

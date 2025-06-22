@@ -4,6 +4,7 @@ import NextTopLoader from "nextjs-toploader";
 import Navbaar from "@/components/Navbaar";
 import Footer from "@/components/Footer";
 import SessionWrapper from "./component/SessionWrapper";
+import TrackCity from "./component/TrackCity";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <TrackCity />
         <NextTopLoader/>
         <Navbaar />
         <div className="container min-h-[100vh] min-w-full">

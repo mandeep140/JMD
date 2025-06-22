@@ -33,12 +33,27 @@ const Page = () => {
         if (!res.ok) throw new Error("Not found");
         const data = await res.json();
         setAd(data);
+
+        // Increment view count after ad is loaded
+        fetch("/api/ads", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mediacode: id }),
+        });
       } catch (err) {
         redirect('/find-hoardings');
       }
       setLoading(false);
     };
     fetchAd();
+
+    // Increment visitor count
+    fetch("/api/conversion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "visitor" }),
+    });
+
   }, [id]);
 
   // Handle form input changes
@@ -123,7 +138,17 @@ const Page = () => {
               <button className='w-full md:w-auto px-6 py-2 bg-white/10 border-2 hover:bg-black/10 rounded-2xl transition-all duration-200 cursor-pointer' onClick={() => setOpen(!open)}>
                 Expand {open ? "Map" : "Photo"}
               </button>
-              <Link href={`/find-hoardings/${id}/#contact-us`} className='w-full md:w-auto px-6 py-2 bg-red-500 border-2 hover:bg-white hover:text-red-500 rounded-2xl transition-all duration-200 cursor-pointer text-center'>
+              <Link
+                href={`/find-hoardings/${id}/#contact-us`}
+                className='w-full md:w-auto px-6 py-2 bg-red-500 border-2 hover:bg-white hover:text-red-500 rounded-2xl transition-all duration-200 cursor-pointer text-center'
+                onClick={async () => {
+                  await fetch("/api/conversion", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type: "book" }),
+                  });
+                }}
+              >
                 Book Now
               </Link>
             </div>

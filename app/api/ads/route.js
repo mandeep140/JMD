@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import Ads from "@/Schema/AdSchema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import imagekit from "@/utils/imagekit";
 
 function validateAdData(adData) {
     // List all required fields
@@ -24,6 +25,26 @@ function validateAdData(adData) {
 }
 
 export async function GET(request) {
+    await connectDB();
+    const mediacode = request.nextUrl.searchParams.get("mediacode");
+    if (mediacode) {
+        const ads = await Ads.find({ mediacode: { $regex: mediacode, $options: "i" } }).limit(10);
+        return NextResponse.json(ads, { status: 200 });
+    }
+
+    const topThreeParam = request.nextUrl.searchParams.get("topthree");
+    if (topThreeParam) {
+        try {
+            await connectDB();
+            const ads = await Ads.find({})
+                .sort({ views: -1 })
+                .limit(3);
+            return NextResponse.json(ads, { status: 200 });
+        } catch (error) {
+            return NextResponse.json({ error: "Failed to fetch top ads" }, { status: 500 });
+        }
+    }
+
     const dateParam = request.nextUrl.searchParams.get("date");
     if (dateParam) {
         try {
@@ -128,10 +149,34 @@ export async function DELETE(request) {
         if (!deleted) {
             return NextResponse.json({ error: "Ad not found" }, { status: 404 });
         }
+        if (deleted.imageId) {
+            await imagekit.deleteFile(deleted.imageId);
+        }
 
         return NextResponse.json({ message: "Ad deleted successfully" }, { status: 200 });
     } catch (error) {
         console.error("Error deleting ad:", error);
         return NextResponse.json({ error: "Failed to delete ad" }, { status: 500 });
+    }
+}
+
+export async function PUT(request) {
+    try {
+        await connectDB();
+        const { mediacode } = await request.json();
+        if (!mediacode) {
+            return NextResponse.json({ error: "Media code is required" }, { status: 400 });
+        }
+        const updated = await Ads.findOneAndUpdate(
+            { mediacode },
+            { $inc: { views: 1 } },
+            { new: true }
+        );
+        if (!updated) {
+            return NextResponse.json({ error: "Ad not found" }, { status: 404 });
+        }
+        return NextResponse.json({ message: "View count incremented", views: updated.views }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ error: "Failed to increment view count" }, { status: 500 });
     }
 }

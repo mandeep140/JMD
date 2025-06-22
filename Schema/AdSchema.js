@@ -74,9 +74,17 @@ const adSchema = new Schema({
         type: String,
         required: true
     },
+    imageId:{
+        type: String,
+        required: true
+    },
     date:{
         type: Date,
         default: Date.now
+    },
+    views:{
+        type: Number,
+        default: 0
     },
 });
 
