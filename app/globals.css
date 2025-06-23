@@ -45,6 +45,7 @@
 
 html{
   scroll-behavior: smooth;
+  font-family: popins, sans-serif;
 }
 
 .scrollbar-hide {

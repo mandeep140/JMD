@@ -108,11 +108,11 @@ const Page = () => {
         <div className='w-[98%] md:w-[80%] min-h-[80vh] border-white border-2 mt-25
          md:mt-25 bg-white/40 backdrop-blur-md rounded-3xl p-2 md:p-6 flex flex-col md:flex-row gap-4 md:gap-0 overflow-hidden'>
           {/* Left: Images */}
-          <div className="w-full md:w-1/2 h-[50vh] md:h-auto flex flex-col justify-between gap-4 md:gap-0 p-2 md:p-5 rounded-3xl">
-            <div className={`w-full ${open ? 'h-2/3' : 'h-1/4'} duration-300 ease-in-out aspect-video overflow-hidden`}>
+          <div className="w-full md:w-1/2 h-[30vh] md:h-auto flex flex-col justify-between gap-4 md:gap-0 p-2 md:p-5 rounded-3xl">
+            <div className={`w-full ${open ? 'md:h-2/3' : 'md:h-1/4'} h-full duration-300 ease-in-out aspect-video overflow-hidden`}>
               <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-cover rounded-2xl cursor-pointer" onClick={() => setOpen(true)} />
             </div>
-            <div className={`w-full ${open ? 'h-1/4' : 'h-2/3'} duration-300 mt-3 md:mt-5 ease-in-out aspect-video rounded-2xl overflow-hidden`} onClick={() => setOpen(false)}>
+            <div className={`w-full ${open ? 'md:h-1/4' : 'md:h-2/3'} hidden md:block duration-300 mt-3 md:mt-5 ease-in-out aspect-video rounded-2xl overflow-hidden`} onClick={() => setOpen(false)}>
               <GoogleMap mapLink={ad.locationmap} />
             </div>
           </div>
@@ -135,8 +135,11 @@ const Page = () => {
             <h2 className='mt-4 text-base md:text-xl'><b>MEDIA LOCATION:</b> {ad.city}</h2>
             <h2 className='mt-4 text-base md:text-xl'><b>PRICE PER DAY:</b> ₹{ad.priceperday}</h2>
             <h2 className='mt-2 text-base md:text-xl'><b>PRICE PER MONTH:</b> ₹{ad.pricepermonth}</h2>
+            <div className={`w-full h-[40vh] md:hidden duration-300 mt-3 md:mt-5 ease-in-out aspect-video rounded-2xl overflow-hidden`} onClick={() => setOpen(false)}>
+              <GoogleMap mapLink={ad.locationmap} />
+            </div>
             <div className='flex flex-col md:flex-row items-center justify-between w-full md:w-[80%] mt-8 md:mt-20 gap-3 md:gap-0'>
-              <button className='w-full md:w-auto px-6 py-2 bg-white/10 border-2 hover:bg-black/10 rounded-2xl transition-all duration-200 cursor-pointer' onClick={() => setOpen(!open)}>
+              <button className='w-full hidden md:block md:w-auto px-6 py-2 bg-white/10 border-2 hover:bg-black/10 rounded-2xl transition-all duration-200 cursor-pointer' onClick={() => setOpen(!open)}>
                 Expand {open ? "Map" : "Photo"}
               </button>
               <Link

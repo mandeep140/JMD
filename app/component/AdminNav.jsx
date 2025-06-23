@@ -8,7 +8,7 @@ import { IoCalendarOutline, IoSearch } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
 import { IoHomeSharp } from "react-icons/io5";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 const links = [
   { href: '/admin/dashboard', label: 'Dashboard' },
@@ -24,7 +24,9 @@ const AdminNav = ({ children }) => {
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [showHomeConfirm, setShowHomeConfirm] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     if (search.trim().length === 0) {
@@ -84,6 +86,20 @@ const AdminNav = ({ children }) => {
           {/* side nav */}
           {links.map(link => {
             const isActive = pathname.includes(link.href) && link.href !== '/';
+            if (link.href === '/') {
+              return (
+                <button
+                  key={link.href}
+                  type="button"
+                  onClick={() => setShowHomeConfirm(true)}
+                  className={`w-full flex flex-row items-center ps-[20%] py-[3%] gap-[8%] text-md font-bold cursor-pointer rounded-md mb-2
+                    ${isActive ? 'text-blue-600 bg-blue-200' : 'text-black hover:bg-blue-50'}`}
+                >
+                  <IoHomeSharp className='text-xl' />
+                  <h2 className='text-black/80'>{link.label}</h2>
+                </button>
+              );
+            }
             return (
               <Link key={link.href} href={link.href}>
                 <div className={`w-full flex flex-row items-center ps-[20%] py-[3%] gap-[8%] text-md font-bold cursor-pointer rounded-md mb-2
@@ -92,7 +108,6 @@ const AdminNav = ({ children }) => {
                   {link.label === 'Manage Inventory' && <FaClipboardList className='text-xl' />}
                   {link.label === 'Booking Request' && <IoCalendarOutline className='text-xl' />}
                   {link.label === 'Report' && <TbReportAnalytics className='text-xl' />}
-                  {link.label === 'Home' && <IoHomeSharp className='text-xl' />}
                   <h2 className='text-black/80'>{link.label}</h2>
                 </div>
               </Link>
@@ -111,6 +126,19 @@ const AdminNav = ({ children }) => {
       <div className="flex md:hidden w-full justify-around bg-white py-2 shadow z-10 mt-2">
         {links.map(link => {
           const isActive = pathname.includes(link.href) && link.href !== '/';
+          if (link.href === '/') {
+            return (
+              <button
+                key={link.href}
+                type="button"
+                onClick={() => setShowHomeConfirm(true)}
+                className={`flex flex-col items-center ${isActive ? 'text-blue-600 bg-blue-100' : 'text-black bg-transparent'} px-2 py-1 rounded`}
+              >
+                <IoHomeSharp className='text-xl' />
+                <span className="text-xs">{link.label.replace('Manage ', '').replace('Booking ', '')}</span>
+              </button>
+            );
+          }
           return (
             <Link key={link.href} href={link.href}>
               <div className={`flex flex-col items-center ${isActive ? 'text-blue-600 bg-blue-100' : 'text-black bg-transparent'} px-2 py-1 rounded`}>
@@ -118,13 +146,37 @@ const AdminNav = ({ children }) => {
                 {link.label === 'Manage Inventory' && <FaClipboardList className='text-xl' />}
                 {link.label === 'Booking Request' && <IoCalendarOutline className='text-xl' />}
                 {link.label === 'Report' && <TbReportAnalytics className='text-xl' />}
-                {link.label === 'Home' && <IoHomeSharp className='text-xl' />}
                 <span className="text-xs">{link.label.replace('Manage ', '').replace('Booking ', '')}</span>
               </div>
             </Link>
           );
         })}
       </div>
+      {/* Confirmation Popup */}
+      {showHomeConfirm && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
+            <h2 className="text-lg font-bold mb-4 text-black">Are you sure you want to go to Home?</h2>
+            <div className="flex gap-4">
+              <button
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                onClick={() => {
+                  setShowHomeConfirm(false);
+                  router.push('/');
+                }}
+              >
+                Yes
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                onClick={() => setShowHomeConfirm(false)}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* main content */}
       <div className='w-full md:w-[80%] h-[100vh] bg-white pt-0 flex flex-col items-center justify-start'>
         <div className='w-full md:h-1/10 flex flex-row items-center gap-2 md:gap-4 px-2 md:px-4 py-2 text-black relative'>

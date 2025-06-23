@@ -5,11 +5,9 @@ import { usePathname } from 'next/navigation'
 
 const Navbaar = () => {
     const path = usePathname();
-    if (path.includes("/admin")) return null;
-
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-
+    
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50)
@@ -17,7 +15,7 @@ const Navbaar = () => {
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
-
+    
     // Close menu on route change or scroll
     useEffect(() => {
         if (menuOpen) {
@@ -30,7 +28,8 @@ const Navbaar = () => {
             }
         }
     }, [menuOpen]);
-
+    
+    if (path.includes("/admin")) return null;
     const scrolledNav = {
         paddingTop: scrolled ? '0.5rem' : '1.25rem',
         paddingBottom: scrolled ? '0.5rem' : '1.25rem',

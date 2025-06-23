@@ -21,11 +21,10 @@ const initialForm = {
   priceperday: "",
   pricepermonth: "",
   locationmap: "",
-  longitude: "",
-  latitude: "",
+  show: true,
   message: "",
   imageUrl: "",
-  imageId: ""
+  imageId: "",
 };
 
 const page = () => {
@@ -36,7 +35,6 @@ const page = () => {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [remove, setRemove] = useState(null);
   const [mediacodeExists, setMediacodeExists] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -46,9 +44,19 @@ const page = () => {
     }
   }, [status, router]);
 
+  // Update handleChange to clear bookedfrom/bookedtill if status is Available
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === "status") {
+      setForm((prev) => ({
+        ...prev,
+        status: value,
+        bookedfrom: value === "Available" ? "" : prev.bookedfrom,
+        bookedtill: value === "Available" ? "" : prev.bookedtill,
+      }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   // Handle image file selection
@@ -243,40 +251,43 @@ const page = () => {
                 />
               </div>
             </div>
-            {/* Row 3 */}
+            {/* Row 3 (update Booked from/till to type="date") */}
             <div className="flex flex-col md:flex-row gap-3 w-full">
-              <div className="flex-1">
+              <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
                 <label className="block text-xs md:text-sm font-semibold mb-1">Client Name*</label>
                 <input
                   type="text"
                   name="clientname"
                   value={form.clientname}
                   onChange={handleChange}
-                  required
+                  required={form.status === "Booked"}
+                  disabled={form.status !== "Booked"}
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
                   placeholder="Client Name"
                 />
               </div>
-              <div className="flex-1">
-                <label className="block text-xs md:text-sm font-semibold mb-1">Booked from*</label>
+              <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <label className="block text-xs md:text-sm font-semibold mb-1">Booked from{form.status === "Booked" && "*"}</label>
                 <input
-                  type="text"
+                  type="date"
                   name="bookedfrom"
                   value={form.bookedfrom}
                   onChange={handleChange}
-                  required
+                  required={form.status === "Booked"}
+                  disabled={form.status !== "Booked"}
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
                   placeholder="Booked from"
                 />
               </div>
-              <div className="flex-1">
-                <label className="block text-xs md:text-sm font-semibold mb-1">Booked till*</label>
+              <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                <label className="block text-xs md:text-sm font-semibold mb-1">Booked till{form.status === "Booked" && "*"}</label>
                 <input
-                  type="text"
+                  type="date"
                   name="bookedtill"
                   value={form.bookedtill}
                   onChange={handleChange}
-                  required
+                  required={form.status === "Booked"}
+                  disabled={form.status !== "Booked"}
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
                   placeholder="Booked till"
                 />
@@ -304,7 +315,7 @@ const page = () => {
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Price per day*</label>
                 <input
-                  type="text"
+                  type="number"
                   name="priceperday"
                   value={form.priceperday}
                   onChange={handleChange}
@@ -316,7 +327,7 @@ const page = () => {
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Price per month*</label>
                 <input
-                  type="text"
+                  type="number"
                   name="pricepermonth"
                   value={form.pricepermonth}
                   onChange={handleChange}
@@ -326,7 +337,7 @@ const page = () => {
                 />
               </div>
             </div>
-            {/* Row 5 */}
+            {/* Row 5 (remove Date field, keep Show on site and Location map link) */}
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Location map link*</label>
@@ -341,31 +352,20 @@ const page = () => {
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs md:text-sm font-semibold mb-1">Longitude*</label>
-                <input
-                  type="text"
-                  name="longitude"
-                  value={form.longitude}
-                  onChange={handleChange}
+                <label className="block text-xs md:text-sm font-semibold mb-1">Show on site*</label>
+                <select
+                  name="show"
+                  value={form.show ? "yes" : "no"}
+                  onChange={e => setForm(prev => ({ ...prev, show: e.target.value === "yes" }))}
                   required
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="Longitude"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs md:text-sm font-semibold mb-1">Latitude*</label>
-                <input
-                  type="text"
-                  name="latitude"
-                  value={form.latitude}
-                  onChange={handleChange}
-                  required
-                  className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="Latitude"
-                />
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
               </div>
             </div>
-            {/* Row 6: Message (full width) */}
+            {/* Row 6: Message about media (full width) */}
             <div className="w-full">
               <label className="block text-xs md:text-sm font-semibold mb-1">Message about media*</label>
               <textarea

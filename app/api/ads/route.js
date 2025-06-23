@@ -6,20 +6,16 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import imagekit from "@/utils/imagekit";
 
 function validateAdData(adData) {
-    // List all required fields
+    // Only fields that are always required
     const requiredFields = [
         "mediacode", "title", "city", "lighting", "status", "size",
         "type", "priceperday", "pricepermonth", "locationmap",
-        "message", "imageUrl", "longitude", "latitude"
+        "message", "imageUrl", "show"
     ];
     for (const field of requiredFields) {
         if (!adData[field] || adData[field].toString().trim() === "") {
             return `Missing or empty required field: ${field}`;
         }
-    }
-    // Validate coordinates as numbers
-    if (isNaN(Number(adData.latitude)) || isNaN(Number(adData.longitude))) {
-        return "Latitude and Longitude must be numbers";
     }
     return null;
 }
@@ -105,6 +101,7 @@ export async function POST(request) {
 
         await connectDB();
         const adData = await request.json();
+        console.log("adData received:", adData);
 
         // Validate required fields
         const validationError = validateAdData(adData);
@@ -112,12 +109,7 @@ export async function POST(request) {
             return NextResponse.json({ error: validationError }, { status: 400 });
         }
 
-        // Prepare coordinates for schema
-        adData.codinates = {
-            lat: Number(adData.latitude),
-            lng: Number(adData.longitude),
-        };
-
+        // Save everything (including optional/extra fields)
         const newAd = new Ads(adData);
         await newAd.save();
         return NextResponse.json(newAd, { status: 201 });

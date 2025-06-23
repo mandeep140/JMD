@@ -16,6 +16,22 @@ const Page = () => {
     const [selectedCity, setSelectedCity] = useState('');
     const [selectedType, setSelectedType] = useState('');
 
+    // Set selectedType from URL query param (SSR/CSR safe)
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            let typeParam = params.get("type");
+            if (typeParam) {
+                // Replace underscores with spaces, capitalize each word
+                typeParam = typeParam
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ');
+                setSelectedType(typeParam);
+            }
+        }
+    }, []);
+
     useEffect(() => {
         const fetchAds = async () => {
             try {
@@ -31,15 +47,17 @@ const Page = () => {
     }, []);
 
     // Filter ads on client side
-    const filteredAds = ads.filter(ad => {
-        const cityMatch = selectedCity
-            ? ad.city && ad.city.trim().toLowerCase() === selectedCity.trim().toLowerCase()
-            : true;
-        const typeMatch = selectedType
-            ? ad.type && ad.type.trim().toLowerCase() === selectedType.trim().toLowerCase()
-            : true;
-        return cityMatch && typeMatch;
-    });
+    const filteredAds = ads
+        .filter(ad => ad.show === true)
+        .filter(ad => {
+            const cityMatch = selectedCity
+                ? ad.city && ad.city.trim().toLowerCase() === selectedCity.trim().toLowerCase()
+                : true;
+            const typeMatch = selectedType
+                ? ad.type && ad.type.trim().toLowerCase() === selectedType.trim().toLowerCase()
+                : true;
+            return cityMatch && typeMatch;
+        });
 
     const cityOptions = Array.from(new Set(ads.map(ad => ad.city).filter(Boolean)));
     const typeOptions = Array.from(new Set(ads.map(ad => ad.type).filter(Boolean)));
@@ -86,6 +104,12 @@ const Page = () => {
                             }}
                         >
                             <option value="" className='text-black'>Select Advertisement Type</option>
+                            {/* Only show extra option if not already in typeOptions */}
+                            {selectedType && !typeOptions.includes(selectedType) && (
+                                <option value={selectedType} className='text-black'>
+                                    {selectedType}
+                                </option>
+                            )}
                             {typeOptions.map(type => (
                                 <option key={type} value={type} className='text-black'>{type}</option>
                             ))}
@@ -115,7 +139,7 @@ const Page = () => {
                         <div className="col-span-full text-center text-black">No ads found.</div>
                     ) : (
                         filteredAds.map((ad, idx) => (
-                            <div key={ad._id || idx} className='w-full h-[31vh] bg-red-500 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-200'>
+                            <div key={ad._id || idx} className={`w-full h-[31vh] bg-red-500 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-200`}>
                                 <img src={ad.imageUrl || "/images/find/test.png"} alt={ad.title} className='w-full h-[70%] object-cover rounded-t-lg' />
                                 <div className='w-full h-[30%] flex flex-col text-start justify-center p-4'>
                                     <h2 className='text-base sm:text-lg font-semibold text-white'>{ad.title?.slice(0, 25) || "No Title"}...</h2>

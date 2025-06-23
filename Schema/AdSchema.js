@@ -28,15 +28,12 @@ const adSchema = new Schema({
     },
     clientname:{
         type: String,
-        required: true
     },
     bookedfrom:{
         type: String,
-        required: true
     },
     bookedtill:{
         type: String,
-        required: true
     },
     type:{
         type: String,
@@ -54,17 +51,9 @@ const adSchema = new Schema({
         type: String,
         required: true
     },
-    codinates:{
-        type: {
-            lat: {
-                type: Number,
-                required: true
-            },
-            lng: {
-                type: Number,
-                required: true
-            }
-        },
+    show:{
+        type: Boolean,
+        default: true
     },
     message:{ 
         type: String,

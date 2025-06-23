@@ -26,12 +26,14 @@ const page = () => {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
-  const [selectedDate, setSelectedDate] = useState(""); // Added state for selected date
+  const [selectedFromDate, setSelectedFromDate] = useState("");
+  const [selectedToDate, setSelectedToDate] = useState("");
   const [dateSortAsc, setDateSortAsc] = useState(true);
   const exportRef = useRef();
   const [showExportPopup, setShowExportPopup] = useState(false);
   const [exportFromDate, setExportFromDate] = useState("");
   const [exportToDate, setExportToDate] = useState("");
+  const [viewAd, setViewAd] = useState(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -72,12 +74,13 @@ const page = () => {
   };
 
   const handleExportWithDateRange = () => {
-    if (data.length === 0) {
+    // Use filteredData instead of all data
+    if (filteredData.length === 0) {
       alert("No data to export.");
       return;
     }
-    // Filter by date range
-    const exportData = data
+    // Filter by export date range (on top of filters)
+    const exportData = filteredData
       .filter(d => {
         if (!d.date) return false;
         const dDate = new Date(d.date).setHours(0, 0, 0, 0);
@@ -101,9 +104,19 @@ const page = () => {
     (selectedCity ? d.city === selectedCity : true) &&
     (selectedType ? d.type === selectedType : true) &&
     (selectedClient ? d.clientname === selectedClient : true) &&
-    (selectedDate
-      ? (d.date && new Date(d.date).toISOString().slice(0, 10) === selectedDate)
-      : true)
+    (
+      selectedFromDate || selectedToDate
+        ? (() => {
+            if (!d.date) return false;
+            const dDate = new Date(d.date).setHours(0, 0, 0, 0);
+            const from = selectedFromDate ? new Date(selectedFromDate).setHours(0, 0, 0, 0) : null;
+            const to = selectedToDate ? new Date(selectedToDate).setHours(0, 0, 0, 0) : null;
+            if (from && dDate < from) return false;
+            if (to && dDate > to) return false;
+            return true;
+          })()
+        : true
+    )
   );
 
   // Sort by date
@@ -212,15 +225,30 @@ const page = () => {
                   <option key={client} value={client}>{client}</option>
                 ))}
               </select>
-              {/* Date filter */}
+              {/* From Date filter */}
               <input
                 type="date"
                 className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
-                value={selectedDate}
+                value={selectedFromDate}
+                id="datefrom"
+                title='from date'
                 onChange={e => {
-                  setSelectedDate(e.target.value);
+                  setSelectedFromDate(e.target.value);
                   setPage(1);
                 }}
+                placeholder="From"
+              />
+              {/* To Date filter */}
+              <input
+                type="date"
+                className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
+                value={selectedToDate}
+                title='to date'
+                onChange={e => {
+                  setSelectedToDate(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="To"
               />
               <button
                 className="md:ml-auto md:mx-0 mx-auto border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm flex items-center gap-1"
@@ -276,11 +304,13 @@ const page = () => {
                           <td className="px-2 py-2">{row.type}</td>
                           <td className="px-2 py-2">{row.pricepermonth}</td>
                           <td className="px-2 py-2 flex gap-2 justify-center">
-                            <Link href={`/find-hoardings/${row.mediacode}`}>
-                              <button className="text-green-600 hover:scale-110 transition" title="View">
-                                <AiOutlineEye />
-                              </button>
-                            </Link>
+                            <button
+                              className="text-green-600 hover:scale-110 transition"
+                              title="View"
+                              onClick={() => setViewAd(row)}
+                            >
+                              <AiOutlineEye />
+                            </button>
                             <Link href={`/admin/inventory/manage/update?mediacode=${row.mediacode}`}>
                               <button className="text-blue-600 hover:scale-110 transition" title="Edit">
                                 <FiEdit />
@@ -414,8 +444,9 @@ const page = () => {
           {showExportPopup && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px]">
-                <div className="mb-4">
-                  <span className="font-bold text-lg">Export Data</span>
+                <div className="mb-4 flex-col flex">
+                  <span className="font-bold text-lg mb-1">Export Data</span>
+                  <span >To export all displayed data, just click on Export </span>
                 </div>
                 <div className="mb-4 flex flex-col gap-2">
                   <label>
@@ -453,6 +484,47 @@ const page = () => {
                   >
                     Export
                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* View Ad Details Popup */}
+          {viewAd && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 min-w-[350px] max-w-[95vw] max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold text-lg">Media Details</span>
+                  <button
+                    className="text-red-500 font-bold text-lg"
+                    onClick={() => setViewAd(null)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {viewAd.imageUrl && (
+                    <img
+                      src={viewAd.imageUrl}
+                      alt={viewAd.title}
+                      className="w-full max-h-56 object-cover rounded mb-2"
+                    />
+                  )}
+                  <div><b>Title:</b> {viewAd.title}</div>
+                  <div><b>Media Code:</b> {viewAd.mediacode}</div>
+                  <div><b>Status:</b> {viewAd.status}</div>
+                  <div><b>Client Name:</b> {viewAd.clientname}</div>
+                  <div><b>City:</b> {viewAd.city}</div>
+                  <div><b>Type:</b> {viewAd.type}</div>
+                  <div><b>Size:</b> {viewAd.size}</div>
+                  <div><b>Lighting:</b> {viewAd.lighting}</div>
+                  <div><b>Price per Month:</b> {viewAd.pricepermonth}</div>
+                  <div><b>Price per Day:</b> {viewAd.priceperday}</div>
+                  <div><b>Booked From:</b> {viewAd.bookedfrom}</div>
+                  <div><b>Booked Till:</b> {viewAd.bookedtill}</div>
+                  <div><b>Show on site:</b> {viewAd.show ? "yes" : "no"}</div>
+                  <div><b>Location Map:</b> {viewAd.locationmap ? <a href={viewAd.locationmap} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">{viewAd.locationmap}</a> : "N/A"}</div>
+                  <div><b>Message:</b> {viewAd.message}</div>
+                  <div><b>Date Added:</b> {viewAd.date ? new Date(viewAd.date).toLocaleDateString() : "N/A"}</div>
                 </div>
               </div>
             </div>

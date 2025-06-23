@@ -19,7 +19,6 @@
     "lucide-react": "^0.518.0",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.0",
-    "motion": "^12.18.1",
     "next": "15.3.3",
     "next-auth": "^4.24.11",
     "nextjs-toploader": "^3.8.16",

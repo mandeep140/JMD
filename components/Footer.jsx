@@ -5,6 +5,7 @@ import { FaSquareInstagram } from "react-icons/fa6";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { FaLinkedin } from "react-icons/fa6";
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 const Footer = () => {
     const path = usePathname();
@@ -31,30 +32,28 @@ const Footer = () => {
                     {/* Quick Links */}
                     <div className='h-auto w-full max-w-[180px] mt-8 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col'>
                         <h1 className='mb-auto text-xl font-bold text-black/60 w-full flex justify-start'>QUICK LINKS</h1>
-                        <span className='w-full flex items-start justify-start flex-col gap-2 text-black/70 mb-auto'>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Home</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Services</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>About Us</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Contact Us</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Privacy Policy</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Terms & Conditions</p>
+                        <span className='w-full flex mt-2 items-start justify-start flex-col gap-2 text-black/70 mb-auto'>
+                            <Link href='/'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Home</p></Link>
+                            <Link href='#services'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Services</p></Link>
+                            <Link href='/about'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>About Us</p></Link>
+                            <Link href='#contact-us'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Contact Us</p></Link>
                         </span>
                     </div>
 
                     {/* Explore Services */}
                     <div className='h-auto w-full max-w-[200px] mt-8 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col'>
                         <h1 className='mb-auto text-lg font-bold text-black/60 w-full flex justify-start'>EXPLORE SERVICES</h1>
-                        <span className='w-full flex items-start justify-start flex-col gap-2 text-black/70 mb-auto'>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Billboard</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Digital Billboard</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Airport Branding</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Mall Media</p>
-                            <p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Transit Media</p>
+                        <span className='w-full flex items-start mt-2 justify-start flex-col gap-2 text-black/70 mb-auto'>
+                            <Link href='/find-hoardings?type=billboard#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Billboard</p></Link>
+                            <Link href='/find-hoardings?type=digital_billboard#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Digital Billboard</p></Link>
+                            <Link href='/find-hoardings?type=airport_branding#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Airport Branding</p></Link>
+                            <Link href='/find-hoardings?type=mall_media#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Mall Media</p></Link>
+                            <Link href='/find-hoardings?type=transit_media#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Transit Media</p></Link>
                         </span>
                     </div>
 
                     {/* Contact Info */}
-                    <div className='min-h-[17rem] w-full max-w-[220px] mt-8 pt-9 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col gap-4'>
+                    <div className='min-h-[17rem] w-full max-w-[220px] mt-8 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col gap-4'>
                         <h1 className='mb-auto text-lg font-bold text-black/60 w-full flex justify-start'>CONTACT INFO</h1>
                         <span className='w-full flex items-start justify-start flex-col gap-2 text-black/70 mb-auto'>
                             <span>

@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { FaArrowRight } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Home = () => {
   const [imgnav, setImgnav] = useState(0);
@@ -18,11 +20,11 @@ const Home = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const serviceCards = [
-    { title: "Hoardings", link: "/svg/hoardings.svg", image: "/images/billboard.png" },
-    { title: "Digital Hoardings", link: "/svg/digital.svg", image: "/images/digital_billboard.png" },
-    { title: "transit media", link: "/svg/bus_shelter.svg", image: "/images/transit_media.png" },
-    { title: "Airport Branding", link: "/svg/kiosk.svg", image: "/images/airport_branding.png" },
-    { title: "Mall Media", link: "/svg/mobile_van.svg", image: "/images/mall_media.png" }
+    { title: "Hoardings", link: "/find-hoardings?type=billboard#results", image: "/images/billboard.png" },
+    { title: "Digital Hoardings", link: "/find-hoardings?type=digital_billboard#results", image: "/images/digital_billboard.png" },
+    { title: "transit media", link: "/find-hoardings?type=transit_media#results", image: "/images/transit_media.png" },
+    { title: "Airport Branding", link: "/find-hoardings?type=airport_branding#results", image: "/images/airport_branding.png" },
+    { title: "Mall Media", link: "/find-hoardings?type=mall_media#results", image: "/images/mall_media.png" }
   ];
 
   const s3cards = [
@@ -149,7 +151,7 @@ const Home = () => {
         </div>  
         <div className='w-[40vw] absolute top-44 pt-50 md:pt-0 left-31 text-white max-lg:w-[70vw] max-lg:top-24 max-lg:left-6 max-md:w-[90vw] max-md:top-16 max-md:left-2'>
           <span>
-            <h1 className='text-3xl font-bold md:text-5xl'><span className='text-red-500'>India's </span>Fastest Growing</h1>
+            <h1 className='text-3xl font-bold md:text-5xl'><span className='text-red-500'>Fastest</span> Growing</h1>
           </span>
           <span>
             <h1 className='text-7xl font-extrabold max-lg:text-5xl max-md:text-3xl'>Outdoor</h1>
@@ -175,14 +177,14 @@ const Home = () => {
       </div>
 
       {/* Section 2 */}
-      <div className='w-full min-h-[80vh] -mt-4 bg-red-500 backdrop-blur-lg flex items-center justify-center relative lg:min-h-[110vh] md:min-h-[90vh]'>
+      <div className='w-full min-h-[80vh] -mt-4 bg-red-500 backdrop-blur-lg flex items-center justify-center relative lg:min-h-[110vh] md:min-h-[90vh]' id='services'>
         <div className='text-white w-full h-[30vh] pt-10 md:pt-0 text-center absolute top-20 max-lg:top-8 max-md:top-4'>
           <h1 className='text-6xl font-extrabold tracking-tight max-lg:text-4xl max-md:text-2xl'>Our Services</h1>
           <h1 className='text-xs mt-2 font-thin tracking-wide max-md:text-[10px]'>Choose from below to deliver advertisements in a truly <br /> exciting, innovative and creative way.</h1>
           <div className='h-1 w-[13vw] bg-white/50 rounded-md mx-auto mt-10 max-md:w-[30vw] max-md:mt-4'></div>
           <div className='items-center justify-center gap-2 mt-6 border-2 hidden md:flex border-white/50 rounded-full w-fit ms-auto me-[10vw] px-4 py-1 hover:border-white duration-150 max-md:gap-1 max-md:px-2 max-md:py-0.5'>
-            <button onClick={decImgNav} className='cursor-pointer text-lg max-md:text-base'> L </button>|
-            <button onClick={incImgNav} className='cursor-pointer text-lg max-md:text-base'> R </button>
+            <button onClick={decImgNav} className='cursor-pointer text-lg max-md:text-base'> <FaArrowLeft/> </button>|
+            <button onClick={incImgNav} className='cursor-pointer text-lg max-md:text-base'> <FaArrowRight/> </button>
           </div>
         </div>
         <div className="w-full md:w-[85vw] h-[25vh] md:h-[50vh] flex flex-row flex-nowrap items-center bg-white/30 backdrop-blur-lg border-y-1 md:border-s-1 md:rounded-s-4xl p-10 mt-20 md:mt-70 ms-auto gap-6 overflow-auto md:overflow-hidden scrollbar-hide scroll-smooth max-lg:p-4 max-md:p-2">
@@ -194,9 +196,9 @@ const Home = () => {
             >
               <img src={card.image} alt={card.title} className="w-[104%] h-3/5 object-cover mb-4 -mt-10 lg:h-3/4 md:h-2/5" />
               <h1 className="font-bold text-black/70 max-md:text-xs">{card.title}</h1>
-              <a href={card.link} className="mt-4 text-black/70 hover:text-black flex items-center gap-2 text-sm duration-100 max-md:text-xs max-md:mt-1">
+              <Link href={card.link} className="mt-4 text-black/70 hover:text-black flex items-center gap-2 text-sm duration-100 max-md:text-xs max-md:mt-1">
                 Learn More <img src="svg/black_arrow.svg" alt="Arrow svg" className='max-md:w-3' />
-              </a>
+              </Link>
             </div>
           ))}
         </div>
@@ -358,7 +360,7 @@ const Home = () => {
                   </span>
                   <span className='flex flex-col items-center gap-2 mb-2'>
                     <label htmlFor="message" className='me-auto'>Message</label>
-                    <textarea rows={1} type="text" name='message' id='message' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Your message' value={form.message} onChange={handleFormChange} />
+                    <textarea rows={1} type="text" name='message' id='message' className='resize-none max-h-40 overflow-y-auto rows-5 me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Your message' value={form.message} onChange={handleFormChange} />
                   </span>
                   <span className='flex flex-row justify-between items-center gap-2 mt-8 max-md:flex-col max-md:gap-2 max-md:mt-4'>
                     <span className='flex flex-row items-center gap-2'>
