@@ -105,9 +105,10 @@ const Page = () => {
     <>
       {/* section 1 */}
       <div className='w-full min-h-[100vh] bg-red-500 flex items-center justify-center relative'>
-        <div className='w-[98%] md:w-[80%] min-h-[80vh] border-white border-2 mt-8 md:mt-25 bg-white/40 backdrop-blur-md rounded-3xl p-2 md:p-6 flex flex-col md:flex-row gap-4 md:gap-0 overflow-hidden'>
+        <div className='w-[98%] md:w-[80%] min-h-[80vh] border-white border-2 mt-25
+         md:mt-25 bg-white/40 backdrop-blur-md rounded-3xl p-2 md:p-6 flex flex-col md:flex-row gap-4 md:gap-0 overflow-hidden'>
           {/* Left: Images */}
-          <div className="w-full md:w-1/2 flex flex-col justify-between gap-4 md:gap-0 p-2 md:p-5 rounded-3xl">
+          <div className="w-full md:w-1/2 h-[50vh] md:h-auto flex flex-col justify-between gap-4 md:gap-0 p-2 md:p-5 rounded-3xl">
             <div className={`w-full ${open ? 'h-2/3' : 'h-1/4'} duration-300 ease-in-out aspect-video overflow-hidden`}>
               <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-cover rounded-2xl cursor-pointer" onClick={() => setOpen(true)} />
             </div>
@@ -157,7 +158,7 @@ const Page = () => {
       </div>
 
       {/* section 2 */}
-      <div className='w-full min-h-[100vh] bg-gradient-to-b from-red-500 to-black/90 flex items-center justify-center' id='contact-us'>
+      <div className='w-full min-h-[100vh] bg-gradient-to-b from-red-500 to-black/90 flex items-center justify-center'>
         <div className='w-full mb- text-center mb-10'>
           <span className='flex flex-col items-center gap-2 mt-10 md:mt-24'>
             <h1 className='text-2xl md:text-4xl font-extrabold text-black/70'><span className='text-white/80'>Connect</span> With Us!</h1>
@@ -172,20 +173,20 @@ const Page = () => {
                 <li>Coverage Across 7+ East Indian States</li>
                 <li>Trusted by Top Brands & Local Businesses</li>
               </ul>
-              <span className='flex flex-col items-center mt-6 pt-10 text-lg md:text-2xl font-extrabold'>
+              <span className='flex flex-col items-center mt-6 pt-10 text-lg md:text-2xl font-extrabold' >
                 <h2>Thinking of Branding</h2>
                 <h2>Think JMD</h2>
               </span>
             </div>
 
-            <div className='w-full md:w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-0 md:ps-15 mt-6 p-5'>
+            <div className='w-full md:w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-0 md:ps-15 mt-6 p-5' id='contact-us'>
               <h2 className='text-2xl font-extrabold text-black'>Book Free Consultation for media booking</h2>
               <span className='flex flex-row items-center justify-between w-[90%] md:w-[80%] my-3 text-xl  text-black'>
                   <h2>Media code: {ad.mediacode}</h2>
                   <h2>Media Type: {ad.type}</h2>
               </span>
               <p className='text-[10px] me-auto mb-auto'>*Please fill all the details</p>
-              <div className='w-full md:w-[90%] mb-auto me-auto'>
+              <div className='w-full md:w-[90%] mb-auto px-4 md:px-auto me-auto'>
                 <form onSubmit={handleSubmit}>
                   <span className='flex flex-col items-center gap-2 mb-4'>
                     <label htmlFor="name" className='me-auto'>Name</label>

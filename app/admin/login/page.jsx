@@ -107,7 +107,7 @@ export default function AdminLoginPage() {
                                 <button type="submit" className="bg-blue-600 hover:bg-blue-700 duration-150 cursor-pointer text-white px-4 py-2 rounded w-full">
                                     {loading ? "Loading..." : "Login"}
                                 </button>
-                                <p>{error}</p>
+                                <p className="text-red-500 font-bold">{error}</p>
                             </span>
                         </form>
                     </div>

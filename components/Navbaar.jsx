@@ -43,42 +43,44 @@ const Navbaar = () => {
     }
 
     return (
-        <nav
-            className={`flex justify-between items-center p-4 border-b-1 text-white fixed top-0 px-[8%] z-50 ${scrolled ? " bg-black/15 backdrop-blur-md" : "bg-transparent"} transition-all duration-300`}
-            style={scrolledNav}
-        >
-            <div className='logo flex-shrink-0'>
-                <Link href="/">
-                    <img src="/images/jmd_logo.png" alt="" className="h-10 w-auto" />
+        <>
+            <nav
+                className={`flex justify-between items-center p-4 border-b-1 text-white fixed top-0 px-[8%] z-50 ${scrolled ? " bg-black/15 backdrop-blur-md" : "bg-transparent"} transition-all duration-300`}
+                style={scrolledNav}
+            >
+                <div className='logo flex-shrink-0'>
+                    <Link href="/">
+                        <img src="/images/jmd_logo.png" alt="" className="h-10 w-auto" />
+                    </Link>
+                </div>
+                {/* Hamburger for mobile */}
+                <button
+                    className="lg:hidden flex flex-col justify-center items-center ml-auto z-50"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    aria-label="Toggle menu"
+                >
+                    <span className={`block w-7 h-1 bg-white rounded transition-all duration-200 ${menuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
+                    <span className={`block w-7 h-1 bg-white rounded my-1 transition-all duration-200 ${menuOpen ? "opacity-0" : ""}`}></span>
+                    <span className={`block w-7 h-1 bg-white rounded transition-all duration-200 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
+                </button>
+                {/* Desktop nav */}
+                <div className='nav-links gap-4 flex items-center max-lg:hidden'>
+                    <Link href="/about" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>About us</Link>
+                    <Link href="/#services" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Services</Link>
+                    <Link href="/#city" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Cities</Link>
+                    <Link href="/#clients" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Clients</Link>
+                    <Link href="/#videos" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Videos</Link>
+                </div>
+                <Link
+                    href="/#contact-us"
+                    className={`text-xl px-3 py-2 border-3 rounded-xl max-lg:hidden ${scrolled ? "hover:bg-white hover:text-red-500 bg-red-500 border-red-500" : "hover:border-red-500"} duration-200`}
+                >
+                    Contact us
                 </Link>
-            </div>
-            {/* Hamburger for mobile */}
-            <button
-                className="lg:hidden flex flex-col justify-center items-center ml-auto z-50"
-                onClick={() => setMenuOpen(!menuOpen)}
-                aria-label="Toggle menu"
-            >
-                <span className={`block w-7 h-1 bg-white rounded transition-all duration-200 ${menuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
-                <span className={`block w-7 h-1 bg-white rounded my-1 transition-all duration-200 ${menuOpen ? "opacity-0" : ""}`}></span>
-                <span className={`block w-7 h-1 bg-white rounded transition-all duration-200 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
-            </button>
-            {/* Desktop nav */}
-            <div className='nav-links gap-4 flex items-center max-lg:hidden'>
-                <Link href="/about" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>About us</Link>
-                <Link href="/#services" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Services</Link>
-                <Link href="/#city" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Cities</Link>
-                <Link href="/#clients" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Clients</Link>
-                <Link href="/#videos" className={`${scrolled ? "" : "text-xl"} hover:underline duration-300`}>Videos</Link>
-            </div>
-            <Link
-                href="/#contact-us"
-                className={`text-xl px-3 py-2 border-3 rounded-xl max-lg:hidden ${scrolled ? "hover:bg-white hover:text-red-500 bg-red-500 border-red-500" : "hover:border-red-500"} duration-200`}
-            >
-                Contact us
-            </Link>
-            {/* Mobile menu */}
-            {menuOpen && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-8 z-40 lg:hidden transition-all duration-300">
+            </nav>
+                <div className="fixed inset-0 w-full h-full top-0 left-0 text-white bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-8 z-40 lg:hidden transition-all ease-in-out duration-500"
+                    style={{ transform: menuOpen ? 'translateY(0)' : 'translateY(-100%)', opacity: menuOpen ? 1 : 0 }}
+                >
                     <Link href="/about" className="text-2xl font-semibold hover:underline" onClick={() => setMenuOpen(false)}>About us</Link>
                     <Link href="/#services" className="text-2xl font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Services</Link>
                     <Link href="/#city" className="text-2xl font-semibold hover:underline" onClick={() => setMenuOpen(false)}>Cities</Link>
@@ -92,8 +94,8 @@ const Navbaar = () => {
                         Contact us
                     </Link>
                 </div>
-            )}
-        </nav>
+        </>
+
     )
 }
 

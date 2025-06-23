@@ -91,7 +91,7 @@ const page = () => {
       if (imageFile) {
         data = await uploadImage(imageFile);
         imageUrl = data.url;
-        imageId = data.fileId; 
+        imageId = data.fileId;
       }
       // 2. Send form data with imageUrl
       const res = await fetch("/api/ads", {
@@ -113,7 +113,7 @@ const page = () => {
 
   // Handler for mediacode input change
   const handleMediacodeChange = async (e) => {
-    const value = e.target.value;
+    const value = e.target.value.toUpperCase().trim();
     setForm(prev => ({ ...prev, mediacode: value }));
     if (value.trim().length > 0) {
       // Check with backend if mediacode exists
@@ -130,9 +130,11 @@ const page = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center text-black text-center">
-        {loading ? "Uploading data, please wait..." : "Hold on While we fetching data - JMD \nShowa.online"}
-      </div>
+      <AdminNav>
+        <div className="w-full h-screen flex items-center justify-center text-black text-center">
+          {loading ? "Uploading data, please wait..." : "Hold on While we fetching data - JMD \nShowa.online"}
+        </div>
+      </AdminNav>
     );
   }
 
