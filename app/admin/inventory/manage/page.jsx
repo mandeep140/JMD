@@ -254,7 +254,7 @@ const page = () => {
             {/* Row 3 (update Booked from/till to type="date") */}
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
-                <label className="block text-xs md:text-sm font-semibold mb-1">Client Name*</label>
+                <label className="block text-xs md:text-sm font-semibold mb-1">Client Name{form.status === "Booked" && "*"}</label>
                 <input
                   type="text"
                   name="clientname"

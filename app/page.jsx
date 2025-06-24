@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaArrowRight } from "react-icons/fa";
 import { FaArrowLeft } from "react-icons/fa";
+import { FaWhatsappSquare } from "react-icons/fa";
 
 const Home = () => {
   const [imgnav, setImgnav] = useState(0);
@@ -51,11 +52,10 @@ const Home = () => {
   ];
 
   const videoCards = [
-    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 1" },
-    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 2" },
-    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 3" },
-    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 4" },
-    { src: "/videos/lander_bg.mp4", thumb: "/images/jmd_logo.png", title: "Brand Campaign 4" },
+    { src: "https://www.youtube.com/embed/9b1QFyFrYY4?si=_61RW6F4228we0F3", thumb: "https://img.youtube.com/vi/9b1QFyFrYY4/maxresdefault.jpg", title: "What does an ad agency do?" },
+    { src: "https://www.youtube.com/embed/ysLRUcCHIiw?si=RGwNm13OE6UnWI3d", thumb: "https://img.youtube.com/vi/ysLRUcCHIiw/maxresdefault.jpg", title: "10 benifits of outdoor advertisement" },
+    { src: "https://www.youtube.com/embed/B83CpMCgPL0?si=2xeDuZd7SheplUB3", thumb: "https://img.youtube.com/vi/B83CpMCgPL0/maxresdefault.jpg", title: "what is outdoor advertisement" },
+    { src: "https://www.youtube.com/embed/fi0gxvSUNZw?si=wMOVJaUDkDF7pl0S", thumb: "/images/about/bg.png", title: "the power of out-of-home advertisement" },
   ];
 
   const incImgNav = () => {
@@ -128,7 +128,7 @@ const Home = () => {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form), 
+        body: JSON.stringify(form),
       });
       if (res.ok) {
         alert("Message sent!");
@@ -148,7 +148,7 @@ const Home = () => {
       <div className='h-[110vh] w-full relative lg:h-[120vh]'>
         <div className='absolute z-[-1] w-full h-full'>
           <video src="/videos/lander_bg.mp4" className='w-full h-full object-cover' autoPlay muted loop></video>
-        </div>  
+        </div>
         <div className='w-[40vw] absolute top-44 pt-50 md:pt-0 left-31 text-white max-lg:w-[70vw] max-lg:top-24 max-lg:left-6 max-md:w-[90vw] max-md:top-16 max-md:left-2'>
           <span>
             <h1 className='text-3xl font-bold md:text-5xl'><span className='text-red-500'>Fastest</span> Growing</h1>
@@ -183,8 +183,8 @@ const Home = () => {
           <h1 className='text-xs mt-2 font-thin tracking-wide max-md:text-[10px]'>Choose from below to deliver advertisements in a truly <br /> exciting, innovative and creative way.</h1>
           <div className='h-1 w-[13vw] bg-white/50 rounded-md mx-auto mt-10 max-md:w-[30vw] max-md:mt-4'></div>
           <div className='items-center justify-center gap-2 mt-6 border-2 hidden md:flex border-white/50 rounded-full w-fit ms-auto me-[10vw] px-4 py-1 hover:border-white duration-150 max-md:gap-1 max-md:px-2 max-md:py-0.5'>
-            <button onClick={decImgNav} className='cursor-pointer text-lg max-md:text-base'> <FaArrowLeft/> </button>|
-            <button onClick={incImgNav} className='cursor-pointer text-lg max-md:text-base'> <FaArrowRight/> </button>
+            <button onClick={decImgNav} className='cursor-pointer text-lg max-md:text-base'> <FaArrowLeft /> </button>|
+            <button onClick={incImgNav} className='cursor-pointer text-lg max-md:text-base'> <FaArrowRight /> </button>
           </div>
         </div>
         <div className="w-full md:w-[85vw] h-[25vh] md:h-[50vh] flex flex-row flex-nowrap items-center bg-white/30 backdrop-blur-lg border-y-1 md:border-s-1 md:rounded-s-4xl p-10 mt-20 md:mt-70 ms-auto gap-6 overflow-auto md:overflow-hidden scrollbar-hide scroll-smooth max-lg:p-4 max-md:p-2">
@@ -212,7 +212,7 @@ const Home = () => {
             <h1 className='text-5xl font-extrabold text-black max-lg:text-3xl max-md:text-xl'>Why To Choose</h1>
             <h1 className='text-4xl font-extrabold text-black max-lg:text-2xl max-md:text-lg'><span className='text-red-500'>JMD Advertisement</span>?</h1>
           </span>
-            <div className='h-[15vh] w-full flex items-center justify-center mt-8 bg-red-500 md:rounded-e-2xl lg:h-[35vh] md:h-[25vh] md:mt-4'>
+          <div className='h-[15vh] w-full flex items-center justify-center mt-8 bg-red-500 md:rounded-e-2xl lg:h-[35vh] md:h-[25vh] md:mt-4'>
             <p className='px-10 md:ms-18 md:text-start  text-[17px] tracking-wide font-extralight max-lg:px-4 max-md:px-2 max-md:text-xs text-white'>At JMD, we’re not just another outdoor advertising company. We are your strategic partner in putting your brand in front of millions — right where it can’t be missed. Our approach blends location intelligence, bold creative execution, and proven reach to deliver unmatched visibility.</p>
           </div>
           <div className='flex items-center justify-center px-2 md:px-0 gap-4 mt-7 md:ms-8 max-lg:gap-2 max-lg:mt-3 '>
@@ -235,7 +235,6 @@ const Home = () => {
 
       {/* Section 4 */}
       <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex flex-col items-center justify-center relative max-md:min-h-[60vh]' id='city'>
-        <img src="svg/red-city.svg" alt="" className='w-[40%] bg-cover absolute left-0 max-md:w-[70%]' />
         <div className='w-full h-[30%] mt-25 mb-auto flex flex-col items-center justify-center text-center z-1 max-md:mt-8'>
           <h1 className='text-red-500 text-4xl font-extrabold max-md:text-xl'>Explore Your City Listing</h1>
           <p className='text-black/70 tracking-wide mt-4 w-[30%] max-md:w-[80%] max-md:text-xs'>Discover premium outdoor ad spaces across India's major cities and boost your brand visibility where it matters most.</p>
@@ -291,7 +290,7 @@ const Home = () => {
               {videoCards.map((video, idx) => (
                 <div
                   key={idx}
-                  className="md:w-[220px] md:h-[140px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0 w-[140px] h-[100px]"
+                  className="md:w-[320px] md:h-[240px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0 w-[140px] h-[100px]"
                   onClick={() => setActiveVideo(video)}
                   style={{ transform: `translateX(-${videoNav * 110}%)` }}
                 >
@@ -315,13 +314,16 @@ const Home = () => {
               >
                 &times;
               </button>
-              <video
+              <iframe
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                title={activeVideo.title}
                 src={activeVideo.src}
                 controls
                 autoPlay
                 className="w-[90vw] max-w-3xl h-[60vh] rounded-2xl shadow-2xl bg-black max-md:h-[30vh]"
                 style={{ objectFit: 'contain' }}
-              />
+              ></iframe>
               <div className="text-white text-lg font-semibold mt-4 text-center drop-shadow max-md:text-xs">{activeVideo.title}</div>
             </div>
           </div>
@@ -377,6 +379,18 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* WhatsApp Floating Button */}
+      <a
+        href="https://wa.me/919910564908?text=Hi%2C%20I%20want%20to%20enquire%20about%20your%20ads"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50"
+        style={{ fontSize: "3.5rem", color: "#25D366" }}
+        aria-label="Chat on WhatsApp"
+      >
+        <FaWhatsappSquare />
+      </a>
     </>
   )
 }
