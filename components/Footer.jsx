@@ -13,12 +13,12 @@ const Footer = () => {
     return (
         <footer>
             <div className='w-full min-h-[60vh] bg-[#FE3737] overflow-hidden relative'>
-                <img src="/svg/JMD.svg" className="w-full h-full absolute opacity-20" alt="JMD" />
+                <img src="/svg/JMD.svg" className="w-full h-full mt-160 md:mt-0 absolute opacity-20" alt="JMD" />
 
                 <div className='flex flex-col lg:flex-row items-start justify-evenly min-h-full z-1 gap-10 lg:gap-0 px-4 py-8'>
                     {/* Logo & About */}
                     <div className='h-auto w-full max-w-xs mt-8 z-1 flex items-center justify-center flex-col'>
-                        <img src="/images/footer_logo.png" className='w-full mb-auto max-w-[180px]' alt="" />
+                        <img src="/images/footer_logo.png" className='w-full  mb- max-w-[180px]' alt="" />
                         <p className='mt-4 text-sm font-extralight text-white text-left'>Jai Mata Di Advertising, based in Harhargutu, Jamshedpur, is a decade strong and the fastest growing advertising agency in East India, committed to delivering effective, result-driven campaigns. With a deep understanding of client needs,
                             we focus on crafting impactful outdoor advertising solutions marked by quality, consistency, and commitment.</p>
                         <span className='w-full flex items-start justify-start mt-8 text-black/70 text-2xl gap-4'>
