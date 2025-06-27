@@ -471,7 +471,7 @@ const Home = () => {
       </div>
 
       {/* Media section */}
-      <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex items-center justify-start flex-col relative md:min-h-[100vh]' id='media'>
+      <div className='w-full min-h-[100vh] bg-gradient-to-b from-white to-[#FFF4F4] flex items-center justify-start flex-col relative md:min-h-[100vh]' id='media'>
         <h1 className='text-4xl mb-10 md:mb-0 md:text-6xl text-red-500 font-extrabold mt-30'>Media Coverage</h1>
         <div className='w-full h-auto flex flex-col md:flex-row items-center justify-evenly my-auto px-2 sm:px-10 gap-6'>
           {media.map((item, index) => (
