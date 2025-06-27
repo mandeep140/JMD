@@ -33,9 +33,9 @@ const Navbaar = () => {
     const scrolledNav = {
         paddingTop: scrolled ? '0.5rem' : '1.25rem',
         paddingBottom: scrolled ? '0.5rem' : '1.25rem',
-        top: scrolled ? '0.3em' : '',
-        marginLeft: scrolled ? '8%' : '',
-        width: scrolled ? '85%' : '100%',
+        top: scrolled ? '0.3em' : '0.3em',
+        marginLeft: scrolled ? '10%' : '',
+        width: scrolled ? '80%' : '100%',
         borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
         border: scrolled ? '1px solid rgba(255, 255, 255, 0.3)' : '',
         borderRadius: scrolled ? '20px' : '0'
@@ -44,10 +44,10 @@ const Navbaar = () => {
     return (
         <>
             <nav
-                className={`flex justify-between items-center p-4 border-b-1 text-white fixed top-0 px-[8%] z-50 ${scrolled ? " bg-black/15 backdrop-blur-md" : "bg-transparent"} transition-all duration-300`}
+                className={`flex justify-between items-center p-4 border-b-1 text-white fixed top-0 md:px-[1%] z-50 ${scrolled ? " bg-black/15 backdrop-blur-md" : "bg-transparent"} transition-all duration-300`}
                 style={scrolledNav}
             >
-                <div className='logo flex-shrink-0'>
+                <div className='logo pl-2 flex-shrink-0'>
                     <Link href="/">
                         <img src="/images/jmd_logo.png" alt="" className="h-10 w-auto" />
                     </Link>
