@@ -5,6 +5,7 @@ import Navbaar from "@/components/Navbaar";
 import Footer from "@/components/Footer";
 import SessionWrapper from "./component/SessionWrapper";
 import TrackCity from "./component/TrackCity";
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({ children }) {
           {children}
         </div>
         <Footer />
+        <Analytics />
       </body>
       </SessionWrapper>
     </html>

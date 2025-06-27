@@ -19,6 +19,7 @@ const Home = () => {
     callback: true,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [activeMedia, setActiveMedia] = useState(null);
 
   const serviceCards = [
     { title: "Hoardings", link: "/find-hoardings?type=billboard#results", image: "/images/billboard.png" },
@@ -57,6 +58,12 @@ const Home = () => {
     { src: "https://www.youtube.com/embed/B83CpMCgPL0?si=2xeDuZd7SheplUB3", thumb: "https://img.youtube.com/vi/B83CpMCgPL0/maxresdefault.jpg", title: "what is outdoor advertisement" },
     { src: "https://www.youtube.com/embed/fi0gxvSUNZw?si=wMOVJaUDkDF7pl0S", thumb: "/images/about/bg.png", title: "the power of out-of-home advertisement" },
   ];
+
+  const media = [
+    {img: '/images/award.jpg', title: 'Buiness Multiplier Award', date: 'June 2024'},
+    {img: '/images/outdoor.jpg', title: 'Outdoor Asia Magazine', date: 'June 2025'},
+    {img: '/images/magazine.jpg', title: 'Outdoor Asia Magazine', date: ''},
+  ]
 
   const incImgNav = () => {
     if (imgnav >= serviceCards.length - 3) {
@@ -146,9 +153,33 @@ const Home = () => {
     <>
       {/* Section 1 */}
       <div className='h-[110vh] w-full relative lg:h-[120vh]'>
-        <div className='absolute z-[-1] w-full h-full'>
-          <video src="/videos/lander_bg.mp4" className='w-full h-full object-cover' autoPlay muted loop></video>
+        <div className="relative w-full h-full md:h-full overflow-hidden">
+
+          {/* 🔹 Blurred Background (Mobile Only) */}
+          <div className="absolute inset-0 z-[-1] block md:hidden">
+            <video
+              src="/videos/lander_bg.mp4"
+              className="w-full h-full object-cover blur-lg"
+              autoPlay
+              muted
+              loop
+            />
+          </div>
+
+          {/* 🔹 Foreground Video (Full screen on PC, container on Mobile) */}
+          <div className="flex items-center justify-center w-full h-full">
+            <video
+              src="/videos/lander_bg.mp4"
+              className="w-full h-auto md:h-full object-cover"
+              autoPlay
+              muted
+              loop
+              controls={false}
+            />
+          </div>
+
         </div>
+
         <div className='w-[40vw] absolute top-44 pt-50 md:pt-0 left-31 text-white max-lg:w-[70vw] max-lg:top-24 max-lg:left-6 max-md:w-[90vw] max-md:top-16 max-md:left-2'>
           <span>
             <h1 className='text-3xl font-bold md:text-5xl'><span className='text-red-500'>Fastest</span> Growing</h1>
@@ -278,7 +309,7 @@ const Home = () => {
       </div>
 
       {/* Section 6 */}
-      <div className='w-full min-h-[100vh] bg-gradient-to-b flex flex-col items-center from-red-500 to-white relative max-md:min-h-[60vh]' id='videos'>
+      <div className='w-full min-h-[100vh] bg-gradient-to-b flex flex-col items-center from-red-500 to-[#FFF4F4] relative max-md:min-h-[60vh]' id='videos'>
         <div className='opacity-40 absolute'>
           <img src="svg/Videos.svg" className='w-full' alt="" />
         </div>
@@ -330,8 +361,52 @@ const Home = () => {
         )}
       </div>
 
+      {/* Media section */}
+      <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex items-center justify-start flex-col relative md:min-h-[100vh]' id='media'>
+        <h1 className='text-4xl mb-10 md:mb-0 md:text-6xl text-red-500 font-extrabold mt-30'>Media Coverage</h1>
+        <div className='w-full h-auto flex flex-col md:flex-row items-center justify-evenly my-auto px-2 sm:px-10 gap-6'>
+          {media.map((item, index) => (
+            <div
+              key={index}
+              className='w-full md:w-[25vw] h-[40vh] flex flex-col items-start justify-start gap-2 mb-6 md:mb-0 cursor-pointer'
+              onClick={() => setActiveMedia(item)}
+            >
+              <img
+                src={item.img}
+                alt={`Media Image ${index + 1}`}
+                className='w-full h-[70%] object-cover rounded-lg'
+              />
+              <h1 className='text-xl font-bold text-black/70'>{item.title}</h1>
+              <p className='text-sm text-black/50'>{item.date}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Media Modal */}
+        {activeMedia && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="relative bg-white rounded-2xl p-6 flex flex-col items-center max-w-[90vw] max-h-[90vh]">
+              <button
+                className="absolute top-2 right-2 text-black text-3xl font-bold z-10 cursor-pointer"
+                onClick={() => setActiveMedia(null)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              <img
+                src={activeMedia.img}
+                alt={activeMedia.title}
+                className="w-full max-w-[500px] max-h-[60vh] object-contain rounded-lg mb-4"
+              />
+              <h1 className='text-2xl font-bold text-black/80 mb-2'>{activeMedia.title}</h1>
+              <p className='text-base text-black/60'>{activeMedia.date}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Section 7 */}
-      <div className='w-full min-h-[100vh] bg-white mb-10 flex items-center justify-center max-md:min-h-[60vh]' id='contact-us'>
+      <div className='w-full min-h-[100vh] bg-gradient-to-b from-[#FFF4F4] to-white mb-10 flex items-center justify-center max-md:min-h-[60vh]' id='contact-us'>
         <div className='w-[100%] mb-auto text-center'>
           <span className='flex flex-col items-center gap-2 mt-23 max-md:mt-8'>
             <h1 className='text-4xl font-extrabold text-black/70 max-md:text-xl'><span className='text-red-500/80'>Connect</span> With Us!</h1>
