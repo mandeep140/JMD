@@ -64,7 +64,7 @@ const Footer = () => {
                             </span>
                             <span>
                                 <p className='font-bold text-black/60'>Email:</p>
-                                <p className='font-extralight text-white'>vishaljmd.jsr@gmail.com</p>
+                                <p className='font-extralight text-white'>info.jmd.jsr@gmail.com</p>
                             </span>
                             <span>
                                 <p className='font-bold text-black/60'>Address:</p>

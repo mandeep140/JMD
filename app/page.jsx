@@ -1,14 +1,70 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { FaArrowRight } from "react-icons/fa";
-import { FaArrowLeft } from "react-icons/fa";
 import { FaWhatsappSquare } from "react-icons/fa";
 
+// --- City/State Data (update as needed) ---
+const cityToState = {
+  asansol: "West Bengal",
+  bhagalpur: "Bihar",
+  bhubaneswar: "Odisha",
+  bilaspur: "Chhattisgarh",
+  bokaro: "Jharkhand",
+  cuttack: "Odisha",
+  dhanbad: "Jharkhand",
+  durgapur: "West Bengal",
+  durgbhilai: "Chhattisgarh",
+  gaya: "Bihar",
+  hyderabad: "Telangana",
+  jamshedpur: "Jharkhand",
+  kolkata: "West Bengal",
+  muzaffarpur: "Bihar",
+  patna: "Bihar",
+  raipur: "Chhattisgarh",
+  ranchi: "Jharkhand",
+  rourkela: "Odisha",
+  siliguri: "West Bengal"
+};
+
+const cityImages = [
+  { name: "asansol", file: "asansol.png" },
+  { name: "bhagalpur", file: "bhagalpur.png" },
+  { name: "bhubaneswar", file: "bhubaneswar.png" },
+  { name: "bilaspur", file: "bilaspur.png" },
+  { name: "bokaro", file: "bokaro.png" },
+  { name: "cuttack", file: "cuttack.png" },
+  { name: "dhanbad", file: "dhanbad.png" },
+  { name: "durgapur", file: "durgapur.png" },
+  { name: "durgbhilai", file: "durgbhilai.png" },
+  { name: "gaya", file: "gaya.png" },
+  { name: "jamshedpur", file: "jamshedpur.png" },
+  { name: "kolkata", file: "kolkata.png" },
+  { name: "muzaffarpur", file: "muzaffarpur.png" },
+  { name: "patna", file: "patna.png" },
+  { name: "raipur", file: "raipur.png" },
+  { name: "ranchi", file: "ranchi.png" },
+  { name: "rourkela", file: "rourkela.png" },
+  { name: "siliguri", file: "siliguri.png" }
+];
+
+// Build state-to-cities mapping dynamically
+const stateToCities = {};
+cityImages.forEach(({ name, file }) => {
+  const state = cityToState[name];
+  if (state) {
+    if (!stateToCities[state]) stateToCities[state] = [];
+    stateToCities[state].push({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      img: `/images/location/${file}`,
+    });
+  }
+});
+const stateList = Object.keys(stateToCities);
+
 const Home = () => {
-  const [imgnav, setImgnav] = useState(0);
-  const [citynav, setCitynav] = useState(0);
-  const [companiesnav, setCompaniesnav] = useState(0);
+  // --- UI State ---
+  const [cityStateIdx, setCityStateIdx] = useState(0); // index of selected state
+  const [cityScroll, setCityScroll] = useState(0); // index of first visible city in selected state
   const [videoNav, setVideoNav] = useState(0);
   const [activeVideo, setActiveVideo] = useState(null);
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -23,63 +79,47 @@ const Home = () => {
   const [submitting, setSubmitting] = useState(false);
   const [activeMedia, setActiveMedia] = useState(null);
 
-  // Auto-shuffle effect for mobile carousel
+  // --- Carousel/Auto-shuffle for mobile service cards ---
   useEffect(() => {
     const interval = setInterval(() => {
       setMobileCardIndex(prev => (prev >= serviceCards.length - 1) ? 0 : prev + 1);
-    }, 3000); // Change every 3 seconds
-
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  // Handle video loading and looping for mobile
+  // --- Video load/loop logic ---
   const handleVideoLoad = (e) => {
     const video = e.target;
     video.currentTime = 0;
-    
-    // Force restart when video ends (especially for mobile)
     const handleVideoEnd = () => {
       video.currentTime = 0;
-      video.play().catch(err => console.log('Video play failed:', err));
+      video.play().catch(err => { });
     };
-    
     video.addEventListener('ended', handleVideoEnd);
-    
-    // Cleanup function
     return () => {
       video.removeEventListener('ended', handleVideoEnd);
     };
   };
-
-  // Ensure video plays properly on mobile
   useEffect(() => {
     const video = document.querySelector('video');
     if (video) {
-      // Force play on mobile after component mounts
       const playVideo = () => {
-        video.play().catch(err => {
-          console.log('Autoplay prevented, will play on user interaction');
-        });
+        video.play().catch(() => { });
       };
-      
-      // Small delay to ensure video is loaded
       setTimeout(playVideo, 100);
-      
-      // Handle visibility change (when user switches tabs)
       const handleVisibilityChange = () => {
         if (!document.hidden && video.paused) {
-          video.play().catch(err => console.log('Play on visibility change failed'));
+          video.play().catch(() => { });
         }
       };
-      
       document.addEventListener('visibilitychange', handleVisibilityChange);
-      
       return () => {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
     }
   }, []);
 
+  // --- Service Cards ---
   const serviceCards = [
     { title: "Hoardings", link: "/find-hoardings?type=billboard#results", image: "/images/billboard.png" },
     { title: "Digital Hoardings", link: "/find-hoardings?type=digital_billboard#results", image: "/images/digital_billboard.png" },
@@ -92,13 +132,6 @@ const Home = () => {
     { img: "/svg/city.svg", text: "Prime Locations Across Major Cities" },
     { img: "/svg/targeted.svg", text: "High Footfall & Targeted Reach" },
     { img: "/svg/ete.svg", text: "End-To-End Campaign Execuation and Support" },
-  ];
-
-  const location = [
-    "/images/location/l1.png", "/images/location/l2.png", "/images/location/l3.png", "/images/location/l4.png", "/images/location/l5.png",
-    "/images/location/l6.png", "/images/location/l7.png", "/images/location/l8.png", "/images/location/l9.png", "/images/location/l10.png",
-    "/images/location/l11.png", "/images/location/l12.png", "/images/location/l13.png", "/images/location/l14.png", "/images/location/l15.png",
-    "/images/location/l16.png", "/images/location/l17.png", "/images/location/l18.png", "/images/location/l19.png"
   ];
 
   const companyLogos = [
@@ -119,59 +152,22 @@ const Home = () => {
   ];
 
   const media = [
-    {img: '/images/award.jpg', title: 'Buiness Multiplier Award', date: 'June 2024'},
-    {img: '/images/outdoor.jpg', title: 'Outdoor Asia Magazine', date: 'June 2025'},
-    {img: '/images/magazine.jpg', title: 'Outdoor Asia Magazine', date: ''},
-  ]
+    { img: '/images/award.jpg', title: 'Buiness Multiplier Award', date: 'June 2024' },
+    { img: '/images/outdoor.jpg', title: 'Outdoor Asia Magazine', date: 'June 2025' },
+    { img: '/images/magazine.jpg', title: 'Outdoor Asia Magazine', date: '' },
+  ];
 
-  const incImgNav = () => {
-    if (imgnav >= serviceCards.length - 3) {
-      setImgnav(0);
-    } else {
-      setImgnav(imgnav + 1);
-    }
-  }
-  const decImgNav = () => {
-    if (imgnav == 0) {
-      setImgnav(serviceCards.length - 3);
-    } else {
-      setImgnav(imgnav - 1);
-    }
-  }
-
-  const incCityNav = () => {
-    if (citynav >= location.length - 1) {
-      setCitynav(0);
-    } else {
-      setCitynav(citynav + 1);
-    }
-  }
-  const decCityNav = () => {
-    if (citynav == 0) {
-      setCitynav(location.length - 1);
-    } else {
-      setCitynav(citynav - 1);
-    }
-  }
-
+  // --- Video Nav ---
   const incVideoNav = () => {
-    if (videoNav >= videoCards.length - 3) {
-      setVideoNav(0);
-    }
-    else {
-      setVideoNav(videoNav + 1);
-    }
-  }
+    if (videoNav >= videoCards.length - 3) setVideoNav(0);
+    else setVideoNav(videoNav + 1);
+  };
   const decVideoNav = () => {
-    if (videoNav == 0) {
-      setVideoNav(videoCards.length - 3);
-    } else {
-      setVideoNav(videoNav - 1);
-    }
-  }
-  
-  // Removed auto-scroll for companies since we're using CSS marquee animation
+    if (videoNav === 0) setVideoNav(videoCards.length - 3);
+    else setVideoNav(videoNav - 1);
+  };
 
+  // --- Contact Form ---
   const handleFormChange = e => {
     const { name, value, type, checked } = e.target;
     setForm(prev => ({
@@ -179,11 +175,10 @@ const Home = () => {
       [name]: type === "checkbox" ? checked : value
     }));
   };
-
   const handleSubmit = async e => {
     e.preventDefault();
     setSubmitting(true);
-    form.callback = form.callback ? "yes" : "no"
+    form.callback = form.callback ? "yes" : "no";
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -202,23 +197,41 @@ const Home = () => {
     setSubmitting(false);
   };
 
+  // --- City Listing Section Logic ---
+  // When state changes, reset cityScroll to 0
+  useEffect(() => {
+    setCityScroll(0);
+  }, [cityStateIdx]);
+
+  // City navigation (left/right) for cities within selected state
+  const handleCityLeft = () => {
+    const cities = stateToCities[stateList[cityStateIdx]] || [];
+    if (cities.length <= 3) return;
+    setCityScroll(prev => prev === 0 ? cities.length - 3 : prev - 1);
+  };
+  const handleCityRight = () => {
+    const cities = stateToCities[stateList[cityStateIdx]] || [];
+    if (cities.length <= 3) return;
+    setCityScroll(prev => prev >= cities.length - 3 ? 0 : prev + 1);
+  };
+
+  // --- Render ---
   return (
     <>
       {/* Section 1 */}
       <div className='h-[110vh] -mt-10 w-full relative lg:h-[115vh]'>
         <div className='absolute z-[-1] w-full h-full'>
           <div className="overlay  z-10 absolute bg-black/65  w-full min-h-[110vh] "></div>
-          <video 
-            src="/videos/bg_video.webm" 
-            className='w-full h-full md:ml-0 object-cover max-md:object-left mobile-video-left' 
-            autoPlay 
-            muted 
-            loop 
+          <video
+            src="/videos/bg_video.webm"
+            className='w-full h-full md:ml-0 object-cover max-md:object-left mobile-video-left'
+            autoPlay
+            muted
+            loop
             playsInline
             preload="auto"
             onLoadedData={handleVideoLoad}
             onTimeUpdate={(e) => {
-              // Prevent video from getting stuck at the end
               if (e.target.currentTime >= e.target.duration - 0.1) {
                 e.target.currentTime = 0;
               }
@@ -260,7 +273,6 @@ const Home = () => {
           <h1 className='text-xs mt-2 font-light tracking-wide max-md:text-[12px]'>Choose from below to deliver advertisements in a truly <br /> exciting, innovative and creative way.</h1>
           <div className='h-1 w-[13vw] bg-white/50 rounded-md mx-auto mt-10 max-md:w-[30vw] max-md:mt-4'></div>
         </div>
-        
         {/* Desktop Service Cards */}
         <div className="hidden md:flex flex-nowrap items-start justify-center gap-4 mt-20 md:mt-70 max-lg:mt-16 px-4 max-w-6xl mx-auto">
           {serviceCards.map((card, index) => (
@@ -268,11 +280,10 @@ const Home = () => {
               key={index}
               onMouseEnter={() => setHoveredCard(index)}
               onMouseLeave={() => setHoveredCard(null)}
-              className={`w-[240px] h-[320px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${
-                hoveredCard !== null && hoveredCard !== index 
-                  ? 'opacity-40 scale-95' 
+              className={`w-[240px] h-[320px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== index
+                  ? 'opacity-40 scale-95'
                   : 'opacity-100 scale-100'
-              }`}
+                }`}
             >
               <img src={card.image} alt={card.title} className="w-full h-3/5 object-cover" />
               <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
@@ -284,20 +295,17 @@ const Home = () => {
             </div>
           ))}
         </div>
-
         {/* Mobile Carousel */}
         <div className="md:hidden w-full flex items-center justify-center mt-40 px-6">
           <div className="w-full max-w-sm">
-            {/* Single Card Display */}
             <div className="relative w-full">
               {serviceCards.map((card, index) => (
                 <div
                   key={index}
-                  className={`w-full transition-all duration-700 ease-out transform ${
-                    index === mobileCardIndex 
-                      ? 'block opacity-100 translate-x-0 scale-100' 
+                  className={`w-full transition-all duration-700 ease-out transform ${index === mobileCardIndex
+                      ? 'block opacity-100 translate-x-0 scale-100'
                       : 'hidden opacity-0 translate-x-4 scale-95'
-                  }`}
+                    }`}
                 >
                   <div className="w-full bg-white backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden">
                     <img src={card.image} alt={card.title} className="w-full h-48 object-cover" />
@@ -311,18 +319,15 @@ const Home = () => {
                 </div>
               ))}
             </div>
-            
-            {/* Dots Indicator */}
             <div className="flex justify-center mt-6 gap-3">
               {serviceCards.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setMobileCardIndex(index)}
-                  className={`h-3 rounded-full transition-all duration-300 ${
-                    index === mobileCardIndex 
-                      ? 'bg-white w-8 shadow-lg' 
+                  className={`h-3 rounded-full transition-all duration-300 ${index === mobileCardIndex
+                      ? 'bg-white w-8 shadow-lg'
                       : 'bg-white/50 w-3 hover:bg-white/70'
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -332,7 +337,6 @@ const Home = () => {
 
       {/* Section 3 */}
       <div className='w-full h-[105vh] md:min-h-[100vh] bg-[#FFF4F4] flex items-center justify-center flex-row max-lg:flex-col max-lg:gap-8 max-md:min-h-[80vh]'>
-        {/* left part */}
         <div className='w-[50vw] me-auto mb-auto text-center max-lg:w-full max-lg:mb-0'>
           <span className='flex flex-col items-center gap-0 md:gap-2 mt-25 max-md:mt-'>
             <h1 className='text-5xl font-black text-black max-lg:text-3xl max-md:text-3xl'>Why To Choose</h1>
@@ -352,27 +356,79 @@ const Home = () => {
             ))}
           </div>
         </div>
-        {/* right part */}
         <div className='w-[60vw] ms-auto mb-auto flex items-center justify-center max-lg:w-full max-lg:justify-center'>
           <img src="svg/billboard.svg" alt="" className='h-[100%] w-[80%] object-cover rounded-2xl mt-16 ms-10 lg:h-[] lg:w-[] max-lg:mt-1' />
         </div>
       </div>
       <div className='w-full h-[20vh] bg-red-400 rounded-t-[100%] -mt-1 md:-mt-43 max-lg:h-[10vh] max-md:h-[6vh]'></div>
 
-      {/* Section 4 */}
-      <div className='w-full min-h-[100vh] bg-[#FFF4F4]  flex flex-col items-center justify-center relative max-md:min-h-[60vh]' id='city'>
+      {/* Section 4: City Listing */}
+      <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex flex-col items-center justify-center relative max-md:min-h-[60vh]' id='city'>
         <div className='w-full h-[30%] mt-35 mb-auto flex flex-col items-center justify-center text-center z-1  max-md:mt-8'>
-          <h1 className='text-red-500 text-4xl font-black max-md:text-3xl'>Explore Your City Listing</h1>
-          <p className='text-black/70 tracking-wide mt-4 w-[30%] max-md:w-[80%] max-md:text-xs'>Discover premium outdoor ad spaces across India's major cities and boost your brand visibility where it matters most.</p>
+          <h1 className='text-red-500 text-4xl font-extrabold md:text-5xl'>Explore Your City Listing</h1>
+          <p className='text-black/70 tracking-wide mt-4 mb-10 w-[30%] max-md:w-[80%] max-md:text-xs'>Discover premium outdoor ad spaces across India's major cities and boost your brand visibility where it matters most.</p>
         </div>
+        {/* City Images with State Buttons and Scroll Buttons */}
         <div className='z-1 flex flex-row items-center justify-center gap-4 max-md:gap-1'>
-          <button className='mb-auto mt-18 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1' onClick={decCityNav}><img src="svg/left-arr.svg" alt="" className='max-md:w-4' /></button>
-          <div className='bg-[#FF4646] border-red border-1 flex flex-row items-center gap-4 overflow-auto md:overflow-hidden rounded-2xl h-[30vh] w-[60vw] -mt-10 mb-35 px-2 max-md:h-[14vh] max-md:w-[90vw] max-md:gap-2'>
-            {location.map((loc, index) => (
-              <img key={index} src={loc} alt={`Location ${index + 1}`} className='w-[35%] object-cover rounded-lg m-2 duration-200 transition-transform md:w-[35%] max-md:m-1' style={{ transform: `translateX(-${citynav * 110}%)` }} />
-            ))}
+          {/* Left Scroll Button (city) */}
+          <button
+            className={`mb-auto mt-18 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1 ${((stateToCities[stateList[cityStateIdx]] || []).length <= 3 ? 'opacity-50 cursor-not-allowed' : '')}`}
+            onClick={handleCityLeft}
+            aria-label="Scroll cities left"
+            disabled={(stateToCities[stateList[cityStateIdx]] || []).length <= 3}
+          >
+            <img src="svg/left-arr.svg" alt="" className='max-md:w-4' />
+          </button>
+          <div className='flex flex-col items-center'>
+            {/* City Images for selected state, with left/right nav, 3 visible at a time */}
+            <div className='relative flex flex-col items-center '>
+              {/* State Buttons */}
+              <div className="flex flex-wrap justify-center mt-10 md:mt-0 gap-3 w-[90vw] md:w-full bg-[#FF4646] items-center rounded-t-2xl py-6">
+                {stateList.map((state, idx) => (
+                  <button
+                    key={state}
+                    className={`px-4 md:px-5 py-2 rounded-full font-semibold  ${cityStateIdx === idx ? 'bg-white text-red-600' : 'bg-red-400 text-white'} hover:bg-white/50 duration-200`}
+                    onClick={() => setCityStateIdx(idx)}
+                  >
+                    {state}
+                  </button>
+                ))}
+              </div>
+              {/* Desktop: Carousel with nav buttons */}
+              <div className='bg-[#FF4646]  flex flex-row items-center gap-4 overflow-hidden rounded-b-2xl h-[30vh] w-[60vw] -mt-2 mb-35 px-2 max-md:hidden transition-all duration-300'>
+                {(stateToCities[stateList[cityStateIdx]] || [])
+                  .slice(cityScroll, cityScroll + 3)
+                  .map((city, index) => (
+                    <img
+                      key={index}
+                      src={city.img}
+                      alt={city.name}
+                      className='w-[35%] object-cover rounded-lg m-2 duration-300 transition-transform md:w-[35%]'
+                    />
+                  ))}
+              </div>
+              {/* Mobile: Horizontal scroll, all cities */}
+              <div className='hidden max-md:flex bg-[#FF4646] flex-row items-center gap-2 overflow-x-auto flex-nowrap rounded-b-2xl h-[14vh] w-[90vw] -mt-2 mb-35 px-2 scrollbar-hide'>
+                {(stateToCities[stateList[cityStateIdx]] || []).map((city, index) => (
+                  <img
+                    key={index}
+                    src={city.img}
+                    alt={city.name}
+                    className='w-[40vw] object-cover rounded-lg m-1'
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-          <button className='mb-auto mt-18 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1' onClick={incCityNav}><img src="svg/right-arr.svg" alt="" className='max-md:w-4' /></button>
+          {/* Right Scroll Button (city) */}
+          <button
+            className={`mb-auto mt-18 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1 ${((stateToCities[stateList[cityStateIdx]] || []).length <= 3 ? 'opacity-50 cursor-not-allowed' : '')}`}
+            onClick={handleCityRight}
+            aria-label="Scroll cities right"
+            disabled={(stateToCities[stateList[cityStateIdx]] || []).length <= 3}
+          >
+            <img src="svg/right-arr.svg" alt="" className='max-md:w-4' />
+          </button>
         </div>
       </div>
 
@@ -380,12 +436,8 @@ const Home = () => {
       <div id='clients' className='w-full h-[70vh] bg-red-600 flex flex-col items-center justify-center max-md:h-[30vh]'>
         <h1 className='text-4xl font-black text-white max-md:text-2xl'>Meet Our Happy Clients</h1>
         <div className='h-1 w-[13vw] bg-white/50 rounded-md mx-auto mt-10 max-md:w-[30vw] max-md:mt-4'></div>
-        
-        {/* Seamless Marquee Container */}
         <div className='w-[80vw] h-[25vh] bg-white/50 border-2 mt-10 rounded-2xl flex items-center overflow-hidden relative max-md:w-[99vw] max-md:h-[90px] max-md:mt-4'>
-          {/* Marquee Track */}
           <div className='flex items-center gap-8 md:gap-12 animate-marquee'>
-            {/* First Set of Logos */}
             {companyLogos.map((logo, logoIndex) => (
               <div
                 key={`first-${logoIndex}`}
@@ -399,7 +451,6 @@ const Home = () => {
                 />
               </div>
             ))}
-            {/* Duplicate Set for Seamless Loop */}
             {companyLogos.map((logo, logoIndex) => (
               <div
                 key={`second-${logoIndex}`}
@@ -418,32 +469,31 @@ const Home = () => {
       </div>
 
       {/* Section 6 */}
-        <div className='w-full min-h-[100vh] bg-gradient-to-b flex flex-col items-center from-red-600 to-white relative max-md:min-h-[60vh]' id='videos'>
-          <div className='opacity-90  mt-10 absolute mix-blend-lighten'>
-            <img src="svg/Videos.svg" className='w-full' alt="" />
-          </div>
-          <div className='z-1 w-full min-h-[40vh] mt-50 flex flex-col items-center justify-center text-center max-md:mt-8'>
-            <h1 className='text-4xl font-black text-white max-md:text-2xl'>Videos</h1>
-            <div className='flex flex-row max-md:gap-1'>
-          <button className='mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1' onClick={decVideoNav}><img src="svg/left-arr.svg" alt="" className='max-md:w-4' /></button>
-          <div className='w-[70vw] h-[20vh] md:h-[40vh] mt-10 rounded-2xl bg-white/60 flex flex-row px-10 overflow-auto md:overflow-x-hidden gap-6 items-center py-8 scrollbar-hide scroll-smooth max-md:w-[95vw] max-md:mt-4 max-md:px-2 max-md:gap-2 max-md:py-2 mix-blend-normal'>
-            {videoCards.map((video, idx) => (
-              <div
-            key={idx}
-            className="md:w-[320px] md:h-[240px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0 w-[140px] h-[100px] mix-blend-normal"
-            onClick={() => setActiveVideo(video)}
-            style={{ transform: `translateX(-${videoNav * 110}%)` }}
-              >
-            <img src={video.thumb} alt={video.title} className="w-full h-full object-cover mix-blend-normal" />
-            <span className="text-white text-sm font-semibold mt-auto max-md:text-[10px]">{video.title}</span>
-              </div>
-            ))}
-          </div>
-          <button className='mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1' onClick={incVideoNav}><img src="svg/right-arr.svg" alt="" className='max-md:w-4' /></button>
+      <div className='w-full min-h-[100vh] bg-gradient-to-b flex flex-col items-center from-red-600 to-white relative max-md:min-h-[60vh]' id='videos'>
+        <div className='opacity-90  mt-10 absolute mix-blend-lighten'>
+          <img src="svg/Videos.svg" className='w-full' alt="" />
+        </div>
+        <div className='z-1 w-full min-h-[40vh] mt-50 flex flex-col items-center justify-center text-center max-md:mt-8'>
+          <h1 className='text-4xl font-black text-white max-md:text-2xl'>Videos</h1>
+          <div className='flex flex-row max-md:gap-1'>
+            <button className='mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1' onClick={decVideoNav}><img src="svg/left-arr.svg" alt="" className='max-md:w-4' /></button>
+            <div className='w-[70vw] h-[20vh] md:h-[40vh] mt-10 rounded-2xl bg-white/60 flex flex-row px-10 overflow-auto md:overflow-x-hidden gap-6 items-center py-8 scrollbar-hide scroll-smooth max-md:w-[95vw] max-md:mt-4 max-md:px-2 max-md:gap-2 max-md:py-2 mix-blend-normal'>
+              {videoCards.map((video, idx) => (
+                <div
+                  key={idx}
+                  className="md:w-[320px] md:h-[240px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0 w-[140px] h-[100px] mix-blend-normal"
+                  onClick={() => setActiveVideo(video)}
+                  style={{ transform: `translateX(-${videoNav * 110}%)` }}
+                >
+                  <img src={video.thumb} alt={video.title} className="w-full h-full object-cover mix-blend-normal" />
+                  <span className="text-white text-sm font-semibold mt-auto max-md:text-[10px]">{video.title}</span>
+                </div>
+              ))}
             </div>
+            <button className='mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1' onClick={incVideoNav}><img src="svg/right-arr.svg" alt="" className='max-md:w-4' /></button>
           </div>
-
-          {/* Video Modal */}
+        </div>
+        {/* Video Modal */}
         {activeVideo && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div className="relative bg-white/0 rounded-2xl flex flex-col items-center justify-center">
@@ -490,7 +540,6 @@ const Home = () => {
             </div>
           ))}
         </div>
-
         {/* Media Modal */}
         {activeMedia && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -566,17 +615,17 @@ const Home = () => {
 
       {/* WhatsApp Floating Button */}
       <a
-        href="https://wa.me/919910564908?text=Hi%2C%20I%20want%20to%20enquire%20about%20your%20ads"
+        href="https://wa.me/917520212222?text=Hi%2C%20I%20want%20to%20enquire%20about%20your%20ads"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50"
+        className="fixed bottom-6 right-6 z-50 hover:scale-110 duration-300"
         style={{ fontSize: "3.5rem", color: "#25D366" }}
         aria-label="Chat on WhatsApp"
       >
         <FaWhatsappSquare />
       </a>
     </>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
