@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaWhatsappSquare } from "react-icons/fa";
+import Head from 'next/head';
 
 // --- City/State Data (update as needed) ---
 const cityToState = {
@@ -62,9 +64,12 @@ cityImages.forEach(({ name, file }) => {
 const stateList = Object.keys(stateToCities);
 
 const Home = () => {
+  // Get base URL from environment variables
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jmdadvertisement.com';
+  
   // --- UI State ---
-  const [cityStateIdx, setCityStateIdx] = useState(0); // index of selected state
-  const [cityScroll, setCityScroll] = useState(0); // index of first visible city in selected state
+  const [cityStateIdx, setCityStateIdx] = useState(0);
+  const [cityScroll, setCityScroll] = useState(0);
   const [videoNav, setVideoNav] = useState(0);
   const [activeVideo, setActiveVideo] = useState(null);
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -198,12 +203,10 @@ const Home = () => {
   };
 
   // --- City Listing Section Logic ---
-  // When state changes, reset cityScroll to 0
   useEffect(() => {
     setCityScroll(0);
   }, [cityStateIdx]);
 
-  // City navigation (left/right) for cities within selected state
   const handleCityLeft = () => {
     const cities = stateToCities[stateList[cityStateIdx]] || [];
     if (cities.length <= 3) return;
@@ -218,6 +221,37 @@ const Home = () => {
   // --- Render ---
   return (
     <>
+      <Head>
+        <title>JMD Advertisement - Leading Outdoor Advertising Company in East India</title>
+        <meta name="description" content="JMD (Jai Mata Di Advertising) - East India's fastest-growing outdoor advertising agency with 18+ years of experience. Get premium billboard, digital signage, transit media solutions across Jharkhand, Bihar, West Bengal, Odisha & Chhattisgarh." />
+        <meta name="keywords" content="JMD Advertisement, Outdoor Advertising East India, Billboards Jharkhand Bihar, Digital Hoardings West Bengal, Transit Media Advertising, Mall Advertising Odisha, Airport Branding Chhattisgarh, OOH Advertising Jamshedpur, Billboard Booking Kolkata, Digital Signage Ranchi, Brand Promotion Patna, Advertising Agency East Zone" />
+
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="JMD Advertisement - Premium Outdoor Advertising in East India" />
+        <meta property="og:description" content="Transform your brand visibility with JMD's premium outdoor advertising solutions. 18+ years of experience, 1000+ successful campaigns across East India's major cities." />
+        <meta property="og:image" content={`${baseUrl}/images/jmd_logo.png`} />
+        <meta property="og:url" content={baseUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="JMD Advertisement" />
+        <meta property="og:locale" content="en_IN" />
+
+        {/* Twitter Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="JMD Advertisement - Premium Outdoor Advertising East India" />
+        <meta name="twitter:description" content="18+ years of experience in outdoor advertising. Premium billboard, digital signage & transit media solutions across East India." />
+        <meta name="twitter:image" content={`${baseUrl}/images/jmd_logo.png`} />
+
+        {/* Additional SEO Tags */}
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="JMD Advertisement" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="geo.region" content="IN-JH" />
+        <meta name="geo.placename" content="Jamshedpur, Jharkhand" />
+        <meta name="geo.position" content="22.8046;86.2029" />
+        <meta name="ICBM" content="22.8046, 86.2029" />
+        <link rel="canonical" href={baseUrl} />
+      </Head>
+
       {/* Section 1 */}
       <div className='h-[110vh] -mt-10 w-full relative lg:h-[115vh]'>
         <div className='absolute z-[-1] w-full h-full'>
@@ -249,7 +283,7 @@ const Home = () => {
             <h1 className='text-4xl font-bold max-lg:text-2xl max-md:text-lg'>Company In East Zone</h1>
           </span>
           <span className='flex items-center gap-2 mt-4 max-md:gap-1 max-md:mt-2'>
-            <img src="svg/Rectangle.svg" alt="" className='max-md:w-auto' />
+            <img src="/svg/Rectangle.svg" alt="Rectangle decoration" className='max-md:w-auto' />
             <span>
               <h1 className='max-md:text-xs'>Trusted By India's Top Brands</h1>
               <h1 className='max-md:text-xs'>To Deliver Maximun Impact.</h1>
@@ -259,9 +293,11 @@ const Home = () => {
             <Link href="find-hoardings" className="relative group overflow-hidden flex gap-8 border-2 rounded-4xl px-4 py-2 hover:border-red-500 duration-200 md:gap-6 md:px-10  md:py-3 md:text-xl">
               <span className="absolute inset-0 bg-white scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0"></span>
               <span className="relative z-10 text-white group-hover:text-red-500 transition-colors duration-300">Find Hoardings</span>
-              <img src="svg/Arrow.svg" alt="Arrow svg" className="relative z-10 max-md:w-4" />
+              <Image src="/svg/Arrow.svg" alt="Arrow" width={16} height={16} className="relative z-10 max-md:w-4" />
             </Link>
-            <a href="#contact-us" className='scale-80 hover:scale-100 duration-100'><img src="svg/dialer.svg" alt="" className='w-12 md:w-15' /></a>
+            <a href="#contact-us" className='scale-80 hover:scale-100 duration-100'>
+              <Image src="/svg/dialer.svg" alt="Contact dialer" width={48} height={48} className='w-12 md:w-15' />
+            </a>
           </span>
         </div>
       </div>
@@ -285,11 +321,11 @@ const Home = () => {
                   : 'opacity-100 scale-100'
                 }`}
             >
-              <img src={card.image} alt={card.title} className="w-full h-3/5 object-cover" />
+              <Image src={card.image} alt={card.title} width={240} height={192} className="w-full h-3/5 object-cover" />
               <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
                 <h1 className="font-bold text-black/70 text-lg mb-3">{card.title}</h1>
                 <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
-                  Learn More <img src="svg/black_arrow.svg" alt="Arrow svg" className='w-3' />
+                  Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
                 </Link>
               </div>
             </div>
@@ -308,11 +344,11 @@ const Home = () => {
                     }`}
                 >
                   <div className="w-full bg-white backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden">
-                    <img src={card.image} alt={card.title} className="w-full h-48 object-cover" />
+                    <Image src={card.image} alt={card.title} width={320} height={192} className="w-full h-48 object-cover" />
                     <div className="w-full p-6 text-center">
                       <h1 className="font-bold text-black/70 text-xl mb-4">{card.title}</h1>
                       <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-base duration-300 hover:scale-105">
-                        Learn More <img src="svg/black_arrow.svg" alt="Arrow svg" className='w-4' />
+                        Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={16} height={16} className='w-4' />
                       </Link>
                     </div>
                   </div>
@@ -343,13 +379,13 @@ const Home = () => {
             <h1 className='text-4xl font-extrabold text-black max-lg:text-2xl max-md:text-lg'><span className='text-red-500'>JMD Advertisement</span>?</h1>
           </span>
           <div className='h-[15vh] w-full flex items-center justify-center mt-8 bg-red-600 md:rounded-e-2xl lg:h-[35vh] md:h-[25vh] md:mt-4'>
-            <p className='px-10 md:ms-18 md:text-start  text-[17px] tracking-wide font-light max-lg:px-4 max-md:px-2 max-md:text-xs text-white'>At JMD, we’re not just another outdoor advertising company. We are your strategic partner in putting your brand in front of millions — right where it can’t be missed. Our approach blends location intelligence, bold creative execution, and proven reach to deliver unmatched visibility.</p>
+            <p className='px-10 md:ms-18 md:text-start  text-[17px] tracking-wide font-light max-lg:px-4 max-md:px-2 max-md:text-xs text-white'>At JMD, we're not just another outdoor advertising company. We are your strategic partner in putting your brand in front of millions — right where it can't be missed. Our approach blends location intelligence, bold creative execution, and proven reach to deliver unmatched visibility.</p>
           </div>
           <div className='flex items-center justify-center px-2 md:px-0 gap-4 mt-7 md:ms-8 max-lg:gap-2 max-lg:mt-3 '>
             {s3cards.map((item, index) => (
               <div key={index} className='flex flex-col items-center gap-2 rounded-lg w-[12vw] h-[20vh] bg-white hover:scale-105 duration-200 shadow-lg hover:shadow-xl transition-transform max-lg:w-[25vw] lg:h-[25vh] max-md:w-[32vw] md:h-[20vh]'>
                 <span className='flex items-center justify-center w-full h-[60%] rounded-t-lg bg-red-500'>
-                  <img src={item.img} alt={item.text} className='w-16 h-16 max-lg:w-10 max-lg:h-10 max-md:w-7 max-md:h-7' />
+                  <Image src={item.img} alt={item.text} width={64} height={64} className='w-16 h-16 max-lg:w-10 max-lg:h-10 max-md:w-7 max-md:h-7' />
                 </span>
                 <h1 className='mx-3 text-xs text-black/70 max-md:text-[10px]'>{item.text}</h1>
               </div>
@@ -357,7 +393,7 @@ const Home = () => {
           </div>
         </div>
         <div className='w-[60vw] ms-auto mb-auto flex items-center justify-center max-lg:w-full max-lg:justify-center'>
-          <img src="svg/billboard.svg" alt="" className='h-[100%] w-[80%] object-cover rounded-2xl mt-16 ms-10 lg:h-[] lg:w-[] max-lg:mt-1' />
+          <Image src="/svg/billboard.svg" alt="Billboard illustration" width={600} height={400} className='h-[100%] w-[80%] object-cover rounded-2xl mt-16 ms-10 lg:h-[] lg:w-[] max-lg:mt-1' />
         </div>
       </div>
       <div className='w-full h-[20vh] bg-red-400 rounded-t-[100%] -mt-1 md:-mt-43 max-lg:h-[10vh] max-md:h-[6vh]'></div>
@@ -377,7 +413,7 @@ const Home = () => {
             aria-label="Scroll cities left"
             disabled={(stateToCities[stateList[cityStateIdx]] || []).length <= 3}
           >
-            <img src="svg/left-arr.svg" alt="" className='max-md:w-4' />
+            <Image src="/svg/left-arr.svg" alt="Left arrow" width={24} height={24} className='max-md:w-4' />
           </button>
           <div className='flex flex-col items-center'>
             {/* City Images for selected state, with left/right nav, 3 visible at a time */}
@@ -399,10 +435,12 @@ const Home = () => {
                 {(stateToCities[stateList[cityStateIdx]] || [])
                   .slice(cityScroll, cityScroll + 3)
                   .map((city, index) => (
-                    <img
+                    <Image
                       key={index}
                       src={city.img}
                       alt={city.name}
+                      width={200}
+                      height={150}
                       className='w-[35%] object-cover rounded-lg m-2 duration-300 transition-transform md:w-[35%]'
                     />
                   ))}
@@ -410,10 +448,12 @@ const Home = () => {
               {/* Mobile: Horizontal scroll, all cities */}
               <div className='hidden max-md:flex bg-[#FF4646] flex-row items-center gap-2 overflow-x-auto flex-nowrap rounded-b-2xl h-[14vh] w-[90vw] -mt-2 mb-35 px-2 scrollbar-hide'>
                 {(stateToCities[stateList[cityStateIdx]] || []).map((city, index) => (
-                  <img
+                  <Image
                     key={index}
                     src={city.img}
                     alt={city.name}
+                    width={160}
+                    height={90}
                     className='w-[40vw] object-cover rounded-lg m-1'
                   />
                 ))}
@@ -427,7 +467,7 @@ const Home = () => {
             aria-label="Scroll cities right"
             disabled={(stateToCities[stateList[cityStateIdx]] || []).length <= 3}
           >
-            <img src="svg/right-arr.svg" alt="" className='max-md:w-4' />
+            <Image src="/svg/right-arr.svg" alt="Right arrow" width={24} height={24} className='max-md:w-4' />
           </button>
         </div>
       </div>
@@ -443,9 +483,11 @@ const Home = () => {
                 key={`first-${logoIndex}`}
                 className="flex items-center justify-center flex-shrink-0 min-w-[70px] min-h-[70px] md:min-w-[100px] md:min-h-[100px]"
               >
-                <img
+                <Image
                   src={logo}
                   alt={`Company Logo ${logoIndex + 1}`}
+                  width={100}
+                  height={100}
                   className="object-contain rounded-lg w-full h-full filter brightness-90 hover:brightness-100 transition-all duration-300"
                   draggable={false}
                 />
@@ -456,9 +498,11 @@ const Home = () => {
                 key={`second-${logoIndex}`}
                 className="flex items-center justify-center flex-shrink-0 min-w-[70px] min-h-[70px] md:min-w-[100px] md:min-h-[100px]"
               >
-                <img
+                <Image
                   src={logo}
                   alt={`Company Logo ${logoIndex + 1}`}
+                  width={100}
+                  height={100}
                   className="object-contain rounded-lg w-full h-full filter brightness-90 hover:brightness-100 transition-all duration-300"
                   draggable={false}
                 />
@@ -471,12 +515,14 @@ const Home = () => {
       {/* Section 6 */}
       <div className='w-full min-h-[100vh] bg-gradient-to-b flex flex-col items-center from-red-600 to-white relative max-md:min-h-[60vh]' id='videos'>
         <div className='opacity-90  mt-10 absolute mix-blend-lighten'>
-          <img src="svg/Videos.svg" className='w-full' alt="" />
+          <Image src="/svg/Videos.svg" alt="Videos background" width={800} height={400} className='w-full' />
         </div>
         <div className='z-1 w-full min-h-[40vh] mt-50 flex flex-col items-center justify-center text-center max-md:mt-8'>
           <h1 className='text-4xl font-black text-white max-md:text-2xl'>Videos</h1>
           <div className='flex flex-row max-md:gap-1'>
-            <button className='mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1' onClick={decVideoNav}><img src="svg/left-arr.svg" alt="" className='max-md:w-4' /></button>
+            <button className='mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1' onClick={decVideoNav}>
+              <Image src="/svg/left-arr.svg" alt="Left arrow" width={24} height={24} className='max-md:w-4' />
+            </button>
             <div className='w-[70vw] h-[20vh] md:h-[40vh] mt-10 rounded-2xl bg-white/60 flex flex-row px-10 overflow-auto md:overflow-x-hidden gap-6 items-center py-8 scrollbar-hide scroll-smooth max-md:w-[95vw] max-md:mt-4 max-md:px-2 max-md:gap-2 max-md:py-2 mix-blend-normal'>
               {videoCards.map((video, idx) => (
                 <div
@@ -485,12 +531,20 @@ const Home = () => {
                   onClick={() => setActiveVideo(video)}
                   style={{ transform: `translateX(-${videoNav * 110}%)` }}
                 >
-                  <img src={video.thumb} alt={video.title} className="w-full h-full object-cover mix-blend-normal" />
+                  <Image 
+                    src={video.thumb} 
+                    alt={video.title} 
+                    width={320} 
+                    height={240}
+                    className="w-full h-full object-cover mix-blend-normal" 
+                  />
                   <span className="text-white text-sm font-semibold mt-auto max-md:text-[10px]">{video.title}</span>
                 </div>
               ))}
             </div>
-            <button className='mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1' onClick={incVideoNav}><img src="svg/right-arr.svg" alt="" className='max-md:w-4' /></button>
+            <button className='mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1' onClick={incVideoNav}>
+              <Image src="/svg/right-arr.svg" alt="Right arrow" width={24} height={24} className='max-md:w-4' />
+            </button>
           </div>
         </div>
         {/* Video Modal */}
@@ -530,9 +584,11 @@ const Home = () => {
               className='w-full md:w-[25vw] h-[40vh] flex flex-col items-start justify-start gap-2 mb-6 md:mb-0 cursor-pointer'
               onClick={() => setActiveMedia(item)}
             >
-              <img
+              <Image
                 src={item.img}
                 alt={`Media Image ${index + 1}`}
+                width={400}
+                height={280}
                 className='w-full h-[70%] object-cover rounded-lg'
               />
               <h1 className='text-xl font-bold text-black/70'>{item.title}</h1>
@@ -551,9 +607,11 @@ const Home = () => {
               >
                 &times;
               </button>
-              <img
+              <Image
                 src={activeMedia.img}
                 alt={activeMedia.title}
+                width={500}
+                height={300}
                 className="w-full max-w-[500px] max-h-[60vh] object-contain rounded-lg mb-4"
               />
               <h1 className='text-2xl font-bold text-black/80 mb-2'>{activeMedia.title}</h1>
@@ -573,7 +631,7 @@ const Home = () => {
             <div className='w-[100%] h-full flex flex-col p-5 items-center justify-center text-start bg-red-500 rounded-4xl mx-auto md:mx-0 me-auto lg:w-[35%] max-lg:mb-4 max-md:p-2'>
               <h1 className='text-lg text-white font-extrabold max-md:text-base'>What can JMD Advertisement help you with?</h1>
               <div className='h-[3px] w-[13vw] bg-white rounded-md me-auto mt-6 max-md:w-[30vw] max-md:mt-2'></div>
-              <p className='mt-10 tracking-wide max-md:mt-4 max-md:text-xs text-white'>Whether you’re launching a new product, boosting brand awareness, or driving local footfall — JMD Advertisement helps you connect with your audience through impactful outdoor media. From strategic billboard placements to dynamic transit advertising, we make sure your message is seen, remembered, and acted upon.</p>
+              <p className='mt-10 tracking-wide max-md:mt-4 max-md:text-xs text-white'>Whether you're launching a new product, boosting brand awareness, or driving local footfall — JMD Advertisement helps you connect with your audience through impactful outdoor media. From strategic billboard placements to dynamic transit advertising, we make sure your message is seen, remembered, and acted upon.</p>
             </div>
             <div className='w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-15 mt-6 p-5 max-lg:w-[90%] max-lg:mt-0 max-md:p-2'>
               <p className='text-[10px] me-auto mb-auto'>*Please fill all the details</p>
