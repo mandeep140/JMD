@@ -24,6 +24,7 @@
     "next-auth": "^4.24.11",
     "nextjs-toploader": "^3.8.16",
     "node-fetch": "^3.3.2",
+    "pptxgenjs": "^4.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
