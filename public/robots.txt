@@ -1,0 +1,49 @@
+# JMD Advertisement - Robots.txt
+# This file tells web crawlers which parts of the site they can access
+
+User-agent: *
+Allow: /
+
+# Allow all important pages
+Allow: /about
+Allow: /find-hoardings
+Allow: /find-hoardings/*
+
+# Block admin areas and sensitive routes
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /api/
+Disallow: /api/*
+
+# Block temporary or development files
+Disallow: /_next/
+Disallow: /temp/
+Disallow: /.well-known/
+
+# Allow search engines to access images and assets
+Allow: /images/
+Allow: /svg/
+Allow: /videos/
+Allow: /favicon.svg
+
+# Sitemap location
+Sitemap: https://jmd-kohl.vercel.app/sitemap.xml
+
+# Crawl-delay (optional - helps prevent server overload)
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Slurp
+Allow: /
+Disallow: /admin/
+Disallow: /api/
