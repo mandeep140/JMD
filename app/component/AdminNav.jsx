@@ -7,6 +7,7 @@ import { FaClipboardList } from "react-icons/fa";
 import { IoCalendarOutline, IoSearch } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
 import { IoHomeSharp } from "react-icons/io5";
+import { MdDownload } from "react-icons/md";
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -15,7 +16,8 @@ const links = [
   { href: '/admin/inventory', label: 'Manage Inventory' },
   { href: '/admin/booking', label: 'Booking Request' },
   { href: '/admin/report', label: 'Report' },
-  {href: '/', label: 'Home' } 
+  { href: '/admin/download-contact', label: 'Download Contact' },
+  { href: '/', label: 'Home' }
 ];
 
 const AdminNav = ({ children }) => {
@@ -108,6 +110,7 @@ const AdminNav = ({ children }) => {
                   {link.label === 'Manage Inventory' && <FaClipboardList className='text-xl' />}
                   {link.label === 'Booking Request' && <IoCalendarOutline className='text-xl' />}
                   {link.label === 'Report' && <TbReportAnalytics className='text-xl' />}
+                  {link.label === 'Download Contact' && <MdDownload className='text-xl' />}
                   <h2 className='text-black/80'>{link.label}</h2>
                 </div>
               </Link>
@@ -123,34 +126,42 @@ const AdminNav = ({ children }) => {
         </div>
       </div>
       {/* Mobile nav */}
-      <div className="flex md:hidden w-full justify-around bg-white py-2 shadow z-10 mt-2">
-        {links.map(link => {
-          const isActive = pathname.includes(link.href) && link.href !== '/';
-          if (link.href === '/') {
+      <div className="flex md:hidden w-full justify-start overflow-x-auto bg-white py-2 shadow z-10 mt-2 px-2">
+        <div className="flex gap-1 min-w-max">
+          {links.map(link => {
+            const isActive = pathname.includes(link.href) && link.href !== '/';
+            if (link.href === '/') {
+              return (
+                <button
+                  key={link.href}
+                  type="button"
+                  onClick={() => setShowHomeConfirm(true)}
+                  className={`flex flex-col items-center ${isActive ? 'text-blue-600 bg-blue-100' : 'text-black bg-transparent'} px-1.5 py-1 rounded min-w-[60px]`}
+                >
+                  <IoHomeSharp className='text-lg' />
+                  <span className="text-[10px] font-medium">{link.label}</span>
+                </button>
+              );
+            }
             return (
-              <button
-                key={link.href}
-                type="button"
-                onClick={() => setShowHomeConfirm(true)}
-                className={`flex flex-col items-center ${isActive ? 'text-blue-600 bg-blue-100' : 'text-black bg-transparent'} px-2 py-1 rounded`}
-              >
-                <IoHomeSharp className='text-xl' />
-                <span className="text-xs">{link.label.replace('Manage ', '').replace('Booking ', '')}</span>
-              </button>
+              <Link key={link.href} href={link.href}>
+                <div className={`flex flex-col items-center ${isActive ? 'text-blue-600 bg-blue-100' : 'text-black bg-transparent'} px-1.5 py-1 rounded min-w-[60px]`}>
+                  {link.label === 'Dashboard' && <MdDashboard className='text-lg' />}
+                  {link.label === 'Manage Inventory' && <FaClipboardList className='text-lg' />}
+                  {link.label === 'Booking Request' && <IoCalendarOutline className='text-lg' />}
+                  {link.label === 'Report' && <TbReportAnalytics className='text-lg' />}
+                  {link.label === 'Download Contact' && <MdDownload className='text-lg' />}
+                  <span className="text-[10px] font-medium text-center leading-tight">
+                    {link.label === 'Manage Inventory' ? 'Inventory' : 
+                     link.label === 'Booking Request' ? 'Booking' :
+                     link.label === 'Download Contact' ? 'Downloads' : 
+                     link.label}
+                  </span>
+                </div>
+              </Link>
             );
-          }
-          return (
-            <Link key={link.href} href={link.href}>
-              <div className={`flex flex-col items-center ${isActive ? 'text-blue-600 bg-blue-100' : 'text-black bg-transparent'} px-2 py-1 rounded`}>
-                {link.label === 'Dashboard' && <MdDashboard className='text-xl' />}
-                {link.label === 'Manage Inventory' && <FaClipboardList className='text-xl' />}
-                {link.label === 'Booking Request' && <IoCalendarOutline className='text-xl' />}
-                {link.label === 'Report' && <TbReportAnalytics className='text-xl' />}
-                <span className="text-xs">{link.label.replace('Manage ', '').replace('Booking ', '')}</span>
-              </div>
-            </Link>
-          );
-        })}
+          })}
+        </div>
       </div>
       {/* Confirmation Popup */}
       {showHomeConfirm && (

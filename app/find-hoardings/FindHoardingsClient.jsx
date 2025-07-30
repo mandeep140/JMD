@@ -19,6 +19,19 @@ const FindHoardingsClient = ({ searchParams }) => {
     const [selectedType, setSelectedType] = useState('');
     const [selectedAds, setSelectedAds] = useState([]);
     const [isGeneratingPPT, setIsGeneratingPPT] = useState(false);
+    const [isGeneratingExcel, setIsGeneratingExcel] = useState(false);
+    
+    // Contact form popup states
+    const [showContactForm, setShowContactForm] = useState(false);
+    const [downloadType, setDownloadType] = useState('');
+    const [contactForm, setContactForm] = useState({
+        name: '',
+        email: '',
+        mobile: '',
+        reason: ''
+    });
+    const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+    
     const router = useRouter();
 
     // Set selectedType from URL query param
@@ -111,13 +124,81 @@ const FindHoardingsClient = ({ searchParams }) => {
         setSelectedAds([]);
     };
 
-    // Generate PowerPoint
-    const handleGeneratePPT = async () => {
+    // Handle contact form input changes
+    const handleContactFormChange = (e) => {
+        const { name, value } = e.target;
+        setContactForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Show contact form popup
+    const showContactFormPopup = (type) => {
         if (selectedAds.length === 0) {
-            alert('Please select at least one ad to generate PowerPoint.');
+            alert('Please select at least one ad to download.');
             return;
         }
+        setDownloadType(type);
+        setShowContactForm(true);
+    };
 
+    // Handle contact form submission
+    const handleContactFormSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!contactForm.name || !contactForm.email || !contactForm.mobile || !contactForm.reason) {
+            alert('Please fill all fields');
+            return;
+        }
+        
+        setIsSubmittingForm(true);
+        
+        try {
+            // Submit contact form data
+            const contactResponse = await fetch('/api/download-contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...contactForm,
+                    downloadType,
+                    selectedAds: selectedAds
+                }),
+            });
+
+            if (contactResponse.ok) {
+                // Close the contact form popup
+                setShowContactForm(false);
+                
+                // Reset contact form
+                setContactForm({
+                    name: '',
+                    email: '',
+                    mobile: '',
+                    reason: ''
+                });
+                
+                // Proceed with download
+                if (downloadType === 'PPT') {
+                    await generatePPT();
+                } else if (downloadType === 'Excel') {
+                    await generateExcel();
+                }
+            } else {
+                throw new Error('Failed to save contact details');
+            }
+        } catch (error) {
+            console.error('Error submitting contact form:', error);
+            alert('Error submitting form. Please try again.');
+        } finally {
+            setIsSubmittingForm(false);
+        }
+    };
+
+    // Generate PowerPoint (without contact form check)
+    const generatePPT = async () => {
         setIsGeneratingPPT(true);
         
         try {
@@ -175,8 +256,191 @@ const FindHoardingsClient = ({ searchParams }) => {
         }
     };
 
+    // Generate Excel (without contact form check)
+    const generateExcel = async () => {
+        setIsGeneratingExcel(true);
+        
+        try {
+            // Create Excel data
+            const excelData = {
+                title: `JMD Advertisement - Selected Hoardings (${selectedAds.length} items)`,
+                subtitle: `Generated on ${new Date().toLocaleDateString()}`,
+                ads: selectedAds.map(ad => ({
+                    id: ad._id,
+                    title: ad.title,
+                    type: ad.type,
+                    city: ad.city,
+                    size: ad.size,
+                    lighting: ad.lighting,
+                    pricePerDay: ad.priceperday,
+                    pricePerMonth: ad.pricepermonth,
+                    mediaCode: ad.mediacode,
+                    imageUrl: ad.imageUrl,
+                    message: ad.message,
+                    locationMap: ad.locationmap
+                }))
+            };
+
+            // Call API to generate Excel
+            const response = await fetch('/api/generate-excel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(excelData),
+            });
+
+            if (response.ok) {
+                // Download the file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `JMD_Selected_Hoardings_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                alert('Excel file downloaded successfully!');
+            } else {
+                throw new Error('Failed to generate Excel file');
+            }
+        } catch (error) {
+            console.error('Error generating Excel:', error);
+            alert('Error generating Excel file. Please try again.');
+        } finally {
+            setIsGeneratingExcel(false);
+        }
+    };
+
     return (
         <>
+            {/* Contact Form Popup */}
+            {showContactForm && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#FFF4F4] rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-bold text-gray-900">
+                                    To Download This {downloadType}, First Fill This Form
+                                </h3>
+                                <button
+                                    onClick={() => setShowContactForm(false)}
+                                    className="text-gray-400 hover:text-gray-600"
+                                    disabled={isSubmittingForm}
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <form onSubmit={handleContactFormSubmit} className="space-y-4">
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Full Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        name="name"
+                                        value={contactForm.name}
+                                        onChange={handleContactFormChange}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        placeholder="Enter your full name"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Email Address *
+                                    </label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        value={contactForm.email}
+                                        onChange={handleContactFormChange}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        placeholder="Enter your email address"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Mobile Number *
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        id="mobile"
+                                        name="mobile"
+                                        value={contactForm.mobile}
+                                        onChange={handleContactFormChange}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        placeholder="Enter your mobile number"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Reason to Download These Ads *
+                                    </label>
+                                    <textarea
+                                        id="reason"
+                                        name="reason"
+                                        rows={3}
+                                        value={contactForm.reason}
+                                        onChange={handleContactFormChange}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        placeholder="Please explain why you want to download these ads..."
+                                    />
+                                </div>
+                                
+                                <div className="bg-gray-50 p-3 rounded-md">
+                                    <p className="text-sm text-gray-600">
+                                        <strong>Selected Ads:</strong> {selectedAds.length} hoarding{selectedAds.length !== 1 ? 's' : ''}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        <strong>Download Format:</strong> {downloadType}
+                                    </p>
+                                </div>
+                                
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowContactForm(false)}
+                                        disabled={isSubmittingForm}
+                                        className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded-md font-medium transition-colors duration-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmittingForm}
+                                        className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-md font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                                    >
+                                        {isSubmittingForm ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                Submitting...
+                                            </>
+                                        ) : (
+                                            'Submit & Download'
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* section 1 */}
             <div className='w-full min-h-[120vh] flex items-center justify-center relative'>
                 <Image 
@@ -309,7 +573,7 @@ const FindHoardingsClient = ({ searchParams }) => {
 
                     {/* Selection Controls */}
                     {!loading && filteredAds.length > 0 && (
-                        <div className="w-full mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white/20 rounded-lg">
+                        <div className="w-full mb-6 flex flex-col items-start gap-4 p-4 bg-white/20 rounded-lg">
                             <div className="flex flex-wrap items-center gap-2">
                                 <button
                                     onClick={handleSelectAll}
@@ -331,25 +595,47 @@ const FindHoardingsClient = ({ searchParams }) => {
                             </div>
                             
                             {selectedAds.length > 0 && (
-                                <button
-                                    onClick={handleGeneratePPT}
-                                    disabled={isGeneratingPPT}
-                                    className="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-                                >
-                                    {isGeneratingPPT ? (
-                                        <>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                            Generating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                            Download as PPT ({selectedAds.length})
-                                        </>
-                                    )}
-                                </button>
+                                <div className="flex flex-wrap gap-3">
+                                    <button
+                                        onClick={() => showContactFormPopup('PPT')}
+                                        disabled={isGeneratingPPT}
+                                        className="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                                    >
+                                        {isGeneratingPPT ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                Generating PPT...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                </svg>
+                                                Download as PPT ({selectedAds.length})
+                                            </>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => showContactFormPopup('Excel')}
+                                        disabled={isGeneratingExcel}
+                                        className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                                    >
+                                        {isGeneratingExcel ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                Generating Excel...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                Download as Excel ({selectedAds.length})
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}
