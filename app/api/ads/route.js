@@ -9,7 +9,7 @@ function validateAdData(adData) {
     // Only fields that are always required
     const requiredFields = [
         "mediacode", "title", "city", "lighting", "status", "size",
-        "type", "priceperday", "pricepermonth", "locationmap",
+        "type", "priceperday", "pricepermonth",
         "message", "imageUrl", "show"
     ];
     for (const field of requiredFields) {
@@ -48,30 +48,27 @@ export async function GET(request) {
 
             // If dateParam is a number, treat it as "last N days"
             if (!isNaN(Number(dateParam))) {
-                const days = Number(dateParam);
-                const now = new Date();
-                const from = new Date();
-                from.setDate(now.getDate() - days + 1); // include today
-
-                // Set from to 00:00:00 and now to 23:59:59 for full day coverage
-                from.setHours(0, 0, 0, 0);
-                now.setHours(23, 59, 59, 999);
-
+                const lastNDays = Number(dateParam);
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - lastNDays);
+                
                 const ads = await Ads.find({
-                    date: { $gte: from, $lte: now }
+                    date: { $gte: startDate }
                 }).sort({ date: -1 });
-
+                
                 return NextResponse.json(ads, { status: 200 });
             }
-
-            // Otherwise, treat as a specific date (YYYY-MM-DD)
-            const start = new Date(dateParam);
-            start.setHours(0, 0, 0, 0);
-            const end = new Date(dateParam);
-            end.setHours(23, 59, 59, 999);
+            
+            // Otherwise, treat it as a specific date
+            const startDate = new Date(dateParam);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 1);
 
             const ads = await Ads.find({
-                date: { $gte: start, $lt: end }
+                date: {
+                    $gte: startDate,
+                    $lt: endDate
+                }
             }).sort({ date: -1 });
 
             return NextResponse.json(ads, { status: 200 });
@@ -109,7 +106,7 @@ export async function POST(request) {
             return NextResponse.json({ error: validationError }, { status: 400 });
         }
 
-        // Save everything (including optional/extra fields)
+        // Save everything (including optional/extra fields like coordinates)
         const newAd = new Ads(adData);
         await newAd.save();
         return NextResponse.json(newAd, { status: 201 });

@@ -203,7 +203,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
               />
             </div>
             <div className={`w-full ${open ? 'md:h-1/4' : 'md:h-2/3'} hidden md:block duration-300 mt-3 md:mt-5 ease-in-out aspect-video rounded-2xl overflow-hidden`} onClick={() => setOpen(false)}>
-              <GoogleMap mapLink={ad.locationmap} />
+              <GoogleMap coordinates={ad.coordinates} />
             </div>
           </div>
           {/* Right: Details */}
@@ -226,7 +226,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
             <h2 className='mt-4 text-base md:text-xl'><b>PRICE PER DAY:</b> ₹{ad.priceperday}</h2>
             <h2 className='mt-2 text-base md:text-xl'><b>PRICE PER MONTH:</b> ₹{ad.pricepermonth}</h2>
             <div className={`w-full h-[40vh] md:hidden duration-300 mt-3 md:mt-5 ease-in-out aspect-video rounded-2xl overflow-hidden`} onClick={() => setOpen(false)}>
-              <GoogleMap mapLink={ad.locationmap} />
+              <GoogleMap coordinates={ad.coordinates} />
             </div>
 
             <div className='flex flex-col md:flex-row items-center justify-between w-full md:w-[80%] mt-8 md:mt-20 gap-3 md:gap-0'>

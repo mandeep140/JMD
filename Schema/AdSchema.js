@@ -47,9 +47,15 @@ const adSchema = new Schema({
         type: String,
         required: true
     },
-    locationmap:{ 
-        type: String,
-        required: true
+    coordinates:{
+        lat: {
+            type: Number,
+            required: false
+        },
+        lng: {
+            type: Number,
+            required: false
+        }
     },
     show:{
         type: Boolean,

@@ -6,11 +6,9 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // Validation function (updated for new fields)
 function validateAdData(adData) {
-    // "date" field removed as per your latest frontend (no date field in form)
     const requiredFields = [
         "mediacode", "title", "city", "lighting", "status", "size",
-        "type", "priceperday",
-        "pricepermonth", "locationmap", "show", "message", "imageUrl", "imageId"
+        "type", "priceperday", "pricepermonth", "show", "message", "imageUrl", "imageId"
     ];
     for (const field of requiredFields) {
         if (
@@ -21,7 +19,6 @@ function validateAdData(adData) {
             return `Missing or empty required field: ${field}`;
         }
     }
-    // No longitude/latitude/date validation anymore
     return null;
 }
 

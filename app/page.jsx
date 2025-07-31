@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaWhatsappSquare } from "react-icons/fa";
+import { FaWhatsappSquare, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 import Head from 'next/head';
 
 // --- City/State Data (update as needed) ---
@@ -83,6 +83,7 @@ const Home = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [activeMedia, setActiveMedia] = useState(null);
+  const [isContactExpanded, setIsContactExpanded] = useState(false);
 
   // --- Carousel/Auto-shuffle for mobile service cards ---
   useEffect(() => {
@@ -216,6 +217,13 @@ const Home = () => {
     const cities = stateToCities[stateList[cityStateIdx]] || [];
     if (cities.length <= 3) return;
     setCityScroll(prev => prev >= cities.length - 3 ? 0 : prev + 1);
+  };
+
+  // Contact info data
+  const contactInfo = {
+    phones: ["+91-9204965321", "+91-7368810121", "+91-7368810125"],
+    email: "info.jmd.jsr@gmail.com",
+    address: "B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002)"
   };
 
   // --- Render ---
@@ -663,7 +671,8 @@ const Home = () => {
                     <button className='me-12 bg-red-500 px-9 py-3 text-white font-bold text-lg rounded-lg cursor-pointer hover:bg-red-800 duration-200 max-md:me-0 max-md:px-4 max-md:py-2 max-md:text-base' type='submit' disabled={submitting}>
                       {submitting ? "Sending..." : "Send Message"}
                     </button>
-                  </span>
+          .
+             </span>
                 </form>
               </div>
             </div>
@@ -671,17 +680,114 @@ const Home = () => {
         </div>
       </div>
 
-      {/* WhatsApp Floating Button */}
-      <a
-        href="https://wa.me/917520212222?text=Hi%2C%20I%20want%20to%20enquire%20about%20your%20ads"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 hover:scale-110 duration-300"
-        style={{ fontSize: "3.5rem", color: "#25D366" }}
-        aria-label="Chat on WhatsApp"
-      >
-        <FaWhatsappSquare />
-      </a>
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {/* Contact Info Expanded Panel */}
+        {isContactExpanded && (
+          <div className="bg-white rounded-2xl shadow-2xl p-4 w-80 max-w-[90vw] border border-gray-200 animate-fade-in">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-gray-800">Contact Us</h3>
+              <button
+                onClick={() => setIsContactExpanded(false)}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+                aria-label="Close contact info"
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Phone Numbers */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <FaPhone className="text-blue-500 text-sm" />
+                <span className="font-semibold text-gray-700 text-sm">Call Us:</span>
+              </div>
+              {contactInfo.phones.map((phone, index) => (
+                <a
+                  key={index}
+                  href={`tel:${phone}`}
+                  className="block text-blue-600 hover:text-blue-800 text-sm pl-6 mb-1 hover:underline"
+                >
+                  {phone}
+                </a>
+              ))}
+            </div>
+
+            {/* Email */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <FaEnvelope className="text-green-500 text-sm" />
+                <span className="font-semibold text-gray-700 text-sm">Email Us:</span>
+              </div>
+              <a
+                href={`mailto:${contactInfo.email}`}
+                className="block text-green-600 hover:text-green-800 text-sm pl-6 hover:underline"
+              >
+                {contactInfo.email}
+              </a>
+            </div>
+
+            {/* Address */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <FaMapMarkerAlt className="text-red-500 text-sm" />
+                <span className="font-semibold text-gray-700 text-sm">Visit Us:</span>
+              </div>
+              <p className="text-gray-600 text-sm pl-6 leading-relaxed">
+                {contactInfo.address}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          {/* Contact Button */}
+          <button
+            onClick={() => setIsContactExpanded(!isContactExpanded)}
+            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 ${
+              isContactExpanded 
+                ? 'bg-gray-600 text-white' 
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+            aria-label="Contact information"
+          >
+            {isContactExpanded ? (
+              <span className="text-xl">×</span>
+            ) : (
+              <FaPhone className="text-lg" />
+            )}
+          </button>
+
+          {/* WhatsApp Button */}
+          <a
+            href="https://wa.me/917520212222?text=Hi%2C%20I%20want%20to%20enquire%20about%20your%20ads"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:scale-110 duration-300 hover:bg-green-600"
+            aria-label="Chat on WhatsApp"
+          >
+            <FaWhatsappSquare className="text-white text-4xl" />
+          </a>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+      `}</style>
     </>
   );
 };

@@ -6,6 +6,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AdminNav from '@/app/component/AdminNav';
 
+// Indian cities list
+const indianCities = [
+  "Agra", "Ahmedabad", "Ajmer", "Allahabad", "Amritsar", "Aurangabad", "Bangalore", "Bareilly", "Belgaum", "Bhavnagar", "Bhilai", "Bhopal", "Bhubaneswar", "Bikaner", "Bilaspur", "Bokaro", "Chandigarh", "Chennai", "Coimbatore", "Cuttack", "Dehradun", "Delhi", "Dhanbad", "Durgapur", "Faridabad", "Firozabad", "Ghaziabad", "Gorakhpur", "Guntur", "Gurgaon", "Guwahati", "Gwalior", "Hubli–Dharwad", "Hyderabad", "Indore", "Jabalpur", "Jaipur", "Jalandhar", "Jammu", "Jamnagar", "Jamshedpur", "Jhansi", "Jodhpur", "Kakinada", "Kannur", "Kanpur", "Kochi", "Kolhapur", "Kolkata", "Kota", "Kozhikode", "Kurnool", "Lucknow", "Ludhiana", "Madurai", "Malappuram", "Mangalore", "Mathura", "Meerut", "Moradabad", "Mumbai", "Mysore", "Nagpur", "Nashik", "Nellore", "New Delhi", "Noida", "Patna", "Pondicherry", "Pune", "Raipur", "Rajkot", "Ranchi", "Rourkela", "Salem", "Sangli", "Shimla", "Siliguri", "Solapur", "Srinagar", "Surat", "Thiruvananthapuram", "Thrissur", "Tiruchirappalli", "Tirunelveli", "Tiruppur", "Ujjain", "Vadodara", "Varanasi", "Vasai-Virar", "Vijayawada", "Visakhapatnam", "Warangal"
+];
+
+// Lighting options
+const lightingOptions = [
+  "No Light",
+  "Fully Light", 
+  "Front Light",
+  "Back Light",
+  "Side Light",
+  "LED Light",
+  "Spot Light"
+];
 
 const initialForm = {
   mediacode: "",
@@ -13,14 +28,16 @@ const initialForm = {
   city: "",
   lighting: "",
   status: "",
-  size: "",
+  height: "",
+  width: "",
   clientname: "",
   bookedfrom: "",
   bookedtill: "",
   type: "",
   priceperday: "",
   pricepermonth: "",
-  locationmap: "",
+  latitude: "",
+  longitude: "",
   show: true,
   message: "",
   imageUrl: "",
@@ -88,6 +105,15 @@ const page = () => {
     return data || "";
   };
 
+  // Generate size string from height and width
+  const generateSizeString = (height, width) => {
+    if (!height || !width) return "";
+    const heightNum = Number(height);
+    const widthNum = Number(width);
+    const area = heightNum * widthNum;
+    return `${height}*${width}ft (${area}sqft)`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -101,11 +127,30 @@ const page = () => {
         imageUrl = data.url;
         imageId = data.fileId;
       }
-      // 2. Send form data with imageUrl
+      
+      // 2. Prepare form data with coordinates and generated size
+      const payload = {
+        ...form,
+        imageUrl,
+        imageId,
+        size: generateSizeString(form.height, form.width),
+        coordinates: {
+          lat: form.latitude ? Number(form.latitude) : null,
+          lng: form.longitude ? Number(form.longitude) : null
+        }
+      };
+      
+      // Remove height, width, latitude and longitude from the main form
+      delete payload.height;
+      delete payload.width;
+      delete payload.latitude;
+      delete payload.longitude;
+      
+      // 3. Send form data
       const res = await fetch("/api/ads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, imageUrl, imageId }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to upload");
       setForm(initialForm);
@@ -202,27 +247,33 @@ const page = () => {
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">City*</label>
-                <input
-                  type="text"
+                <select
                   name="city"
                   value={form.city}
                   onChange={handleChange}
                   required
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="City"
-                />
+                >
+                  <option value="">Select City</option>
+                  {indianCities.map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Lighting*</label>
-                <input
-                  type="text"
+                <select
                   name="lighting"
                   value={form.lighting}
                   onChange={handleChange}
                   required
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="Lighting"
-                />
+                >
+                  <option value="">Select Lighting</option>
+                  {lightingOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Status*</label>
@@ -238,20 +289,43 @@ const page = () => {
                   <option>Booked</option>
                 </select>
               </div>
+            </div>
+            {/* Row 3 - Height and Width */}
+            <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className="flex-1">
-                <label className="block text-xs md:text-sm font-semibold mb-1">Size*</label>
+                <label className="block text-xs md:text-sm font-semibold mb-1">Height (in feet)*</label>
                 <input
-                  type="text"
-                  name="size"
-                  value={form.size}
+                  type="number"
+                  step="0.1"
+                  name="height"
+                  value={form.height}
                   onChange={handleChange}
                   required
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="Size"
+                  placeholder="Height in feet"
                 />
               </div>
+              <div className="flex-1">
+                <label className="block text-xs md:text-sm font-semibold mb-1">Width (in feet)*</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="width"
+                  value={form.width}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                  placeholder="Width in feet"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs md:text-sm font-semibold mb-1">Size Preview</label>
+                <div className="w-full bg-gray-100 border border-gray-300 rounded px-2 py-1 md:py-2 text-gray-600">
+                  {form.height && form.width ? generateSizeString(form.height, form.width) : "Enter height and width"}
+                </div>
+              </div>
             </div>
-            {/* Row 3 (update Booked from/till to type="date") */}
+            {/* Row 4 (update Booked from/till to type="date") */}
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
                 <label className="block text-xs md:text-sm font-semibold mb-1">Client Name{form.status === "Booked" && "*"}</label>
@@ -293,7 +367,7 @@ const page = () => {
                 />
               </div>
             </div>
-            {/* Row 4 */}
+            {/* Row 5 */}
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className="flex-1">
                 <label className="block text-xs md:text-sm font-semibold mb-1">Type*</label>
@@ -337,18 +411,30 @@ const page = () => {
                 />
               </div>
             </div>
-            {/* Row 5 (remove Date field, keep Show on site and Location map link) */}
+            {/* Row 6 - Coordinates (optional) and Show on site */}
             <div className="flex flex-col md:flex-row gap-3 w-full">
               <div className="flex-1">
-                <label className="block text-xs md:text-sm font-semibold mb-1">Location map link*</label>
+                <label className="block text-xs md:text-sm font-semibold mb-1">Latitude (Optional)</label>
                 <input
-                  type="text"
-                  name="locationmap"
-                  value={form.locationmap}
+                  type="number"
+                  step="any"
+                  name="latitude"
+                  value={form.latitude}
                   onChange={handleChange}
-                  required
                   className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                  placeholder="Google map link"
+                  placeholder="Latitude"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs md:text-sm font-semibold mb-1">Longitude (Optional)</label>
+                <input
+                  type="number"
+                  step="any"
+                  name="longitude"
+                  value={form.longitude}
+                  onChange={handleChange}
+                  className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                  placeholder="Longitude"
                 />
               </div>
               <div className="flex-1">
@@ -365,7 +451,7 @@ const page = () => {
                 </select>
               </div>
             </div>
-            {/* Row 6: Message about media (full width) */}
+            {/* Row 7: Message about media (full width) */}
             <div className="w-full">
               <label className="block text-xs md:text-sm font-semibold mb-1">Message about media*</label>
               <textarea
@@ -378,7 +464,7 @@ const page = () => {
                 placeholder="Message about media"
               />
             </div>
-            {/* Row 7: Image upload (required) */}
+            {/* Row 8: Image upload (required) */}
             <div className="flex flex-col items-center md:items-start">
               <span className="text-xs text-gray-500 mb-1">Upload Image*</span>
               <span className="text-xs text-gray-400 mb-2">Only JPG and PNG file supported</span>
@@ -394,7 +480,7 @@ const page = () => {
                 <span className="text-xs text-green-600 mt-1">{imageFile.name}</span>
               )}
             </div>
-            {/* Row 8: Actions (full width) */}
+            {/* Row 9: Actions (full width) */}
             <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-center md:justify-between gap-3 mt-2">
               <button type="submit" className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold text-xs md:text-sm">
                 <span className="mr-1">➕</span> Add Media in Listing
