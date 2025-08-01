@@ -10,6 +10,8 @@ const AdDetailClient = ({ initialAd, adId }) => {
   const [open, setOpen] = useState(true);
   const [ad, setAd] = useState(initialAd);
   const [loading, setLoading] = useState(!initialAd);
+  const [similarAds, setSimilarAds] = useState([]);
+  const [similarLoading, setSimilarLoading] = useState(true);
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
@@ -49,49 +51,86 @@ const AdDetailClient = ({ initialAd, adId }) => {
       fetch("/api/ads", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mediacode: adId }),
-      });
+        body: JSON.stringify({ mediacode: ad.mediacode }),
+      }).catch(console.error);
 
-      // Increment visitor count
-      fetch("/api/conversion", {
+      // Log visitor for analytics
+      fetch("/api/log-visitor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "visitor" }),
-      });
+        body: JSON.stringify({ city: ad.city }),
+      }).catch(console.error);
     }
   }, [adId, initialAd, ad]);
 
-  // Handle share functionality
+  // Fetch similar ads
+  useEffect(() => {
+    if (ad) {
+      const fetchSimilarAds = async () => {
+        setSimilarLoading(true);
+        try {
+          const res = await fetch('/api/ads');
+          if (res.ok) {
+            const allAds = await res.json();
+            
+            // Filter out current ad and only show available ads
+            const availableAds = allAds.filter(item => 
+              item.mediacode !== ad.mediacode && 
+              item.status === 'Available' &&
+              item.show !== false
+            );
+            
+            // Sort by priority: same city + same type > same city > same type > others
+            const sortedAds = availableAds.sort((a, b) => {
+              const aIsSameCity = a.city === ad.city;
+              const aIsSameType = a.type === ad.type;
+              const bIsSameCity = b.city === ad.city;
+              const bIsSameType = b.type === ad.type;
+              
+              // Priority scoring
+              const aScore = (aIsSameCity && aIsSameType ? 4 : 0) + (aIsSameCity ? 2 : 0) + (aIsSameType ? 1 : 0);
+              const bScore = (bIsSameCity && bIsSameType ? 4 : 0) + (bIsSameCity ? 2 : 0) + (bIsSameType ? 1 : 0);
+              
+              return bScore - aScore;
+            });
+            
+            // Take first 8 ads for display
+            setSimilarAds(sortedAds.slice(0, 8));
+          }
+        } catch (error) {
+          console.error('Error fetching similar ads:', error);
+        }
+        setSimilarLoading(false);
+      };
+
+      fetchSimilarAds();
+    }
+  }, [ad]);
+
+  // Handle sharing
   const handleShare = async () => {
     const shareData = {
-      title: `${ad.type} in ${ad.city} - ${ad.title}`,
-      text: `Check out this ${ad.type.toLowerCase()} advertising space in ${ad.city}. Size: ${ad.size}, Price: ₹${ad.priceperday}/day. Book with JMD Advertisement!`,
+      title: `${ad.type} in ${ad.city}`,
+      text: `Check out this ${ad.type} available for advertising in ${ad.city}. Size: ${ad.size}`,
       url: window.location.href,
     };
 
     try {
-      // Try Web Share API first (mobile devices)
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
         setShareMessage('Shared successfully!');
       } else {
-        // Fallback: Copy to clipboard
-        await navigator.clipboard.writeText(`${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`);
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
         setShareMessage('Link copied to clipboard!');
       }
-    } catch (error) {
-      console.error('Error sharing:', error);
-      // Final fallback: manual copy
+    } catch (err) {
+      // Final fallback: copy to clipboard
       try {
-        const textArea = document.createElement('textarea');
-        textArea.value = `${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        await navigator.clipboard.writeText(window.location.href);
         setShareMessage('Link copied to clipboard!');
-      } catch (fallbackError) {
-        setShareMessage('Unable to share. Please copy the URL manually.');
+      } catch (clipboardErr) {
+        setShareMessage('Unable to share');
       }
     }
 
@@ -155,7 +194,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
 
   return (
     <>
-      {/* section 1 */}
+      {/* section 1 - Ad Details */}
       <div className='w-full min-h-[100vh] bg-red-500 flex items-center justify-center relative'>
         <div className='w-[98%] md:w-[80%] min-h-[80vh] border-white border-2 mt-25
          md:mt-25 bg-white/40 backdrop-blur-md rounded-3xl p-2 md:p-6 flex flex-col md:flex-row gap-4 md:gap-0 overflow-hidden relative'>
@@ -249,6 +288,131 @@ const AdDetailClient = ({ initialAd, adId }) => {
               </Link>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Similar Products Section */}
+      <div className='w-full min-h-[60vh] bg-red-500 flex items-center justify-center py-10'>
+        <div className='w-[95%] md:w-[90%] bg-white/20 backdrop-blur-sm border border-white/30 rounded-3xl p-4 md:p-8'>
+          <div className='flex items-center justify-between mb-6 md:mb-8'>
+            <h2 className='text-2xl md:text-4xl font-bold text-white'>
+              SIMILAR PRODUCTS:
+            </h2>
+            <div className='flex gap-2'>
+              <button 
+                className='w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-white/30 border border-white/30 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer'
+                onClick={() => {
+                  const container = document.getElementById('similarContainer');
+                  if (container) {
+                    container.scrollBy({ left: -300, behavior: 'smooth' });
+                  }
+                }}
+              >
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button 
+                className='w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-white/30 border border-white/30 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer'
+                onClick={() => {
+                  const container = document.getElementById('similarContainer');
+                  if (container) {
+                    container.scrollBy({ left: 300, behavior: 'smooth' });
+                  }
+                }}
+              >
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {similarLoading ? (
+            <div className='flex items-center justify-center h-40'>
+              <div className='text-white text-lg'>Loading similar products...</div>
+            </div>
+          ) : similarAds.length > 0 ? (
+            <div 
+              id="similarContainer"
+              className='flex gap-4 md:gap-6 overflow-x-auto pb-4'
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                WebkitScrollbar: { display: 'none' }
+              }}
+            >
+              {similarAds.map((similarAd) => (
+                <div key={similarAd.mediacode} className='flex-shrink-0 w-64 md:w-72 bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group'>
+                  <div className='relative h-40 md:h-48 overflow-hidden'>
+                    <Image
+                      src={similarAd.imageUrl || "/images/find/test.png"}
+                      alt={`${similarAd.title} - ${similarAd.type}`}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 256px, 288px"
+                    />
+                    
+                    {/* Badge for same city/type */}
+                    {(similarAd.city === ad.city || similarAd.type === ad.type) && (
+                      <div className='absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full'>
+                        {similarAd.city === ad.city && similarAd.type === ad.type ? 'Same City & Type' :
+                         similarAd.city === ad.city ? 'Same City' : 'Same Type'}
+                      </div>
+                    )}
+                    
+                    {/* Action buttons */}
+                    <div className='absolute top-2 right-2 flex gap-1'>
+                      <button 
+                        className='w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-all duration-200'
+                        title="Add to wishlist"
+                      >
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </button>
+                      <button 
+                        className='w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-all duration-200'
+                        title="Quick view"
+                      >
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className='p-4'>
+                    <h3 className='font-bold text-lg text-gray-800 truncate'>
+                      {similarAd.title}
+                    </h3>
+                    <p className='text-gray-600 text-sm mt-1'>
+                      {similarAd.city}
+                    </p>
+                    <div className='flex items-center justify-between mt-3'>
+                      <span className='text-xs bg-gray-100 px-2 py-1 rounded'>
+                        {similarAd.type}
+                      </span>
+                      <span className='text-red-500 font-bold'>
+                        ₹{similarAd.priceperday}/day
+                      </span>
+                    </div>
+                    <Link
+                      href={`/find-hoardings/${similarAd.mediacode}`}
+                      className='block w-full mt-3 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-center rounded-lg transition-all duration-200 cursor-pointer'
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className='flex items-center justify-center h-40'>
+              <div className='text-white text-lg'>No similar products found</div>
+            </div>
+          )}
         </div>
       </div>
 

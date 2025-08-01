@@ -40,10 +40,9 @@ function generateUserExcel(data) {
             // Try to extract dimensions like "10*20ft (200sqft)" or "10x20ft" or "10*20"
             const match = sizeStr.match(/(\d+)\s*[*x×]\s*(\d+)/i);
             if (match) {
-                // Fixed: First number is HEIGHT, second number is WIDTH as per your requirement
-                const height = parseInt(match[1]);
-                const width = parseInt(match[2]);
-                const totalSqft = height * width;
+                const width = parseInt(match[1]);
+                const height = parseInt(match[2]);
+                const totalSqft = width * height;
                 return {
                     width: width,
                     height: height,
@@ -68,7 +67,6 @@ function generateUserExcel(data) {
                 '(H)': sizeInfo.height,
                 'Media Type': ad.type || 'Hoarding',
                 'Media Code': ad.mediaCode || 'N/A',
-                'Lighting': ad.lighting || 'N/A',
                 'Total Sq Ft': sizeInfo.totalSqft,
                 'Rate': rate > 0 ? `₹${rate.toLocaleString()}` : 'N/A'
             };
@@ -86,7 +84,6 @@ function generateUserExcel(data) {
             { wch: 8 },   // (H)
             { wch: 15 },  // Media Type
             { wch: 15 },  // Media Code
-            { wch: 12 },  // Lighting
             { wch: 12 },  // Total Sq Ft
             { wch: 15 }   // Rate
         ];

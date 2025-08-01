@@ -114,7 +114,9 @@ const page = () => {
             alert("No data found in selected date range.");
             return;
         }
-        exportRef.current.exportData(exportData);
+        
+        // Use the new admin export API for reports
+        exportRef.current.exportData(exportData, 'reports');
     };
 
     const paginated = data.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -257,81 +259,22 @@ const page = () => {
                             </div>
                         </div>
                         {/* Pagination */}
-                        <div className="flex items-center justify-between mt-2 text-xs relative">
-                            <div>
-                                <span className="mr-3 font-semibold">
-                                    Page {page} of {totalPages}
-                                </span>
-                                <button
-                                    className="px-2 py-1 rounded bg-gray-200 mr-1"
-                                    disabled={page === 1}
-                                    onClick={() => setPage(page - 1)}
-                                >
-                                    &lt; Previous
-                                </button>
-                                {Array.from({ length: totalPages }, (_, i) => (
-                                    <button
-                                        key={i + 1}
-                                        className={`px-2 py-1 rounded ${page === i + 1 ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-                                        onClick={() => setPage(i + 1)}
-                                        style={{ display: i < 5 ? "inline-block" : "none" }}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                ))}
-                                {totalPages > 5 && <span className="mx-1">...</span>}
-                                {totalPages > 5 && (
-                                    <button
-                                        className={`px-2 py-1 rounded ${page === totalPages ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-                                        onClick={() => setPage(totalPages)}
-                                    >
-                                        {totalPages}
-                                    </button>
-                                )}
-                                <button
-                                    className="px-2 py-1 rounded bg-gray-200 ml-1"
-                                    disabled={page === totalPages}
-                                    onClick={() => setPage(page + 1)}
-                                >
-                                    Next &gt;
-                                </button>
-                                <button
-                                    className="ml-2 underline text-blue-600"
-                                    onClick={() => setShowAllPages(true)}
-                                >
-                                    Show all
-                                </button>
-                            </div>
-                            {/* Modal for all pages */}
-                            {showAllPages && (
-                                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                                    <div className="bg-white rounded-lg shadow-lg p-6 max-h-[70vh] overflow-y-auto min-w-[300px]">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <span className="font-bold">Jump to Page</span>
-                                            <button
-                                                className="text-red-500 font-bold text-lg"
-                                                onClick={() => setShowAllPages(false)}
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {Array.from({ length: totalPages }, (_, i) => (
-                                                <button
-                                                    key={i + 1}
-                                                    className={`px-2 py-1 rounded border ${page === i + 1 ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-                                                    onClick={() => {
-                                                        setPage(i + 1);
-                                                        setShowAllPages(false);
-                                                    }}
-                                                >
-                                                    {i + 1}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                        <div className="flex justify-center items-center gap-2 py-4">
+                            <button
+                                disabled={page === 1}
+                                onClick={() => setPage(page - 1)}
+                                className="px-3 py-1 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed rounded text-xs md:text-sm"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-xs md:text-sm">Page {page} of {totalPages}</span>
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => setPage(page + 1)}
+                                className="px-3 py-1 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed rounded text-xs md:text-sm"
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
                 </div>

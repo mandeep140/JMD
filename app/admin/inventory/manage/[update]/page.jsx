@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation'; // Changed: useParams instead of useSearchParams
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AdminNav from '@/app/component/AdminNav';
@@ -71,8 +71,8 @@ const Page = () => {
   const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const mediacode = searchParams.get("mediacode");
+  const params = useParams(); // Changed: use useParams
+  const mediacode = params.update; // Changed: get from params instead of searchParams
 
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);

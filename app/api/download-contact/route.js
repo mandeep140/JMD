@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectdb from '@/utils/connectdb';
 import DownloadContact from '@/Schema/DownloadContactSchema';
+import { sendDownloadFormNotification } from '@/utils/emailService';
 
 export async function POST(request) {
     try {
@@ -33,6 +34,23 @@ export async function POST(request) {
         });
         
         await downloadContact.save();
+
+        // Send email notification to admin
+        try {
+            await sendDownloadFormNotification({
+                reqid,
+                name: name.trim(),
+                email: email.trim(),
+                mobile: mobile.trim(),
+                reason: reason.trim(),
+                downloadType,
+                selectedAds: adsData,
+                totalAdsCount: selectedAds.length
+            });
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+            // Don't fail the request if email fails
+        }
         
         return NextResponse.json({ 
             success: true, 
@@ -50,26 +68,16 @@ export async function POST(request) {
     }
 }
 
-export async function GET(request) {
+export async function GET() {
     try {
         await connectdb();
-        
-        // Get all download contacts, sorted by creation date (newest first)
-        const contacts = await DownloadContact.find({})
-            .sort({ createdAt: -1 })
-            .lean();
-        
-        return NextResponse.json({ 
-            success: true, 
-            contacts: contacts || []
-        }, { status: 200 });
-        
+        const downloadContacts = await DownloadContact.find().sort({ createdAt: -1 });
+        return NextResponse.json(downloadContacts, { status: 200 });
     } catch (error) {
         console.error('Error fetching download contacts:', error);
         return NextResponse.json({ 
             success: false, 
-            error: 'Failed to fetch download contacts',
-            details: error.message 
+            error: 'Failed to fetch download contacts' 
         }, { status: 500 });
     }
 }

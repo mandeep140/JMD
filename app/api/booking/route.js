@@ -3,6 +3,7 @@ import connectdb from "@/utils/connectdb";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { sendBookingFormNotification } from "@/utils/emailService";
 
 export async function GET(request) {
     await connectdb();
@@ -59,7 +60,8 @@ export async function POST(request) {
             exists = await Booking.exists({ reqid });
         }
 
-        const booking = new Booking({
+        // Create new booking
+        const newBooking = new Booking({
             reqid,
             mediacode,
             mediatype,
@@ -70,60 +72,93 @@ export async function POST(request) {
             email,
             phone,
             message,
-            callback,
-            date: new Date()
+            callback
         });
 
-        await booking.save();
+        await newBooking.save();
 
-        return NextResponse.json({ message: "Booking request submitted successfully." }, { status: 201 });
-    } catch (error) {
-        console.error("Booking error:", error);
-        return NextResponse.json({ error: "Failed to submit booking." }, { status: 500 });
-    }
-}
-
-export async function PUT(request) {
-    await connectdb();
-
-    // Authenticate user
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    try {
-        const { reqid, status } = await request.json();
-        const booking = await Booking.findOneAndUpdate({ reqid }, { status }, { new: true });
-        if (!booking) {
-            return NextResponse.json({ error: "Booking not found." }, { status: 404 });
+        // Send email notification to admin
+        try {
+            await sendBookingFormNotification({
+                reqid,
+                mediacode,
+                mediatype,
+                title,
+                city,
+                status,
+                name,
+                email,
+                phone,
+                message,
+                callback
+            });
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+            // Don't fail the request if email fails
         }
-        return NextResponse.json({ message: "Status updated", booking }, { status: 200 });
+
+        return NextResponse.json({ message: "Booking request submitted successfully.", reqid }, { status: 201 });
     } catch (error) {
-        return NextResponse.json({ error: "Failed to update status." }, { status: 500 });
+        console.error("Error creating booking:", error);
+        return NextResponse.json({ error: "Failed to create booking request." }, { status: 500 });
     }
 }
 
 export async function DELETE(request) {
     await connectdb();
-
-    // Authenticate user
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     try {
-        const { reqid } = await request.json();
-        if (!reqid) {
-            return NextResponse.json({ error: "reqid is required." }, { status: 400 });
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        const deleted = await Booking.findOneAndDelete({ reqid });
-        if (!deleted) {
+
+        const body = await request.json();
+        const { reqid } = body;
+
+        if (!reqid) {
+            return NextResponse.json({ error: "Request ID is required." }, { status: 400 });
+        }
+
+        const deletedBooking = await Booking.findOneAndDelete({ reqid });
+        if (!deletedBooking) {
             return NextResponse.json({ error: "Booking not found." }, { status: 404 });
         }
+
         return NextResponse.json({ message: "Booking deleted successfully." }, { status: 200 });
     } catch (error) {
+        console.error("Error deleting booking:", error);
         return NextResponse.json({ error: "Failed to delete booking." }, { status: 500 });
+    }
+}
+
+export async function PUT(request) {
+    await connectdb();
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { reqid, status } = body;
+
+        if (!reqid || !status) {
+            return NextResponse.json({ error: "Request ID and status are required." }, { status: 400 });
+        }
+
+        const updatedBooking = await Booking.findOneAndUpdate(
+            { reqid },
+            { status },
+            { new: true }
+        );
+
+        if (!updatedBooking) {
+            return NextResponse.json({ error: "Booking not found." }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "Booking status updated successfully.", booking: updatedBooking }, { status: 200 });
+    } catch (error) {
+        console.error("Error updating booking status:", error);
+        return NextResponse.json({ error: "Failed to update booking status." }, { status: 500 });
     }
 }
