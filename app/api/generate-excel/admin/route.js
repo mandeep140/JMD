@@ -58,8 +58,8 @@ function generateInventoryExcel(data) {
             
             const match = sizeStr.match(/(\d+)\s*[*x×]\s*(\d+)/i);
             if (match) {
-                const width = parseInt(match[1]);
-                const height = parseInt(match[2]);
+                const height = parseInt(match[1]);
+                const width = parseInt(match[2]);
                 return {
                     width: `${width}ft`,
                     height: `${height}ft`,
@@ -80,8 +80,8 @@ function generateInventoryExcel(data) {
                 'Title/Location': ad.title || 'N/A',
                 'City': ad.city || 'N/A',
                 'Type': ad.type || 'N/A',
-                'Width': sizeInfo.width,
                 'Height': sizeInfo.height,
+                'Width': sizeInfo.width,
                 'Total Area': sizeInfo.totalSqft,
                 'Lighting': ad.lighting || 'N/A',
                 'Status': ad.status || 'Available',
@@ -208,17 +208,11 @@ function generateBookingsExcel(data) {
         
         // Summary for bookings
         const totalRequests = data.length;
-        const pendingRequests = data.filter(b => b.status === 'Pending').length;
-        const confirmedRequests = data.filter(b => b.status === 'Confirmed').length;
-        const rejectedRequests = data.filter(b => b.status === 'Rejected').length;
-        
+
         const bookingSummary = [
             { 'Metric': 'Booking Requests Summary', 'Value': '' },
             { 'Metric': '', 'Value': '' },
             { 'Metric': 'Total Requests', 'Value': totalRequests },
-            { 'Metric': 'Pending', 'Value': pendingRequests },
-            { 'Metric': 'Confirmed', 'Value': confirmedRequests },
-            { 'Metric': 'Rejected', 'Value': rejectedRequests },
             { 'Metric': '', 'Value': '' },
             { 'Metric': 'Generated On', 'Value': new Date().toLocaleString() }
         ];
@@ -303,70 +297,67 @@ function generateReportsExcel(data) {
     try {
         const workbook = XLSX.utils.book_new();
         
-        // Combine all data types into comprehensive report
-        const { inventory = [], bookings = [], downloads = [] } = data;
+        // Since this is for reports page, data is the contact form data from home page
+        const contactData = Array.isArray(data) ? data : [];
         
-        // Inventory sheet
-        if (inventory.length > 0) {
-            const inventoryData = inventory.map((ad, index) => ({
+        // Main Contact Forms Sheet
+        if (contactData.length > 0) {
+            const formattedData = contactData.map((contact, index) => ({
                 'Sr.No': index + 1,
-                'Media Code': ad.mediacode || 'N/A',
-                'Title': ad.title || 'N/A',
-                'City': ad.city || 'N/A',
-                'Type': ad.type || 'N/A',
-                'Status': ad.status || 'Available',
-                'Price/Month': ad.pricepermonth ? `₹${parseInt(ad.pricepermonth.toString().replace(/[^0-9]/g, '')).toLocaleString()}` : 'N/A',
-                'Views': ad.views || 0,
-                'Visible': ad.show ? 'Yes' : 'No'
+                'Request ID': contact.reqid || 'N/A',
+                'Name': contact.name || 'N/A',
+                'Email': contact.email || 'N/A',
+                'Phone': contact.phone || 'N/A',
+                'Message': contact.message || 'N/A',
+                'Date Submitted': contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : 'N/A',
+                'Time': contact.createdAt ? new Date(contact.createdAt).toLocaleTimeString() : 'N/A'
             }));
             
-            const inventoryWorksheet = XLSX.utils.json_to_sheet(inventoryData);
-            XLSX.utils.book_append_sheet(workbook, inventoryWorksheet, 'Inventory');
-        }
-        
-        // Bookings sheet
-        if (bookings.length > 0) {
-            const bookingData = bookings.map((booking, index) => ({
-                'Sr.No': index + 1,
-                'Request ID': booking.reqid || 'N/A',
-                'Customer': booking.name || 'N/A',
-                'Media Code': booking.mediacode || 'N/A',
-                'Status': booking.status || 'Pending',
-                'Date': booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A'
-            }));
+            const contactWorksheet = XLSX.utils.json_to_sheet(formattedData);
             
-            const bookingWorksheet = XLSX.utils.json_to_sheet(bookingData);
-            XLSX.utils.book_append_sheet(workbook, bookingWorksheet, 'Bookings');
-        }
-        
-        // Downloads sheet
-        if (downloads.length > 0) {
-            const downloadData = downloads.map((download, index) => ({
-                'Sr.No': index + 1,
-                'Name': download.name || 'N/A',
-                'Email': download.email || 'N/A',
-                'Type': download.downloadType || 'N/A',
-                'Ads Count': download.totalAdsCount || 0,
-                'Date': download.createdAt ? new Date(download.createdAt).toLocaleDateString() : 'N/A'
-            }));
+            // Auto-resize columns
+            contactWorksheet['!cols'] = [
+                { wch: 8 },  // Sr.No
+                { wch: 15 }, // Request ID
+                { wch: 20 }, // Name
+                { wch: 25 }, // Email
+                { wch: 15 }, // Phone
+                { wch: 20 }, // Company
+                { wch: 40 }, // Message
+                { wch: 12 }, // Date
+                { wch: 10 }  // Time
+            ];
             
-            const downloadWorksheet = XLSX.utils.json_to_sheet(downloadData);
-            XLSX.utils.book_append_sheet(workbook, downloadWorksheet, 'Downloads');
+            XLSX.utils.book_append_sheet(workbook, contactWorksheet, 'Contact Forms');
         }
         
-        // Comprehensive summary
+        // Summary Report Sheet
         const reportSummary = [
-            { 'Category': 'Overall Report Summary', 'Count': '', 'Details': '' },
-            { 'Category': '', 'Count': '', 'Details': '' },
-            { 'Category': 'Total Inventory', 'Count': inventory.length, 'Details': 'Active hoardings in system' },
-            { 'Category': 'Booking Requests', 'Count': bookings.length, 'Details': 'Customer booking inquiries' },
-            { 'Category': 'Download Requests', 'Count': downloads.length, 'Details': 'Quotation downloads' },
-            { 'Category': '', 'Count': '', 'Details': '' },
-            { 'Category': 'Available Inventory', 'Count': inventory.filter(ad => ad.status !== 'Booked').length, 'Details': 'Ready for booking' },
-            { 'Category': 'Booked Inventory', 'Count': inventory.filter(ad => ad.status === 'Booked').length, 'Details': 'Currently occupied' },
-            { 'Category': 'Pending Bookings', 'Count': bookings.filter(b => b.status === 'Pending').length, 'Details': 'Awaiting response' },
-            { 'Category': '', 'Count': '', 'Details': '' },
-            { 'Category': 'Report Generated', 'Count': '', 'Details': new Date().toLocaleString() }
+            { 'Metric': 'Contact Forms Report Summary', 'Count': '', 'Details': '' },
+            { 'Metric': '', 'Count': '', 'Details': '' },
+            { 'Metric': 'Total Contact Forms', 'Count': contactData.length, 'Details': 'All customer inquiries from website' },
+            { 'Metric': '', 'Count': '', 'Details': '' },
+            { 'Metric': 'Today\'s Forms', 'Count': contactData.filter(c => {
+                if (!c.createdAt) return false;
+                const today = new Date().toDateString();
+                return new Date(c.createdAt).toDateString() === today;
+            }).length, 'Details': 'Submitted today' },
+            { 'Metric': 'This Week\'s Forms', 'Count': contactData.filter(c => {
+                if (!c.createdAt) return false;
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return new Date(c.createdAt) >= weekAgo;
+            }).length, 'Details': 'Last 7 days' },
+            { 'Metric': 'This Month\'s Forms', 'Count': contactData.filter(c => {
+                if (!c.createdAt) return false;
+                const thisMonth = new Date().getMonth();
+                const thisYear = new Date().getFullYear();
+                const contactDate = new Date(c.createdAt);
+                return contactDate.getMonth() === thisMonth && contactDate.getFullYear() === thisYear;
+            }).length, 'Details': 'Current month' },
+            { 'Metric': '', 'Count': '', 'Details': '' },
+            { 'Metric': '', 'Count': '', 'Details': '' },
+            { 'Metric': 'Report Generated On', 'Count': '', 'Details': new Date().toLocaleString() }
         ];
         
         const summaryWorksheet = XLSX.utils.json_to_sheet(reportSummary);
