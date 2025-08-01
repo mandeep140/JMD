@@ -10,19 +10,19 @@ import AdminNav from '@/app/component/AdminNav';
 const indianCities = [
   // Bihar
   "Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga", "Purnia", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra (Saran)", "Danapur", "Hajipur", "Siwan", "Motihari", "Bettiah", "Sasaram", "Dehri", "Samastipur", "Aurangabad", "Buxar", "Sitamarhi", "Jamalpur", "Nawada", "Khagaria", "Jehanabad", "Madhubani", "Supaul", "Lakhisarai", "Sheikhpura", "Arwal", "Kishanganj", "Madhepura", "Vaishali",
-  
+
   // Jharkhand
   "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Chirkunda", "Lohardaga", "Chaibasa (West Singhbhum)", "Gumla", "Medininagar (Daltonganj)", "Dumka", "Sahebganj", "Jamtara", "Pakur", "Godda", "Latehar", "Khunti", "Simdega", "Chatra", "Koderma", "Barhi", "Phusro", "Chakradharpur", "Adityapur", "Saraikela",
-  
+
   // West Bengal
   "Kolkata", "Howrah", "Asansol", "Siliguri", "Durgapur", "Bardhaman", "Kharagpur", "Haldia", "Malda (English Bazar)", "Berhampore",
-  
+
   // Chhattisgarh
   "Raipur", "Durg", "Bilaspur", "Korba", "Raigarh", "Jagdalpur", "Ambikapur",
-  
+
   // Odisha
   "Bhubaneswar", "Cuttack", "Rourkela", "Berhampur (Brahmapur)", "Sambalpur", "Balasore", "Baripada", "Jharsuguda", "Puri", "Angul",
-  
+
   // Other major cities
   "Agra", "Ahmedabad", "Ajmer", "Allahabad", "Amritsar", "Bangalore", "Bareilly", "Belgaum", "Bhavnagar", "Bhilai", "Bhopal", "Bikaner", "Chandigarh", "Chennai", "Coimbatore", "Dehradun", "Delhi", "Faridabad", "Firozabad", "Ghaziabad", "Gorakhpur", "Guntur", "Gurgaon", "Guwahati", "Gwalior", "Hubli–Dharwad", "Hyderabad", "Indore", "Jabalpur", "Jaipur", "Jalandhar", "Jammu", "Jamnagar", "Jhansi", "Jodhpur", "Kakinada", "Kannur", "Kanpur", "Kochi", "Kolhapur", "Kota", "Kozhikode", "Kurnool", "Lucknow", "Ludhiana", "Madurai", "Malappuram", "Mangalore", "Mathura", "Meerut", "Moradabad", "Mumbai", "Mysore", "Nagpur", "Nashik", "Nellore", "New Delhi", "Noida", "Pondicherry", "Pune", "Rajkot", "Salem", "Sangli", "Shimla", "Solapur", "Srinagar", "Surat", "Thiruvananthapuram", "Thrissur", "Tiruchirappalli", "Tirunelveli", "Tiruppur", "Ujjain", "Vadodara", "Varanasi", "Vasai-Virar", "Vijayawada", "Visakhapatnam", "Warangal"
 ];
@@ -30,7 +30,7 @@ const indianCities = [
 // Lighting options
 const lightingOptions = [
   "No Light",
-  "Fully Light", 
+  "Fully Light",
   "Front Light",
   "Back Light",
 ];
@@ -78,7 +78,7 @@ const page = () => {
   // Update handleChange to handle city and customCity
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name === "city") {
       setForm((prev) => ({
         ...prev,
@@ -130,11 +130,13 @@ const page = () => {
   const checkMediacode = async (mediacode) => {
     if (!mediacode) return;
     try {
-      const res = await fetch(`/api/ads?mediacode=${encodeURIComponent(mediacode)}`);
+      // Use the availability check endpoint
+      const res = await fetch(`/api/ads?mediacode=${encodeURIComponent(mediacode)}&check=availability`);
       const data = await res.json();
       setMediacodeExists(data.exists);
     } catch (error) {
       console.error("Error checking mediacode:", error);
+      setMediacodeExists(false);
     }
   };
 
@@ -152,7 +154,7 @@ const page = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (mediacodeExists) {
       alert("Media code already exists. Please choose a different one.");
       return;
@@ -162,7 +164,7 @@ const page = () => {
     try {
       let imageUrl = "";
       let imageId = "";
-      
+
       if (imageFile) {
         const uploadResult = await uploadImage(imageFile);
         imageUrl = uploadResult.url;
@@ -171,22 +173,29 @@ const page = () => {
 
       // Use custom city if "Other" is selected, otherwise use selected city
       const finalCity = form.city === "Other" ? form.customCity : form.city;
-      
+
       if (form.city === "Other" && !form.customCity.trim()) {
         alert("Please enter a custom city name.");
         setLoading(false);
         return;
       }
 
+      // Generate size string from height and width
+      const sizeString = form.height && form.width ?
+        `${form.height}*${form.width}ft (${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)}sqft)` : "";
+
       const formData = {
         ...form,
-        city: finalCity, // Use the final city value
+        city: finalCity,
+        size: sizeString, // Add the generated size
         imageUrl,
         imageId,
       };
-      
-      // Remove customCity from the final form data
+
+      // Remove fields that shouldn't be sent to API
       delete formData.customCity;
+      delete formData.height;
+      delete formData.width;
 
       const res = await fetch("/api/ads", {
         method: "POST",
@@ -195,19 +204,20 @@ const page = () => {
       });
 
       if (res.ok) {
-        alert("Ad added successfully!");
+        alert("Advertisement added successfully! 🎉");
         setForm(initialForm);
         setImageFile(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
+        router.push("/admin/inventory");
       } else {
         const errorData = await res.json();
-        alert(`Error: ${errorData.error || "Failed to add ad"}`);
+        alert(`Error: ${errorData.error || "Failed to add advertisement"}`);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred while submitting the form.");
+      alert("An error occurred while submitting the form. Please try again.");
     }
     setLoading(false);
   };
@@ -239,24 +249,54 @@ const page = () => {
           {/* main form container */}
           <div className="bg-white w-full h-auto text-black rounded-lg shadow p-2 md:p-4 flex-1 max-w-full overflow-hidden">
             <h2 className="text-xl md:text-2xl font-bold mb-4 text-center">Add New Advertisement</h2>
-            
+
             <div className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Row 1 */}
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs md:text-sm font-semibold mb-1">Media Code*</label>
-                    <input
-                      type="text"
-                      name="mediacode"
-                      value={form.mediacode}
-                      onChange={handleChange}
-                      required
-                      className={`w-full bg-[#E9E9E9] border ${mediacodeExists ? 'border-red-500' : 'border-gray-300'} focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2`}
-                      placeholder="Unique Media Code"
-                    />
-                    {mediacodeExists && (
-                      <p className="text-red-500 text-xs mt-1">This media code already exists</p>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="mediacode"
+                        value={form.mediacode}
+                        onChange={handleChange}
+                        required
+                        className={`w-full bg-[#E9E9E9] border ${mediacodeExists
+                            ? 'border-red-500 focus:border-red-500'
+                            : form.mediacode && !mediacodeExists
+                              ? 'border-green-500 focus:border-green-500'
+                              : 'border-gray-300 focus:border-blue-400'
+                          } focus:outline-none rounded px-2 py-1 md:py-2 pr-10`}
+                        placeholder="Enter unique media code"
+                      />
+                      {/* Status indicator */}
+                      {form.mediacode && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          {mediacodeExists ? (
+                            <span className="text-red-500 text-lg">❌</span>
+                          ) : (
+                            <span className="text-green-500 text-lg">✅</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {/* Status message */}
+                    {form.mediacode && (
+                      <div className="mt-1">
+                        {mediacodeExists ? (
+                          <p className="text-red-500 text-xs flex items-center gap-1">
+                            <span>⚠️</span>
+                            This media code already exists. Please choose a different one.
+                          </p>
+                        ) : (
+                          <p className="text-green-500 text-xs flex items-center gap-1">
+                            <span>✅</span>
+                            Media code is available!
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -268,12 +308,12 @@ const page = () => {
                       onChange={handleChange}
                       required
                       className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                      placeholder="Title"
+                      placeholder="Advertisement title"
                     />
                   </div>
                 </div>
-                
-                {/* Row 2 */}
+
+                {/* Row 2 - City, Lighting, and Show on site */}
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs md:text-sm font-semibold mb-1">City*</label>
@@ -290,7 +330,7 @@ const page = () => {
                       ))}
                       <option value="Other">Other</option>
                     </select>
-                    
+
                     {/* Custom City Input - Show when "Other" is selected */}
                     {form.city === "Other" && (
                       <input
@@ -304,7 +344,7 @@ const page = () => {
                       />
                     )}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs md:text-sm font-semibold mb-1">Lighting*</label>
                     <select
@@ -320,10 +360,38 @@ const page = () => {
                       ))}
                     </select>
                   </div>
+
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs md:text-sm font-semibold mb-1">Show on site*</label>
+                    <select
+                      name="show"
+                      value={form.show ? "yes" : "no"}
+                      onChange={e => setForm(prev => ({ ...prev, show: e.target.value === "yes" }))}
+                      required
+                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                    >
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
                 </div>
-                
-                {/* Row 3 - Height and Width */}
+
+                {/* Row 3 - Status, Height, Width, Size Preview */}
                 <div className="flex flex-col md:flex-row gap-3 w-full">
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs md:text-sm font-semibold mb-1">Status*</label>
+                    <select
+                      name="status"
+                      value={form.status}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                    >
+                      <option value="">Select</option>
+                      <option>Available</option>
+                      <option>Booked</option>
+                    </select>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs md:text-sm font-semibold mb-1">Height (in feet)*</label>
                     <input
@@ -353,11 +421,11 @@ const page = () => {
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs md:text-sm font-semibold mb-1">Size Preview</label>
                     <div className="w-full bg-gray-100 border border-gray-300 rounded px-2 py-1 md:py-2 text-gray-600">
-                      {form.height && form.width ? `${form.height} x ${form.width} feet` : "Enter height and width"}
+                      {form.height && form.width ? `${form.height}*${form.width}ft (${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)}sqft)` : "Enter height and width"}
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Row 4 (update Booked from/till to type="date") */}
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
@@ -400,7 +468,7 @@ const page = () => {
                     />
                   </div>
                 </div>
-                
+
                 {/* Row 5 */}
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className="flex-1 min-w-0">
@@ -445,7 +513,7 @@ const page = () => {
                     />
                   </div>
                 </div>
-                
+
                 {/* Row 6 - Coordinates (optional) and Show on site */}
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className="flex-1 min-w-0">
@@ -472,21 +540,8 @@ const page = () => {
                       placeholder="Longitude"
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="block text-xs md:text-sm font-semibold mb-1">Show on site*</label>
-                    <select
-                      name="show"
-                      value={form.show ? "yes" : "no"}
-                      onChange={e => setForm(prev => ({ ...prev, show: e.target.value === "yes" }))}
-                      required
-                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                    >
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </div>
                 </div>
-                
+
                 {/* Row 7: Message about media (full width) */}
                 <div className="w-full">
                   <label className="block text-xs md:text-sm font-semibold mb-1">Message about media*</label>
@@ -500,7 +555,7 @@ const page = () => {
                     placeholder="Message about media"
                   />
                 </div>
-                
+
                 {/* Row 8: Image upload (required) */}
                 <div className="flex flex-col items-center md:items-start">
                   <span className="text-xs text-gray-500 mb-1">Upload Image*</span>
@@ -517,12 +572,41 @@ const page = () => {
                     <span className="text-xs text-green-600 mt-1">{imageFile.name}</span>
                   )}
                 </div>
-                
+
                 {/* Row 9: Actions (full width) */}
                 <div className="w-full flex flex-col md:flex-row items-center md:items-end justify-center md:justify-between gap-3 mt-2">
-                  <button type="submit" className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold text-xs md:text-sm">
-                    <span className="mr-1">➕</span> Add Media in Listing
-                  </button>
+                  {/* Submit button */}
+                  <div className="flex justify-center pt-6 pb-2">
+                    <button
+                      type="submit"
+                      disabled={loading || mediacodeExists || !form.mediacode}
+                      className={`
+                      ${loading || mediacodeExists || !form.mediacode
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700'
+                        } 
+                      text-white font-bold py-3 px-8 rounded-lg transition-all duration-200 
+                      w-full md:w-auto min-w-[200px] text-lg shadow-lg
+                      ${!loading && !mediacodeExists && form.mediacode ? 'hover:shadow-xl transform hover:-translate-y-0.5' : ''}
+                    `}
+                    >
+                      {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Adding Advertisement...
+                        </span>
+                      ) : mediacodeExists ? (
+                        "❌ Media Code Already Exists"
+                      ) : !form.mediacode ? (
+                        "Enter Media Code to Continue"
+                      ) : (
+                        "🚀 Add Advertisement"
+                      )}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>

@@ -23,9 +23,23 @@ function validateAdData(adData) {
 export async function GET(request) {
     await connectDB();
     const mediacode = request.nextUrl.searchParams.get("mediacode");
+    
     if (mediacode) {
-        const ads = await Ads.find({ mediacode: { $regex: mediacode, $options: "i" } }).limit(10);
-        return NextResponse.json(ads, { status: 200 });
+        // Check if this is for availability check (exact match)
+        const checkAvailability = request.nextUrl.searchParams.get("check");
+        
+        if (checkAvailability === "availability") {
+            // For availability check, do exact match
+            const existingAd = await Ads.findOne({ mediacode: mediacode });
+            return NextResponse.json({ 
+                exists: !!existingAd,
+                mediacode: mediacode
+            }, { status: 200 });
+        } else {
+            // For search, do regex match
+            const ads = await Ads.find({ mediacode: { $regex: mediacode, $options: "i" } }).limit(10);
+            return NextResponse.json(ads, { status: 200 });
+        }
     }
 
     const topThreeParam = request.nextUrl.searchParams.get("topthree");
@@ -98,7 +112,6 @@ export async function POST(request) {
 
         await connectDB();
         const adData = await request.json();
-        console.log("adData received:", adData);
 
         // Validate required fields
         const validationError = validateAdData(adData);
