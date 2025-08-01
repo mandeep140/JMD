@@ -18,7 +18,7 @@ export const sendContactFormNotification = async (contactData) => {
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.ADMIN_EMAIL,
+      to: process.env.EMAIL_TO_SEND, // Admin email
       subject: `🆕 New Contact Form Submission - ${contactData.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px;">
@@ -82,7 +82,7 @@ export const sendBookingFormNotification = async (bookingData) => {
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.ADMIN_EMAIL,
+      to: process.env.EMAIL_TO_SEND,
       subject: `🎯 New Booking Request - ${bookingData.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px;">
@@ -161,7 +161,7 @@ export const sendDownloadFormNotification = async (downloadData) => {
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.ADMIN_EMAIL,
+      to: process.env.EMAIL_TO_SEND,
       subject: `📥 New Download Request - ${downloadData.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px;">
