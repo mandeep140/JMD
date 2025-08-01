@@ -755,7 +755,7 @@ const Home = () => {
             {isContactExpanded ? (
               <span className="text-xl">×</span>
             ) : (
-              <FaPhone className="text-lg" />
+              <FaPhone className="text-lg rotate-90" />
             )}
           </button>
 
