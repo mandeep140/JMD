@@ -53,9 +53,7 @@ const DownloadContactClient = () => {
 
     if (loading) {
         return (
-            <div className="w-full h-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
+            <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>
         );
     }
 

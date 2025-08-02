@@ -33,7 +33,7 @@ const page = () => {
 
   // Pagination
   const [page, setPage] = useState(1);
-  const PER_PAGE = 15;
+  const PER_PAGE = 8;
   const [dateSortAsc, setDateSortAsc] = useState(false);
 
   useEffect(() => {
