@@ -153,7 +153,7 @@ const page = () => {
                             </div>
                         </div>
                         {/* Card 2 */}
-                        <div className='w-full md:w-1/3 bg-white flex flex-col items-center justify-start rounded-lg gap-2 p-3 md:p-4 mb-3 md:mb-0'>
+                        <div className='w-full md:w-1/3 bg-white flex flex-col items-center justify-start rounded-lg gap-2 p-3 md:p-4 mb-3 md:mb-0 overflow-y-auto'>
                             <h1 className='text-base md:text-lg font-bold text-black me-auto'>Most Viewed Media Listings:</h1>
                             {topAds.length === 0 ? (
                                 <div className='w-full rounded-md bg-[#E9E9E9] text-black/70 px-3 md:px-5 flex flex-row items-center justify-between gap-2 mb-1'>
