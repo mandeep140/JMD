@@ -43,10 +43,10 @@ const FindHoardingsClient = ({ searchParams }) => {
     const mediaTypes = ['Billboard', 'Transit Media', 'Mall Media', 'Airport Branding', 'Digital Billboard'];
     const majorCities = ['Delhi', 'Mumbai', 'Bangalore', 'Kolkata'];
     const priceRanges = [
-        { label: 'Below 10000', min: 0, max: 9999 },
-        { label: '10000 - 20000', min: 10000, max: 20000 },
-        { label: '20000 - 30000', min: 20000, max: 30000 },
-        { label: 'Above 30000', min: 30001, max: Infinity }
+        { label: 'Below ₹25,000', min: 0, max: 24999 },
+        { label: '₹25,000 - ₹50,000', min: 25000, max: 50000 },
+        { label: '₹50,000 - ₹1,00,000', min: 50000, max: 100000 },
+        { label: 'Above ₹1,00,000', min: 100001, max: Infinity }
     ];
 
     // Get all available cities from ads
@@ -105,9 +105,9 @@ const FindHoardingsClient = ({ searchParams }) => {
                 if (!hasCity) return false;
             }
             
-            // Price filter
+            // Price filter - Changed to use pricepermonth instead of priceperday
             if (selectedPriceRanges.length > 0) {
-                const price = parseFloat(ad.priceperday) || 0;
+                const price = parseFloat(ad.pricepermonth) || 0; // Changed from priceperday to pricepermonth
                 const inPriceRange = selectedPriceRanges.some(range => 
                     price >= range.min && price <= range.max
                 );
@@ -121,10 +121,10 @@ const FindHoardingsClient = ({ searchParams }) => {
                 return b.views - a.views || 0;
             }
             if (sortBy === 'price_low') {
-                return (parseFloat(a.priceperday) || 0) - (parseFloat(b.priceperday) || 0);
+                return (parseFloat(a.pricepermonth) || 0) - (parseFloat(b.pricepermonth) || 0); // Changed to pricepermonth
             }
             if (sortBy === 'price_high') {
-                return (parseFloat(b.priceperday) || 0) - (parseFloat(a.priceperday) || 0);
+                return (parseFloat(b.pricepermonth) || 0) - (parseFloat(a.pricepermonth) || 0); // Changed to pricepermonth
             }
             return 0;
         });
@@ -169,7 +169,7 @@ const FindHoardingsClient = ({ searchParams }) => {
                 : [...prev, city]
         );
         setCurrentPage(1);
-        // setTimeout(updateURL, 3X00); // Debounce URL update
+        // setTimeout(updateURL, 300); // Debounce URL update
     };
 
     const handlePriceRangeChange = (range) => {
@@ -738,6 +738,20 @@ const FindHoardingsClient = ({ searchParams }) => {
                                                     <span className="text-xs lg:text-sm text-gray-600 bg-blue-100 px-2 py-1 rounded">
                                                         {selectedAds.length} selected
                                                     </span>
+                                                    
+                                                    {/* Cancel All Button - Show when 2+ selections */}
+                                                    {selectedAds.length >= 2 && (
+                                                        <button
+                                                            onClick={() => setSelectedAds([])}
+                                                            className="px-2 lg:px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs lg:text-sm font-medium transition-colors flex items-center gap-1"
+                                                        >
+                                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                            Cancel All
+                                                        </button>
+                                                    )}
+                                                    
                                                     <button
                                                         onClick={() => showContactFormPopup('PPT')}
                                                         disabled={isGeneratingPPT}
