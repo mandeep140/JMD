@@ -62,7 +62,7 @@ const AdminNav = ({ children }) => {
             <h2 className='text-black/80 text-base md:text-lg'>JMD Admin</h2>
           </span>
           <button onClick={() => setOpen(!open)} style={{
-            rotate: open ? '180deg' : '0deg',
+            rotate: open ? '45deg' : '0deg',
             transition: 'rotate 0.3s ease-in-out',
           }}>
             <IoMdArrowDropdown className='text-black cursor-pointer' />

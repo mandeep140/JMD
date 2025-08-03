@@ -89,7 +89,7 @@ async function generatePowerPoint(data) {
         
         // Define color scheme (pptxgenjs v4 requires hex format with #)
         const colors = {
-            primary: '#D44E51',    // JMD Red
+            primary: '#000000',    // solid black
             secondary: '#FFFFFF',  // White
             accent: '#000000',     // Black
             background: '#F5F5F5', // Light Gray
