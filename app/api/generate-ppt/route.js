@@ -36,7 +36,7 @@ async function fetchImageAsBase64(imageUrl) {
         let fullUrl = imageUrl;
         if (imageUrl && !imageUrl.startsWith('http')) {
             // If it's a relative URL, make it absolute
-            fullUrl = `https://jmd-kohl.vercel.app${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+            fullUrl = `https://adjmd.com${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
         }
         
         const response = await fetch(fullUrl, {
@@ -76,10 +76,33 @@ async function fetchImageAsBase64(imageUrl) {
     }
 }
 
+// Helper function to get lighting abbreviation
+function getLightingAbbreviation(lighting) {
+    if (!lighting) return '';
+    
+    const lightingLower = lighting.toLowerCase();
+    
+    if (lightingLower.includes('no light')) {
+        return 'NL';
+    } else if (lightingLower.includes('fully light')) {
+        return 'FLL';
+    } else if (lightingLower.includes('front light')) {
+        return 'FL';
+    } else if (lightingLower.includes('back light')) {
+        return 'BL';
+    }
+    
+    return ''; // Default if no match
+}
+
 async function generatePowerPoint(data) {
     try {
         // Create new presentation
         const pres = new pptxgen();
+        
+        // Set slide dimensions to standard 16:9 ratio
+        pres.defineLayout({ name: 'JMD_LAYOUT', width: 10, height: 5.625 });
+        pres.layout = 'JMD_LAYOUT';
         
         // Set presentation properties
         pres.author = 'JMD Advertisement';
@@ -87,322 +110,243 @@ async function generatePowerPoint(data) {
         pres.title = data.title || 'JMD Hoardings Presentation';
         pres.subject = 'Outdoor Advertising Hoardings';
         
-        // Define color scheme (pptxgenjs v4 requires hex format with #)
+        // Define color scheme with proper hex codes
         const colors = {
-            primary: '#000000',    // solid black
-            secondary: '#FFFFFF',  // White
-            accent: '#000000',     // Black
-            background: '#F5F5F5', // Light Gray
-            text: '#333333'        // Dark Gray
+            white: 'FFFFFF',
+            black: '000000',
+            red: 'FF0000',
+            gray: '666666'
         };
 
-        // ===== SLIDE 1: Title Slide =====
+        // ===== SLIDE 1: Title Slide with JMD Logo =====
         const titleSlide = pres.addSlide();
-        titleSlide.background = { color: colors.primary };
+        titleSlide.background = { color: colors.white };
         
-        // JMD Title
-        titleSlide.addText('JMD ADVERTISEMENT', {
-            x: 1,
-            y: 2,
-            w: 8,
-            h: 1.5,
-            fontSize: 36,
-            fontFace: 'Arial',
-            color: colors.secondary,
-            bold: true,
-            align: 'center'
-        });
+        // Fetch and add the PPT logo as full page image
+        const logoImageData = await fetchImageAsBase64('/images/ppt_logo.png');
         
-        // Main title
-        titleSlide.addText(data.title || 'Selected Hoardings Presentation', {
-            x: 1,
-            y: 3.5,
-            w: 8,
-            h: 1,
-            fontSize: 24,
-            fontFace: 'Arial',
-            color: colors.secondary,
-            bold: true,
-            align: 'center'
-        });
-        
-        // Subtitle
-        titleSlide.addText(data.subtitle || `Generated on ${new Date().toLocaleDateString()}`, {
-            x: 1,
-            y: 4.5,
-            w: 8,
-            h: 0.8,
-            fontSize: 16,
-            fontFace: 'Arial',
-            color: colors.secondary,
-            align: 'center'
-        });
-
-        // ===== SLIDE 2: Overview Slide =====
-        const overviewSlide = pres.addSlide();
-        overviewSlide.background = { color: colors.secondary };
-        
-        // Header
-        overviewSlide.addText('Presentation Overview', {
-            x: 1,
-            y: 0.5,
-            w: 8,
-            h: 1,
-            fontSize: 28,
-            fontFace: 'Arial',
-            color: colors.primary,
-            bold: true,
-            align: 'center'
-        });
-        
-        // Statistics
-        const totalDailyPrice = data.ads?.reduce((sum, ad) => {
-            const price = parseInt(ad.pricePerDay?.toString().replace(/[^0-9]/g, '')) || 0;
-            return sum + price;
-        }, 0) || 0;
-        
-        const totalMonthlyPrice = data.ads?.reduce((sum, ad) => {
-            const price = parseInt(ad.pricePerMonth?.toString().replace(/[^0-9]/g, '')) || 0;
-            return sum + price;
-        }, 0) || 0;
-        
-        const uniqueCities = [...new Set((data.ads || []).map(ad => ad.city).filter(Boolean))];
-        const uniqueTypes = [...new Set((data.ads || []).map(ad => ad.type).filter(Boolean))];
-        
-        const stats = [
-            { label: 'Total Hoardings Selected', value: (data.ads?.length || 0).toString() },
-            { label: 'Cities Covered', value: uniqueCities.length.toString() },
-            { label: 'Ad Types', value: uniqueTypes.length.toString() },
-            { label: 'Total Daily Investment', value: `₹${totalDailyPrice.toLocaleString()}` },
-            { label: 'Total Monthly Investment', value: `₹${totalMonthlyPrice.toLocaleString()}` }
-        ];
-        
-        stats.forEach((stat, index) => {
-            const yPos = 2 + (index * 0.7);
+        if (logoImageData) {
+            // Add full page logo image
+            titleSlide.addImage({
+                data: `data:image/${logoImageData.extension};base64,${logoImageData.data}`,
+                x: 0,
+                y: 0,
+                w: 10,
+                h: 5.625,
+                sizing: { type: 'cover', w: 10, h: 5.625 }
+            });
+        } else {
+            // Fallback: Use the previous design if logo image fails to load
+            console.warn('Logo image not found, using fallback design');
             
-            overviewSlide.addText(stat.label + ':', {
-                x: 1.5,
-                y: yPos,
-                w: 4,
-                h: 0.6,
-                fontSize: 16,
-                fontFace: 'Arial',
-                color: colors.text,
-                bold: true
+            // JMD Logo Area - Centered Red Oval Background
+            titleSlide.addShape(pres.shapes.OVAL, {
+                x: 3.0,
+                y: 1.0,
+                w: 4.0,
+                h: 2.0,
+                fill: { color: colors.red },
+                line: { width: 0 }
             });
             
-            overviewSlide.addText(stat.value, {
-                x: 5.5,
-                y: yPos,
-                w: 3,
-                h: 0.6,
-                fontSize: 16,
+            // JMD Text in Logo - Properly centered
+            titleSlide.addText('JMD', {
+                x: 3.0,
+                y: 1.4,
+                w: 4.0,
+                h: 1.2,
+                fontSize: 48,
                 fontFace: 'Arial',
-                color: colors.primary,
-                bold: true
+                color: colors.white,
+                bold: true,
+                align: 'center',
+                valign: 'middle'
             });
-        });
+            
+            // JAI MATA DI Text - Centered below logo
+            titleSlide.addText('JAI MATA DI', {
+                x: 1.0,
+                y: 3.2,
+                w: 8.0,
+                h: 0.8,
+                fontSize: 36,
+                fontFace: 'Arial',
+                color: colors.red,
+                bold: true,
+                align: 'center',
+                valign: 'middle'
+            });
+            
+            // OUTDOOR ADVERTISEMENT Text - Centered at bottom
+            titleSlide.addText('OUTDOOR ADVERTISEMENT', {
+                x: 1.0,
+                y: 4.2,
+                w: 8.0,
+                h: 0.6,
+                fontSize: 18,
+                fontFace: 'Arial',
+                color: colors.black,
+                bold: true,
+                align: 'center',
+                valign: 'middle'
+            });
+        }
 
-        // ===== Individual Ad Slides =====
+        // ===== CONTENT SLIDES: One slide per hoarding =====
         if (data.ads && data.ads.length > 0) {
             for (let i = 0; i < data.ads.length; i++) {
                 const ad = data.ads[i];
+                const contentSlide = pres.addSlide();
+                contentSlide.background = { color: colors.white };
                 
-                const slide = pres.addSlide();
-                slide.background = { color: colors.secondary };
+                // Try to fetch and add the hoarding image at the top
+                const imageData = await fetchImageAsBase64(ad.imageUrl);
                 
-                // Slide header with ad number
-                slide.addText(`Hoarding ${i + 1} of ${data.ads.length}`, {
-                    x: 0.5,
-                    y: 0.2,
-                    w: 9,
-                    h: 0.5,
-                    fontSize: 12,
-                    fontFace: 'Arial',
-                    color: colors.text,
-                    align: 'right'
-                });
-                
-                // Ad title
-                slide.addText(ad.title || 'Untitled Hoarding', {
-                    x: 0.5,
-                    y: 0.8,
-                    w: 9,
-                    h: 0.8,
-                    fontSize: 20,
-                    fontFace: 'Arial',
-                    color: colors.primary,
-                    bold: true
-                });
-                
-                // Try to add actual image
-                let imageAdded = false;
-                if (ad.imageUrl) {
-                    try {
-                        const imageData = await fetchImageAsBase64(ad.imageUrl);
-                        if (imageData) {
-                            slide.addImage({
-                                data: `data:image/${imageData.extension};base64,${imageData.data}`,
-                                x: 0.5,
-                                y: 1.8,
-                                w: 4.5,
-                                h: 2.8,
-                                sizing: {
-                                    type: 'contain',
-                                    w: 4.5,
-                                    h: 2.8
-                                }
-                            });
-                            imageAdded = true;
-                        }
-                    } catch (error) {
-                        console.error(`Failed to add image for ad ${i + 1}:`, error.message);
-                    }
-                }
-                
-                // If image couldn't be added, show placeholder
-                if (!imageAdded) {
-                    slide.addText('Image Available Online', {
+                if (imageData) {
+                    // Add large hoarding image at the top of slide
+                    contentSlide.addImage({
+                        data: `data:image/${imageData.extension};base64,${imageData.data}`,
                         x: 0.5,
-                        y: 1.8,
-                        w: 4.5,
-                        h: 2.8,
-                        fontSize: 14,
+                        y: 0.3,
+                        w: 9.0,
+                        h: 4.0,
+                        sizing: { type: 'contain', w: 9.0, h: 4.0 }
+                    });
+                } else {
+                    // Fallback: Add a placeholder rectangle
+                    contentSlide.addShape(pres.shapes.RECTANGLE, {
+                        x: 0.5,
+                        y: 0.3,
+                        w: 9.0,
+                        h: 4.0,
+                        fill: { color: 'F0F0F0' },
+                        line: { color: colors.gray, width: 1 }
+                    });
+                    
+                    contentSlide.addText('IMAGE NOT AVAILABLE', {
+                        x: 0.5,
+                        y: 2.0,
+                        w: 9.0,
+                        h: 0.5,
+                        fontSize: 16,
                         fontFace: 'Arial',
-                        color: colors.text,
+                        color: colors.gray,
                         align: 'center',
-                        valign: 'middle',
-                        border: { pt: 1, color: colors.text }
+                        valign: 'middle'
                     });
                 }
                 
-                // Ad details - Adjusted positioning
-                const details = [
-                    { label: 'Media Code', value: ad.mediaCode || 'N/A' },
-                    { label: 'Type', value: ad.type || 'N/A' },
-                    { label: 'City', value: ad.city || 'N/A' },
-                    { label: 'Size', value: ad.size || 'N/A' },
-                    { label: 'Lighting', value: ad.lighting || 'N/A' },
-                    { label: 'Price/Day', value: ad.pricePerDay ? `₹${parseInt(ad.pricePerDay.toString().replace(/[^0-9]/g, '')).toLocaleString()}` : 'N/A' },
-                    { label: 'Price/Month', value: ad.pricePerMonth ? `₹${parseInt(ad.pricePerMonth.toString().replace(/[^0-9]/g, '')).toLocaleString()}` : 'N/A' }
-                ];
+                // All information in one line below the image
+                const city = ad.city || 'N/A';
+                const title = ad.title || 'N/A';
+                const size = ad.size || 'N/A';
+                const lightingAbbr = getLightingAbbreviation(ad.lighting);
                 
-                details.forEach((detail, index) => {
-                    const yPos = 1.8 + (index * 0.35);
-                    
-                    slide.addText(detail.label + ':', {
-                        x: 5.2,
-                        y: yPos,
-                        w: 2,
-                        h: 0.3,
-                        fontSize: 11,
-                        fontFace: 'Arial',
-                        color: colors.text,
-                        bold: true
-                    });
-                    
-                    slide.addText(detail.value, {
-                        x: 7.2,
-                        y: yPos,
-                        w: 2.3,
-                        h: 0.3,
-                        fontSize: 11,
-                        fontFace: 'Arial',
-                        color: colors.primary
-                    });
-                });
+                // Create single line text with all information
+                let infoText = `${city} - ${title} - ${size}`;
+                if (lightingAbbr) {
+                    infoText += ` - ${lightingAbbr}`;
+                }
                 
-                // Ad description/message - Better positioning within slide bounds
-                slide.addText('Description:', {
+                // Single line with all information
+                contentSlide.addText(infoText, {
                     x: 0.5,
-                    y: 4.8,
-                    w: 9,
-                    h: 0.3,
-                    fontSize: 12,
+                    y: 4.7,
+                    w: 9.0,
+                    h: 0.4,
+                    fontSize: 14,
                     fontFace: 'Arial',
-                    color: colors.text,
-                    bold: true
-                });
-                
-                // Check for message content and limit it to fit within slide
-                const messageContent = ad.message && ad.message.trim() !== '' 
-                    ? (ad.message.length > 150 ? ad.message.substring(0, 150) + '...' : ad.message)
-                    : 'Strategic outdoor advertising location perfect for brand visibility and maximum audience reach.';
-                
-                slide.addText(messageContent, {
-                    x: 0.5,
-                    y: 5.1,
-                    w: 9,
-                    h: 2.3,  // Increased height to accommodate text
-                    fontSize: 10,
-                    fontFace: 'Arial',
-                    color: colors.text,
-                    wrap: true,
-                    valign: 'top'
+                    color: colors.black,
+                    bold: true,
+                    align: 'center',
+                    valign: 'middle'
                 });
             }
         }
 
-        // ===== FINAL SLIDE: Contact Information =====
-        const contactSlide = pres.addSlide();
-        contactSlide.background = { color: colors.primary };
+        // ===== LAST SLIDE: Terms and Conditions =====
+        const termsSlide = pres.addSlide();
+        termsSlide.background = { color: colors.white };
         
-        contactSlide.addText('Thank You', {
-            x: 1,
-            y: 1.2,
-            w: 8,
-            h: 1.2,
-            fontSize: 32,
+        // General Terms & Conditions Header
+        termsSlide.addText('* GENERAL TERMS & CONDITIONS :-', {
+            x: 0.3,
+            y: 0.2,
+            w: 9.4,
+            h: 0.3,
+            fontSize: 12,
             fontFace: 'Arial',
-            color: colors.secondary,
+            color: colors.red,
             bold: true,
-            align: 'center'
+            align: 'left'
         });
         
-        contactSlide.addText('For more information, contact JMD Advertisement', {
-            x: 1,
-            y: 2.6,
-            w: 8,
-            h: 0.6,
-            fontSize: 16,
-            fontFace: 'Arial',
-            color: colors.secondary,
-            align: 'center'
-        });
-        
-        const contactInfo = [
-            '🏢 B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002)',
-            '📞 Contact: +91-9204965321',
-            '✉️ Email: info.jmd.jsr@gmail.com',
-            '🌐 Website: https://jmd-kohl.vercel.app/'
+        // General Terms
+        const generalTerms = [
+            '1) Display Location is Subject to Availability at The Time of Receiving Your Confirm Written Orders .',
+            '2) Media Display Extension through Written Mail .',
+            '3) Site Once Booked Can\'t be Cancelled / Postponed.',
+            '4) Billing For All The Sites Will Be From Date of Booking & Won\'t Be Postponed Due to Delay in Supply of Creative From Your Side .',
+            '5 ) Site Booking And Dropping Mail is Provide By Client.'
         ];
         
-        contactInfo.forEach((info, index) => {
-            contactSlide.addText(info, {
-                x: 1,
-                y: 3.4 + (index * 0.35),
-                w: 8,
-                h: 0.3,
-                fontSize: 11,
+        let yPos = 0.6;
+        generalTerms.forEach((term) => {
+            termsSlide.addText(term, {
+                x: 0.3,
+                y: yPos,
+                w: 9.4,
+                h: 0.25,
+                fontSize: 9,
                 fontFace: 'Arial',
-                color: colors.secondary,
-                align: 'center'
+                color: colors.black,
+                align: 'left'
             });
+            yPos += 0.3;
         });
         
-        contactSlide.addText('🎯 Thinking of Branding? Think JMD!', {
-            x: 1,
-            y: 5.2,
-            w: 8,
-            h: 0.5,
-            fontSize: 14,
+        // Business Terms Header
+        termsSlide.addText('* BUSINESS TERMS :-', {
+            x: 0.3,
+            y: yPos + 0.1,
+            w: 9.4,
+            h: 0.3,
+            fontSize: 12,
             fontFace: 'Arial',
-            color: colors.secondary,
+            color: colors.red,
             bold: true,
-            align: 'center'
+            align: 'left'
         });
         
-        // Use the synchronous write method for better compatibility
+        yPos += 0.5;
+        
+        // Business Terms
+        const businessTerms = [
+            '1) Payment to Be Made 100 % in advance',
+            '2) 18% Advertisement Service Tax Shall Be Charged Extra on Mounting / Installation Billing.',
+            '3) Additional Taxes Shall Be Charged if Levied By The Government .',
+            '4) Any Special Photography / Monitoring etc Will Attract Additional Cost .',
+            '5) Flex Printing Charges Will Be Extra i.e For NonLit / Frontlit Flex @ Rs. 11 /- Per Sqft & For Backlit Flex @ Rs. 30 Per Sqft.',
+            '6) Flex Mounting Charges Will Be Extra .',
+            '7) Sites Once Confirmed (Verbally or Written ) Can Be Cancelled only After Giving 3 Days Clear Prior Notice ( From Campaign Start Date )in Writing , in Case its Unavoidable Client Agrees To Suitably Compensate M/S Jai Mata Di. If Cancellation is Made 4- 5 Days Prior to Campaign Start Date Client Agrees To Pay For 7 Days Display Charges + Taxes There on .',
+            '8 ) If Cancellation is Made After The Start Date of Campaign Client Agrees to Pay For 15 Days Display Charges + Taxes There on.'
+        ];
+        
+        businessTerms.forEach((term) => {
+            termsSlide.addText(term, {
+                x: 0.3,
+                y: yPos,
+                w: 9.4,
+                h: 0.25,
+                fontSize: 8,
+                fontFace: 'Arial',
+                color: colors.black,
+                align: 'left'
+            });
+            yPos += 0.28;
+        });
+        
+        // Generate and return the PPT buffer
         const buffer = pres.write('nodebuffer');
         
         if (!buffer || buffer.length < 1000) {

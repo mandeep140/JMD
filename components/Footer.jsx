@@ -44,11 +44,16 @@ const Footer = () => {
                     <div className='h-auto w-full max-w-[200px] mt-8 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col'>
                         <h1 className='mb-auto text-lg font-bold text-black/60 w-full flex justify-start'>EXPLORE SERVICES</h1>
                         <span className='w-full flex items-start mt-2 justify-start flex-col gap-2 text-black/70 mb-auto'>
-                            <Link href='/find-hoardings?type=billboard#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Billboard</p></Link>
-                            <Link href='/find-hoardings?type=digital_billboard#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Digital Billboard</p></Link>
+                            <Link href='/find-hoardings?type=Hoarding#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Hoarding</p></Link>
+                            <Link href='/find-hoardings?type=digital_Hoarding#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Digital Hoarding</p></Link>
                             <Link href='/find-hoardings?type=airport_branding#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Airport Branding</p></Link>
                             <Link href='/find-hoardings?type=mall_media#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Mall Media</p></Link>
                             <Link href='/find-hoardings?type=transit_media#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Transit Media</p></Link>
+                            <Link href='/find-hoardings?type=pole_kiosk#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Pole Kiosk</p></Link>
+                            <Link href='/find-hoardings?type=railway_station_branding#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Railway Station Branding</p></Link>
+                            <Link href='/find-hoardings?type=unipole#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Unipole</p></Link>
+                            <Link href='/find-hoardings?type=bus_shelter_branding#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Bus Shelter Branding</p></Link>
+                            <Link href='/find-hoardings?type=digital_marketing#results'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Digital Marketing</p></Link>
                         </span>
                     </div>
 

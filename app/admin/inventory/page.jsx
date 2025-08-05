@@ -277,13 +277,14 @@ const page = () => {
                       <th className="px-2 py-2 text-left">City</th>
                       <th className="px-2 py-2 text-left">Type</th>
                       <th className="px-2 py-2 text-left">Price PM</th>
+                      <th className="px-2 py-2 text-left">Uploaded By</th>
                       <th className="px-2 py-2 text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginated.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="text-center py-4">No bookings found.</td>
+                        <td colSpan={9} className="text-center py-4">No bookings found.</td>
                       </tr>
                     ) : (
                       paginated.map((row, i) => (
@@ -297,6 +298,16 @@ const page = () => {
                           <td className="px-2 py-2">{row.city}</td>
                           <td className="px-2 py-2">{row.type}</td>
                           <td className="px-2 py-2">{row.pricepermonth}</td>
+                          <td className="px-2 py-2">
+                            {row.uploadedBy ? (
+                              <div className="text-xs">
+                                <div className="font-medium">{row.uploadedBy.name || "Unknown"}</div>
+                                <div className="text-gray-600">{row.uploadedBy.email || "Unknown"}</div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-xs">Not Available</span>
+                            )}
+                          </td>
                           <td className="px-2 py-2 text-center">
                             <div className="flex items-center justify-center gap-1">
                               <button
@@ -453,8 +464,15 @@ const page = () => {
                   <div><b>Status:</b> {viewAd.status}</div>
                   <div><b>Client Name:</b> {viewAd.clientname}</div>
                   <div><b>City:</b> {viewAd.city}</div>
+                  {viewAd.locality && <div><b>Locality:</b> {viewAd.locality}</div>}
                   <div><b>Type:</b> {viewAd.type}</div>
                   <div><b>Size:</b> {viewAd.size}</div>
+                  {viewAd.height && viewAd.width && (
+                    <div><b>Dimensions:</b> {viewAd.height} x {viewAd.width} ft</div>
+                  )}
+                  {viewAd.unit && <div><b>Units Required:</b> {viewAd.unit}</div>}
+                  {viewAd.printing && <div><b>Printing Type:</b> {viewAd.printing}</div>}
+                  {viewAd.mounting && <div><b>Mounting Type:</b> {viewAd.mounting}</div>}
                   <div><b>Lighting:</b> {viewAd.lighting}</div>
                   <div><b>Price per Month:</b> {viewAd.pricepermonth}</div>
                   <div><b>Price per Day:</b> {viewAd.priceperday}</div>
@@ -463,6 +481,12 @@ const page = () => {
                   <div><b>Show on site:</b> {viewAd.show ? "yes" : "no"}</div>
                   <div><b>Coordinates:</b> {viewAd.coordinates ? `${viewAd.coordinates.lat}, ${viewAd.coordinates.lng}` : "N/A"}</div>
                   <div><b>Message:</b> {viewAd.message}</div>
+                  {viewAd.uploadedBy && (
+                    <>
+                      <div><b>Uploaded By:</b> {viewAd.uploadedBy.name || "Unknown"}</div>
+                      <div><b>Uploader Email:</b> {viewAd.uploadedBy.email || "Unknown"}</div>
+                    </>
+                  )}
                   <div><b>Date Added:</b> {viewAd.date ? new Date(viewAd.date).toLocaleDateString() : "N/A"}</div>
                 </div>
               </div>

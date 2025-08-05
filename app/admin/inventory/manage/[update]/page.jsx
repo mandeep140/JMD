@@ -44,6 +44,10 @@ const initialForm = {
   status: "",
   height: "",
   width: "",
+  unit: 1, // Number input for units
+  printing: "",
+  mounting: "",
+  locality: "",
   clientname: "",
   bookedfrom: "",
   bookedtill: "",
@@ -53,6 +57,7 @@ const initialForm = {
   latitude: "",
   longitude: "",
   show: true,
+  visibility: "Single",
   message: "",
   imageUrl: "",
   date: "",
@@ -104,7 +109,7 @@ const Page = () => {
         if (!res.ok) throw new Error("Failed to fetch ad");
         const ad = await res.json();
 
-        // Parse existing size to get height and width
+        // Parse existing size to get height and width if not available separately
         const { height, width } = parseSizeString(ad.size);
 
         // Check if current city is in the list, if not set it as "Other" and put in customCity
@@ -116,8 +121,14 @@ const Page = () => {
           date: ad.date ? ad.date.substring(0, 10) : "",
           latitude: ad.coordinates?.lat || "",
           longitude: ad.coordinates?.lng || "",
-          height,
-          width,
+          visibility: ad.visibility || "Single",
+          // Handle new fields with fallbacks for existing ads
+          height: ad.height || height || "",
+          width: ad.width || width || "",
+          unit: ad.unit || 1,
+          printing: ad.printing || "",
+          mounting: ad.mounting || "",
+          locality: ad.locality || "",
           city: cityInList ? ad.city : "Other",
           customCity: cityInList ? "" : ad.city
         });
@@ -160,6 +171,7 @@ const Page = () => {
     }
   };
 
+  // Update the handleSubmit function (around line 165-200)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -181,16 +193,26 @@ const Page = () => {
       const updateData = {
         ...form,
         city: finalCity,
-        size: sizeString, // Add the generated size
+        size: sizeString, // Keep for backward compatibility
+        height: form.height, // Store separately
+        width: form.width, // Store separately
+        unit: form.unit, // Store number of units
+        printing: form.printing, // Store printing type
+        mounting: form.mounting, // Store mounting type
+        locality: form.locality, // Store locality
         coordinates: {
           lat: parseFloat(form.latitude) || 0,
           lng: parseFloat(form.longitude) || 0
+        },
+        visibility: form.visibility,
+        // Keep existing uploadedBy info if present
+        uploadedBy: form.uploadedBy || {
+          name: "Unknown",
+          email: "Unknown"
         }
       };
 
-      // Remove fields that shouldn't be sent to API
-      delete updateData.height;
-      delete updateData.width;
+      // Remove form-specific fields that shouldn't be sent to API
       delete updateData.latitude;
       delete updateData.longitude;
       delete updateData.customCity;
@@ -385,6 +407,58 @@ const Page = () => {
                   </div>
                 </div>
 
+                {/* Row 3.5 - Unit, Printing, Mounting, Locality */}
+                <div className="flex flex-col md:flex-row gap-3 w-full">
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs md:text-sm font-semibold mb-1">Units Required*</label>
+                    <input
+                      type="number"
+                      min="1"
+                      name="unit"
+                      value={form.unit}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                      placeholder="Number of units"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs md:text-sm font-semibold mb-1">Printing Cost*</label>
+                    <input
+                      type="number"
+                      name="printing"
+                      value={form.printing}
+                      onChange={handleChange}
+                      required
+                      placeholder='Enter printing cost'
+                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs md:text-sm font-semibold mb-1">Mounting Cost*</label>
+                    <input
+                      type="number"
+                      name="mounting"
+                      value={form.mounting}
+                      onChange={handleChange}
+                      required
+                      placeholder='Enter mounting cost'
+                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="block text-xs md:text-sm font-semibold mb-1">Locality</label>
+                    <input
+                      type="text"
+                      name="locality"
+                      value={form.locality}
+                      onChange={handleChange}
+                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                      placeholder="Locality"
+                    />
+                  </div>
+                </div>
+
                 {/* Row 4 (update Booked from/till to type="date") */}
                 <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
@@ -440,11 +514,29 @@ const Page = () => {
                       className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
                     >
                       <option value="">Select</option>
-                      <option>Billboard</option>
-                      <option>Digital Billboard</option>
+                      <option>Hoarding</option>
+                      <option>Digital Hoarding</option>
                       <option>Mall Media</option>
                       <option>Airport Branding</option>
                       <option>Transit Media</option>
+                      <option>Pole Kiosk</option>
+                      <option>Railway Station Branding</option>
+                      <option>Unipole</option>
+                      <option>Bus Shelter Branding</option>
+                      <option>Digital Marketing</option>
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs md:text-sm font-semibold mb-1">Visibility*</label>
+                    <select
+                      name="visibility"
+                      value={form.visibility}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
+                    >
+                      <option value="Single">Single</option>
+                      <option value="Double">Double</option>
                     </select>
                   </div>
                   <div className="flex-1">
@@ -459,6 +551,10 @@ const Page = () => {
                       placeholder="Price per day"
                     />
                   </div>
+                </div>
+
+                {/* Row 6 */}
+                <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className="flex-1">
                     <label className="block text-xs md:text-sm font-semibold mb-1">Price per month*</label>
                     <input
@@ -471,10 +567,6 @@ const Page = () => {
                       placeholder="Price per month"
                     />
                   </div>
-                </div>
-
-                {/* Row 6 - Coordinates (optional) and Show on site */}
-                <div className="flex flex-col md:flex-row gap-3 w-full">
                   <div className="flex-1">
                     <label className="block text-xs md:text-sm font-semibold mb-1">Latitude (Optional)</label>
                     <input
@@ -498,19 +590,6 @@ const Page = () => {
                       className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
                       placeholder="Longitude"
                     />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-xs md:text-sm font-semibold mb-1">Show on site*</label>
-                    <select
-                      name="show"
-                      value={form.show ? "yes" : "no"}
-                      onChange={e => setForm(prev => ({ ...prev, show: e.target.value === "yes" }))}
-                      required
-                      className="w-full bg-[#E9E9E9] border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-2 py-1 md:py-2"
-                    >
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
                   </div>
                 </div>
 

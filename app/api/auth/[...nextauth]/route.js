@@ -1,5 +1,8 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import connectdb from '@/utils/connectdb';
+import User from '@/Schema/UserSchema';
+import bcrypt from 'bcryptjs';
 
 export const authOptions = {
   providers: [
@@ -10,22 +13,54 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // Check against environment variables
-        if (
-          credentials.email === process.env.ADMIN_EMAIL &&
-          credentials.password === process.env.ADMIN_PASSWORD
-        ) {
-          // Only allow admin, return user object
-          return { id: process.env.ADMIN_ID || "admin", email: credentials.email };
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
+
+          await connectdb();
+
+          // Find user in database
+          const user = await User.findOne({ 
+            email: credentials.email.toLowerCase(),
+            status: 'active' // Only allow active users
+          });
+
+          if (!user) {
+            return null;
+          }
+
+          // Check password
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          // Update last login
+          await User.findByIdAndUpdate(user._id, {
+            lastLogin: new Date()
+          });
+
+          // Return user object (password excluded)
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.fullName,
+            isAdmin: user.isAdmin
+          };
+
+        } catch (error) {
+          console.error('Authentication error:', error);
+          return null;
         }
-        // Invalid login
-        return null;
       },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
     signIn: "/admin/login", // Custom sign-in page
@@ -35,6 +70,8 @@ export const authOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.name = user.name;
+        token.isAdmin = user.isAdmin;
       }
       return token;
     },
@@ -42,6 +79,8 @@ export const authOptions = {
       if (token) {
         session.user.id = token.id;
         session.user.email = token.email;
+        session.user.name = token.name;
+        session.user.isAdmin = token.isAdmin;
       }
       return session;
     },

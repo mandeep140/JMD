@@ -141,6 +141,11 @@ export async function DELETE(request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        // Check if user is admin
+        if (!session.user.isAdmin) {
+            return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+        }
+
         await connectDB();
         const { mediacode } = await request.json();
         if (!mediacode) {

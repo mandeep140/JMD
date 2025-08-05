@@ -26,6 +26,43 @@ const adSchema = new Schema({
         type: String,
         required: true
     },
+    // New fields - Height and Width stored separately
+    height:{
+        type: String,
+        required: false // Make optional for existing ads
+    },
+    width:{
+        type: String,
+        required: false // Make optional for existing ads
+    },
+    unit:{
+        type: Number,
+        required: false, // Make optional for existing ads
+        default: 1 // Default to 1 unit
+    },
+    printing:{
+        type: String,
+        required: false // Make optional for existing ads
+    },
+    mounting:{
+        type: String,
+        required: false // Make optional for existing ads
+    },
+    locality:{
+        type: String,
+        required: false
+    },
+    // User who uploaded this ad
+    uploadedBy: {
+        name: {
+            type: String,
+            required: false // Optional for existing ads
+        },
+        email: {
+            type: String,
+            required: false // Optional for existing ads
+        }
+    },
     clientname:{
         type: String,
     },
@@ -46,6 +83,12 @@ const adSchema = new Schema({
     pricepermonth:{
         type: String,
         required: true
+    },
+    visibility:{
+        type: String,
+        required: true,
+        enum: ['Single', 'Double'],
+        default: 'Single'
     },
     coordinates:{
         lat: {

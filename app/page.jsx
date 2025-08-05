@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaWhatsappSquare, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import { FaWhatsapp, FaPhone, FaEnvelope, FaMapMarkerAlt, FaLongArrowAltRight, FaUser, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Head from 'next/head';
 
 // --- City/State Data (update as needed) ---
@@ -66,7 +66,7 @@ const stateList = Object.keys(stateToCities);
 const Home = () => {
   // Get base URL from environment variables
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://jmdadvertisement.com';
-  
+
   // --- UI State ---
   const [cityStateIdx, setCityStateIdx] = useState(0);
   const [cityScroll, setCityScroll] = useState(0);
@@ -84,6 +84,72 @@ const Home = () => {
   const [submitting, setSubmitting] = useState(false);
   const [activeMedia, setActiveMedia] = useState(null);
   const [isContactExpanded, setIsContactExpanded] = useState(false);
+  
+  // --- Dynamic Video Cards State ---
+  const [videoCards, setVideoCards] = useState([]);
+  const [videosLoading, setVideosLoading] = useState(true);
+
+  // --- Testimonials State ---
+  const [testimonials, setTestimonials] = useState([]);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [testimonialStartIndex, setTestimonialStartIndex] = useState(0); // Add this new state
+
+  // --- Fetch Videos from Database ---
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        setVideosLoading(true);
+        const response = await fetch('/api/videos');
+        if (response.ok) {
+          const videos = await response.json();
+          // Transform database videos to match existing format
+          const transformedVideos = videos
+            .filter(video => video.isActive) // Only show active videos
+            .sort((a, b) => a.order - b.order) // Sort by display order
+            .map(video => ({
+              src: video.embedUrl,
+              thumb: video.thumbnailUrl,
+              title: video.title,
+              videoId: video.videoId
+            }));
+          
+          setVideoCards(transformedVideos);
+        } else {
+          throw new Error('Failed to fetch videos');
+        }
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+        // Fallback to default videos if API fails
+        setVideoCards([
+          { src: "https://www.youtube.com/embed/9b1QFyFrYY4?si=_61RW6F4228we0F3", thumb: "https://img.youtube.com/vi/9b1QFyFrYY4/maxresdefault.jpg", title: "What does an ad agency do?" },
+          { src: "https://www.youtube.com/embed/ysLRUcCHIiw?si=RGwNm13OE6UnWI3d", thumb: "https://img.youtube.com/vi/ysLRUcCHIiw/maxresdefault.jpg", title: "10 benifits of outdoor advertisement" },
+          { src: "https://www.youtube.com/embed/B83CpMCgPL0?si=2xeDuZd7SheplUB3", thumb: "https://img.youtube.com/vi/B83CpMCgPL0/maxresdefault.jpg", title: "what is outdoor advertisement" },
+          { src: "https://www.youtube.com/embed/fi0gxvSUNZw?si=wMOVJaUDkDF7pl0S", thumb: "/images/about/bg.png", title: "the power of out-of-home advertisement" },
+        ]);
+      } finally {
+        setVideosLoading(false);
+      }
+    };
+
+    fetchVideos();
+  }, []);
+
+  // --- Fetch Testimonials from Database ---
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await fetch('/api/testimonials');
+        const data = await response.json();
+        if (data.success) {
+          setTestimonials(data.testimonials);
+        }
+      } catch (error) {
+        console.error('Error fetching testimonials:', error);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   // --- Carousel/Auto-shuffle for mobile service cards ---
   useEffect(() => {
@@ -129,9 +195,14 @@ const Home = () => {
   const serviceCards = [
     { title: "Hoardings", link: "/find-hoardings?type=billboard#results", image: "/images/billboard.png" },
     { title: "Digital Hoardings", link: "/find-hoardings?type=digital_billboard#results", image: "/images/digital_billboard.png" },
-    { title: "transit media", link: "/find-hoardings?type=transit_media#results", image: "/images/transit_media.png" },
+    { title: "Transit Media", link: "/find-hoardings?type=transit_media#results", image: "/images/transit_media.png" },
     { title: "Airport Branding", link: "/find-hoardings?type=airport_branding#results", image: "/images/airport_branding.png" },
-    { title: "Mall Media", link: "/find-hoardings?type=mall_media#results", image: "/images/mall_media.png" }
+    { title: "Mall Media", link: "/find-hoardings?type=mall_media#results", image: "/images/mall_media.png" },
+    { title: "Pole Kiosk", link: "/find-hoardings?type=pole_kiosk#results", image: "/images/pole_kiosk.png" },
+    { title: "Railway Station Branding", link: "/find-hoardings?type=railway_station_branding#results", image: "/images/railway_station_branding.png" },
+    { title: "Unipole", link: "/find-hoardings?type=unipole#results", image: "/images/unipole.png" },
+    { title: "Bus Shelter Branding", link: "/find-hoardings?type=bus_shelter_branding#results", image: "/images/bus_shelter_branding.png" },
+    { title: "Digital Marketing", link: "/find-hoardings?type=digital_marketing#results", image: "/images/digital_marketing.png" }
   ];
 
   const s3cards = [
@@ -150,27 +221,27 @@ const Home = () => {
     "/images/companies/c31.png", "/images/companies/c32.png"
   ];
 
-  const videoCards = [
-    { src: "https://www.youtube.com/embed/9b1QFyFrYY4?si=_61RW6F4228we0F3", thumb: "https://img.youtube.com/vi/9b1QFyFrYY4/maxresdefault.jpg", title: "What does an ad agency do?" },
-    { src: "https://www.youtube.com/embed/ysLRUcCHIiw?si=RGwNm13OE6UnWI3d", thumb: "https://img.youtube.com/vi/ysLRUcCHIiw/maxresdefault.jpg", title: "10 benifits of outdoor advertisement" },
-    { src: "https://www.youtube.com/embed/B83CpMCgPL0?si=2xeDuZd7SheplUB3", thumb: "https://img.youtube.com/vi/B83CpMCgPL0/maxresdefault.jpg", title: "what is outdoor advertisement" },
-    { src: "https://www.youtube.com/embed/fi0gxvSUNZw?si=wMOVJaUDkDF7pl0S", thumb: "/images/about/bg.png", title: "the power of out-of-home advertisement" },
-  ];
-
   const media = [
-    { img: '/images/award.jpg', title: 'Buiness Multiplier Award', date: 'June 2024' },
+    { img: '/images/award.jpg', title: 'Business Multiplier Award', date: 'June 2024' },
     { img: '/images/outdoor.jpg', title: 'Outdoor Asia Magazine', date: 'June 2025' },
     { img: '/images/magazine.jpg', title: 'Outdoor Asia Magazine', date: '' },
   ];
 
   // --- Video Nav ---
   const incVideoNav = () => {
+    if (videoCards.length <= 3) return; // Don't navigate if 3 or fewer videos
     if (videoNav >= videoCards.length - 3) setVideoNav(0);
     else setVideoNav(videoNav + 1);
   };
   const decVideoNav = () => {
+    if (videoCards.length <= 3) return; // Don't navigate if 3 or fewer videos
     if (videoNav === 0) setVideoNav(videoCards.length - 3);
     else setVideoNav(videoNav - 1);
+  };
+
+  // --- Image Error Handler ---
+  const handleImageError = (e) => {
+    e.target.src = '/images/about/bg.png'; // Default fallback image
   };
 
   // --- Contact Form ---
@@ -300,8 +371,8 @@ const Home = () => {
           <span className='flex items-center gap-4 mt-6 text-lg font-semibold md:gap-2 md:mt-3 md:text-base'>
             <Link href="find-hoardings" className="relative group overflow-hidden flex gap-8 border-2 rounded-4xl px-4 py-2 hover:border-red-500 duration-200 md:gap-6 md:px-10  md:py-3 md:text-xl">
               <span className="absolute inset-0 bg-white scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0"></span>
-              <span className="relative z-10 text-white group-hover:text-red-500 transition-colors duration-300">Find Hoardings</span>
-              <Image src="/svg/Arrow.svg" alt="Arrow" width={16} height={16} className="relative z-10 max-md:w-4" />
+              <span className="relative z-10 text-white group-hover:text-red-500 transition-colors duration-300">Make your plan</span>
+              <FaLongArrowAltRight className="text-white h-6 w-6 group-hover:text-red-500 z-10 my-auto transition-colors duration-300" />
             </Link>
             <a href="#contact-us" className='scale-80 hover:scale-100 duration-100'>
               <Image src="/svg/dialer.svg" alt="Contact dialer" width={48} height={48} className='w-12 md:w-15' />
@@ -311,33 +382,59 @@ const Home = () => {
       </div>
 
       {/* Section 2 */}
-      <div className='w-full min-h-[90vh] -mt-20 bg-red-600 backdrop-blur-lg flex items-center justify-center relative lg:min-h-[100vh] md:min-h-[95vh]' id='services'>
+      <div className='w-full min-h-[120vh] -mt-20 bg-red-600 backdrop-blur-lg flex items-center justify-center relative lg:min-h-[130vh] md:min-h-[125vh]' id='services'>
         <div className='text-white w-full h-[30vh] pt-10 md:pt-15 text-center absolute top-20 max-lg:top-8 max-md:top-4'>
           <h1 className='text-6xl font-black tracking-tight max-lg:text-4xl max-md:text-3xl'>Our Services</h1>
           <h1 className='text-xs mt-2 font-light tracking-wide max-md:text-[12px]'>Choose from below to deliver advertisements in a truly <br /> exciting, innovative and creative way.</h1>
           <div className='h-1 w-[13vw] bg-white/50 rounded-md mx-auto mt-10 max-md:w-[30vw] max-md:mt-4'></div>
         </div>
         {/* Desktop Service Cards */}
-        <div className="hidden md:flex flex-nowrap items-start justify-center gap-4 mt-20 md:mt-70 max-lg:mt-16 px-4 max-w-6xl mx-auto">
-          {serviceCards.map((card, index) => (
-            <div
-              key={index}
-              onMouseEnter={() => setHoveredCard(index)}
-              onMouseLeave={() => setHoveredCard(null)}
-              className={`w-[240px] h-[320px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== index
+        <div className="hidden md:flex flex-col items-center justify-center gap-6 mt-20 md:mt-70 max-lg:mt-16 px-4 max-w-6xl mx-auto">
+          {/* First Row - 5 Cards */}
+          <div className="flex flex-nowrap items-start justify-center gap-4">
+            {serviceCards.slice(0, 5).map((card, index) => (
+              <div
+                key={index}
+                onMouseEnter={() => setHoveredCard(index)}
+                onMouseLeave={() => setHoveredCard(null)}
+                className={`w-[220px] h-[300px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== index
                   ? 'opacity-40 scale-95'
                   : 'opacity-100 scale-100'
-                }`}
-            >
-              <Image src={card.image} alt={card.title} width={240} height={192} className="w-full h-3/5 object-cover" />
-              <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
-                <h1 className="font-bold text-black/70 text-lg mb-3">{card.title}</h1>
-                <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
-                  Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
-                </Link>
+                  }`}
+              >
+                <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
+                <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
+                  <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
+                  <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
+                    Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          
+          {/* Second Row - 5 Cards */}
+          <div className="flex flex-nowrap items-start justify-center gap-4">
+            {serviceCards.slice(5, 10).map((card, index) => (
+              <div
+                key={index + 5}
+                onMouseEnter={() => setHoveredCard(index + 5)}
+                onMouseLeave={() => setHoveredCard(null)}
+                className={`w-[220px] h-[300px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== (index + 5)
+                  ? 'opacity-40 scale-95'
+                  : 'opacity-100 scale-100'
+                  }`}
+              >
+                <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
+                <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
+                  <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
+                  <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
+                    Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         {/* Mobile Carousel */}
         <div className="md:hidden w-full flex items-center justify-center mt-40 px-6">
@@ -347,8 +444,8 @@ const Home = () => {
                 <div
                   key={index}
                   className={`w-full transition-all duration-700 ease-out transform ${index === mobileCardIndex
-                      ? 'block opacity-100 translate-x-0 scale-100'
-                      : 'hidden opacity-0 translate-x-4 scale-95'
+                    ? 'block opacity-100 translate-x-0 scale-100'
+                    : 'hidden opacity-0 translate-x-4 scale-95'
                     }`}
                 >
                   <div className="w-full bg-white backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden">
@@ -369,8 +466,8 @@ const Home = () => {
                   key={index}
                   onClick={() => setMobileCardIndex(index)}
                   className={`h-3 rounded-full transition-all duration-300 ${index === mobileCardIndex
-                      ? 'bg-white w-8 shadow-lg'
-                      : 'bg-white/50 w-3 hover:bg-white/70'
+                    ? 'bg-white w-8 shadow-lg'
+                    : 'bg-white/50 w-3 hover:bg-white/70'
                     }`}
                 />
               ))}
@@ -520,41 +617,75 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Section 6 */}
+      {/* Section 6 - Videos (Dynamic from Database) */}
       <div className='w-full min-h-[100vh] bg-gradient-to-b flex flex-col items-center from-red-600 to-white relative max-md:min-h-[60vh]' id='videos'>
         <div className='opacity-90  mt-10 absolute mix-blend-lighten'>
           <Image src="/svg/Videos.svg" alt="Videos background" width={800} height={400} className='w-full' />
         </div>
         <div className='z-1 w-full min-h-[40vh] mt-50 flex flex-col items-center justify-center text-center max-md:mt-8'>
           <h1 className='text-4xl font-black text-white max-md:text-2xl'>Videos</h1>
-          <div className='flex flex-row max-md:gap-1'>
-            <button className='mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1' onClick={decVideoNav}>
-              <Image src="/svg/left-arr.svg" alt="Left arrow" width={24} height={24} className='max-md:w-4' />
-            </button>
-            <div className='w-[70vw] h-[20vh] md:h-[40vh] mt-10 rounded-2xl bg-white/60 flex flex-row px-10 overflow-auto md:overflow-x-hidden gap-6 items-center py-8 scrollbar-hide scroll-smooth max-md:w-[95vw] max-md:mt-4 max-md:px-2 max-md:gap-2 max-md:py-2 mix-blend-normal'>
-              {videoCards.map((video, idx) => (
-                <div
-                  key={idx}
-                  className="md:w-[320px] md:h-[240px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0 w-[140px] h-[100px] mix-blend-normal"
-                  onClick={() => setActiveVideo(video)}
-                  style={{ transform: `translateX(-${videoNav * 110}%)` }}
-                >
-                  <Image 
-                    src={video.thumb} 
-                    alt={video.title} 
-                    width={320} 
-                    height={240}
-                    className="w-full h-full object-cover mix-blend-normal" 
-                  />
-                  <span className="text-white text-sm font-semibold mt-auto max-md:text-[10px]">{video.title}</span>
-                </div>
-              ))}
+          
+          {/* Loading State */}
+          {videosLoading ? (
+            <div className="mt-10 text-white">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+              <p className="mt-4 text-sm">Loading videos...</p>
             </div>
-            <button className='mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1' onClick={incVideoNav}>
-              <Image src="/svg/right-arr.svg" alt="Right arrow" width={24} height={24} className='max-md:w-4' />
-            </button>
-          </div>
+          ) : (
+            <div className='flex flex-row max-md:gap-1'>
+              {/* Left Navigation Button */}
+              <button 
+                className={`mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                onClick={decVideoNav}
+                disabled={videoCards.length <= 3}
+              >
+                <Image src="/svg/left-arr.svg" alt="Left arrow" width={24} height={24} className='max-md:w-4' />
+              </button>
+              
+              {/* Videos Container */}
+              <div className='w-[70vw] h-[20vh] md:h-[40vh] mt-10 rounded-2xl bg-white/60 flex flex-row px-10 overflow-auto md:overflow-x-hidden gap-6 items-center py-8 scrollbar-hide scroll-smooth max-md:w-[95vw] max-md:mt-4 max-md:px-2 max-md:gap-2 max-md:py-2 mix-blend-normal'>
+                {videoCards.length === 0 ? (
+                  <div className="w-full text-center text-gray-600">
+                    <p className="text-sm md:text-base">No videos available at the moment.</p>
+                  </div>
+                ) : (
+                  videoCards.map((video, idx) => (
+                    <div
+                      key={idx}
+                      className="md:w-[320px] md:h-[240px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0 w-[140px] h-[100px] mix-blend-normal"
+                      onClick={() => setActiveVideo(video)}
+                      style={{ 
+                        transform: videoCards.length > 3 ? `translateX(-${videoNav * 110}%)` : 'translateX(0)' 
+                      }}
+                    >
+                      <Image
+                        src={video.thumb}
+                        alt={video.title}
+                        width={320}
+                        height={240}
+                        className="w-full h-full object-cover mix-blend-normal"
+                        onError={handleImageError}
+                      />
+                      <span className="text-white text-sm font-semibold mt-auto max-md:text-[10px] absolute bottom-2 left-2 right-2 bg-black/50 p-1 rounded text-center">
+                        {video.title}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {/* Right Navigation Button */}
+              <button 
+                className={`mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                onClick={incVideoNav}
+                disabled={videoCards.length <= 3}
+              >
+                <Image src="/svg/right-arr.svg" alt="Right arrow" width={24} height={24} className='max-md:w-4' />
+              </button>
+            </div>
+          )}
         </div>
+        
         {/* Video Modal */}
         {activeVideo && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -629,6 +760,131 @@ const Home = () => {
         )}
       </div>
 
+      {/* Testimonials Section */}
+      {testimonials.length > 0 && (
+        <div className='w-full min-h-[60vh] bg-[#FFF4F4] flex flex-col items-center justify-center py-16 max-md:py-8'>
+          <div className='text-center mb-12 max-md:mb-6'>
+            <h1 className='text-4xl font-black text-black/70 max-md:text-2xl mb-4'>Testimonials</h1>
+            <h2 className='text-2xl font-bold text-red-500 max-md:text-lg'>HEAR FROM OUR HAPPY CLIENTS</h2>
+            <div className='h-1 w-[13vw] bg-red-500/50 rounded-md mx-auto mt-4 max-md:w-[30vw]'></div>
+          </div>
+
+          <div className='w-full max-w-6xl mx-auto px-4 relative'>
+            {/* Desktop View - 3 Cards with Navigation */}
+            <div className='hidden md:block'>
+              {/* Navigation Arrows */}
+              {testimonials.length > 3 && (
+                <>
+                  <button 
+                    onClick={() => setTestimonialStartIndex(prev => prev > 0 ? prev - 3 : Math.max(0, testimonials.length - 3))}
+                    className='absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 hover:scale-110'
+                    disabled={testimonialStartIndex === 0}
+                  >
+                    <FaChevronLeft className={`text-lg ${testimonialStartIndex === 0 ? 'text-gray-300' : 'text-red-500'}`} />
+                  </button>
+                  <button 
+                    onClick={() => setTestimonialStartIndex(prev => prev + 3 < testimonials.length ? prev + 3 : 0)}
+                    className='absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 hover:scale-110'
+                    disabled={testimonialStartIndex + 3 >= testimonials.length}
+                  >
+                    <FaChevronRight className={`text-lg ${testimonialStartIndex + 3 >= testimonials.length ? 'text-gray-300' : 'text-red-500'}`} />
+                  </button>
+                </>
+              )}
+              
+              {/* Desktop Cards */}
+              <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 px-16'>
+                {testimonials.slice(testimonialStartIndex, testimonialStartIndex + 3).map((testimonial, index) => (
+                  <div key={testimonial._id} className='bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-red-200'>
+                    <div className='flex items-center gap-4 mb-4'>
+                      <div className='w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center flex-shrink-0 shadow-md'>
+                        <FaUser className='text-white text-lg' />
+                      </div>
+                      <div>
+                        <h3 className='font-bold text-black/80 text-lg'>{testimonial.name}</h3>
+                        <p className='text-sm text-red-600 font-medium'>{testimonial.designation}</p>
+                      </div>
+                    </div>
+                    <p className='text-black/70 text-sm leading-relaxed italic'>"{testimonial.message}"</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Dots Indicator */}
+              {testimonials.length > 3 && (
+                <div className='flex justify-center mt-8 gap-2'>
+                  {Array.from({ length: Math.ceil(testimonials.length / 3) }, (_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setTestimonialStartIndex(index * 3)}
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        Math.floor(testimonialStartIndex / 3) === index 
+                          ? 'bg-red-500 w-8' 
+                          : 'bg-red-300 w-3 hover:bg-red-400'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile View - Single Card with Navigation */}
+            <div className='md:hidden'>
+              <div className='relative'>
+                {/* Mobile Navigation Arrows */}
+                {testimonials.length > 1 && (
+                  <>
+                    <button 
+                      onClick={() => setCurrentTestimonial(prev => prev > 0 ? prev - 1 : testimonials.length - 1)}
+                      className='absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300'
+                    >
+                      <FaChevronLeft className='text-red-500' />
+                    </button>
+                    <button 
+                      onClick={() => setCurrentTestimonial(prev => prev < testimonials.length - 1 ? prev + 1 : 0)}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300'
+                    >
+                      <FaChevronRight className='text-red-500' />
+                    </button>
+                  </>
+                )}
+                
+                {/* Mobile Card */}
+                <div className='bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 shadow-lg mx-4 border border-red-200'>
+                  <div className='flex items-center gap-4 mb-4'>
+                    <div className='w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-full flex items-center justify-center flex-shrink-0 shadow-md'>
+                      <FaUser className='text-white text-lg' />
+                    </div>
+                    <div>
+                      <h3 className='font-bold text-black/80 text-lg'>{testimonials[currentTestimonial]?.name}</h3>
+                      <p className='text-sm text-red-600 font-medium'>{testimonials[currentTestimonial]?.designation}</p>
+                    </div>
+                  </div>
+                  <p className='text-black/70 text-sm leading-relaxed italic'>"{testimonials[currentTestimonial]?.message}"</p>
+                </div>
+              </div>
+
+              {/* Mobile Dots Indicator */}
+              {testimonials.length > 1 && (
+                <div className='flex justify-center mt-6 gap-2'>
+                  {testimonials.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentTestimonial(index)}
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        index === currentTestimonial 
+                          ? 'bg-red-500 w-8' 
+                          : 'bg-red-300 w-3 hover:bg-red-400'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Section 7 */}
       <div className='w-full min-h-[100vh] bg-gradient-to-b from-[#FFF4F4] to-white mb-10 flex items-center justify-center max-md:min-h-[60vh]' id='contact-us'>
         <div className='w-[100%] mb-auto text-center'>
@@ -671,8 +927,8 @@ const Home = () => {
                     <button className='me-12 bg-red-500 px-9 py-3 text-white font-bold text-lg rounded-lg cursor-pointer hover:bg-red-800 duration-200 max-md:me-0 max-md:px-4 max-md:py-2 max-md:text-base' type='submit' disabled={submitting}>
                       {submitting ? "Sending..." : "Send Message"}
                     </button>
-          .
-             </span>
+                    .
+                  </span>
                 </form>
               </div>
             </div>
@@ -695,11 +951,11 @@ const Home = () => {
                 ×
               </button>
             </div>
-            
+
             {/* Phone Numbers */}
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
-                <FaPhone className="text-blue-500 text-sm" />
+                <FaPhone className="text-blue-500 text-sm rotate-90" />
                 <span className="font-semibold text-gray-700 text-sm">Call Us:</span>
               </div>
               {contactInfo.phones.map((phone, index) => (
@@ -745,11 +1001,10 @@ const Home = () => {
           {/* Contact Button */}
           <button
             onClick={() => setIsContactExpanded(!isContactExpanded)}
-            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 ${
-              isContactExpanded 
-                ? 'bg-gray-600 text-white' 
+            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 ${isContactExpanded
+                ? 'bg-gray-600 text-white'
                 : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
+              }`}
             aria-label="Contact information"
           >
             {isContactExpanded ? (
@@ -761,13 +1016,13 @@ const Home = () => {
 
           {/* WhatsApp Button */}
           <a
-            href="https://wa.me/917520212222?text=Hi%2C%20I%20want%20to%20enquire%20about%20your%20ads"
+            href="https://wa.me/917520212222?text=I%20visited%20your%20website.%0Aplease%20share%20your%20media%20plan%20for"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:scale-110 duration-300 hover:bg-green-600"
+            className="rounded-full flex items-center justify-center"
             aria-label="Chat on WhatsApp"
           >
-            <FaWhatsappSquare className="text-white text-4xl" />
+            <FaWhatsapp className="text-green-500 text-4xl w-14 h-14 hover:text-green-600 hover:scale-105 duration-30 shadow-lg" />
           </a>
         </div>
       </div>

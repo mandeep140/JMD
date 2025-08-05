@@ -40,7 +40,7 @@ const FindHoardingsClient = ({ searchParams }) => {
     const router = useRouter();
 
     // Filter options
-    const mediaTypes = ['Billboard', 'Transit Media', 'Mall Media', 'Airport Branding', 'Digital Billboard'];
+    const mediaTypes = ['Hoarding', 'Transit Media', 'Mall Media', 'Airport Branding', 'Digital Hoarding', 'Pole Kiosk', 'Unipole', 'Railway Station Branding', 'Bus Shelter Branding', 'Digital Marketing'];
     const majorCities = ['Delhi', 'Mumbai', 'Bangalore', 'Kolkata'];
     const priceRanges = [
         { label: 'Below ₹25,000', min: 0, max: 24999 },
@@ -327,17 +327,26 @@ const FindHoardingsClient = ({ searchParams }) => {
                     type: ad.type,
                     city: ad.city,
                     size: ad.size,
+                    height: ad.height, // Add height
+                    width: ad.width,   // Add width
+                    unit: ad.unit,     // Add unit
                     lighting: ad.lighting,
+                    printing: ad.printing, // Add printing type
+                    printingCost: ad.printingCost, // Add printing cost
+                    mounting: ad.mounting, // Add mounting type
+                    mountingCost: ad.mountingCost, // Add mounting cost
+                    locality: ad.locality, // Add locality
                     pricePerDay: ad.priceperday,
                     pricePerMonth: ad.pricepermonth,
                     mediaCode: ad.mediacode,
                     imageUrl: ad.imageUrl,
                     message: ad.message,
-                    coordinates: ad.coordinates
+                    coordinates: ad.coordinates,
+                    visibility: ad.visibility
                 }))
             };
 
-            const response = await fetch('/api/generate-excel', {
+            const response = await fetch('/api/generate-excel/user', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
