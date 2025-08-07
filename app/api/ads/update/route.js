@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 import Ads from "@/Schema/AdSchema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { logAdChange } from "@/utils/historyHelper";
 
 // Validation function (updated for new fields)
 function validateAdData(adData) {
     const requiredFields = [
         "mediacode", "title", "city", "lighting", "status", "size",
-        "type", "priceperday", "pricepermonth", "show", "message", "imageUrl", "imageId"
+        "type", "pricepermonth", "show", "message", "imageUrl", "imageId"
     ];
     for (const field of requiredFields) {
         if (
@@ -45,32 +46,46 @@ export async function GET(request) {
 // PUT /api/ads/update
 export async function PUT(request) {
     try {
+        // Check if user is authenticated
         const session = await getServerSession(authOptions);
         if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         await connectDB();
-        const adData = await request.json();
+        const updateData = await request.json();
+        const { mediacode, ...adData } = updateData;
 
-        // Validate required fields
-        const validationError = validateAdData(adData);
-        if (validationError) {
-            return NextResponse.json({ error: validationError }, { status: 400 });
+        if (!mediacode) {
+            return NextResponse.json({ error: "Media code is required" }, { status: 400 });
         }
 
-        // Find and update the ad by mediacode
-        const updatedAd = await Ads.findOneAndUpdate(
-            { mediacode: adData.mediacode },
-            adData,
-            { new: true, runValidators: true }
-        );
-        if (!updatedAd) {
+        // Get old data for history comparison
+        const oldAd = await Ads.findOne({ mediacode }).lean();
+        if (!oldAd) {
             return NextResponse.json({ error: "Ad not found" }, { status: 404 });
         }
-        return NextResponse.json(updatedAd, { status: 200 });
+
+        // Update the ad
+        const updatedAd = await Ads.findOneAndUpdate(
+            { mediacode },
+            { ...adData },
+            { new: true, runValidators: true }
+        );
+
+        // Log the update in history
+        await logAdChange('UPDATE', updatedAd, oldAd, {
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email
+        }, request);
+
+        return NextResponse.json(updatedAd);
     } catch (error) {
         console.error("Error updating ad:", error);
+        if (error.code === 11000 && error.keyPattern?.mediacode) {
+            return NextResponse.json({ error: "Media code must be unique" }, { status: 400 });
+        }
         return NextResponse.json({ error: "Failed to update ad" }, { status: 500 });
     }
 }

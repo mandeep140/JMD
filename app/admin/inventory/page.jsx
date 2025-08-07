@@ -33,7 +33,7 @@ const page = () => {
 
   // Pagination
   const [page, setPage] = useState(1);
-  const PER_PAGE = 8;
+  const PER_PAGE = 10;
   const [dateSortAsc, setDateSortAsc] = useState(false);
 
   useEffect(() => {
@@ -41,6 +41,7 @@ const page = () => {
       .then((res) => res.json())
       .then((data) => {
         setData(data || []);
+        console.log("Fetched data:", data);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -58,7 +59,8 @@ const page = () => {
       if (res.ok) {
         setData((prev) => prev.filter((ad) => ad.mediacode !== adToDelete.mediacode));
       } else {
-        alert("Failed to delete ad.");
+        const errorData = await res.json();
+        alert(errorData.error || "Failed to delete ad.");
       }
     } catch (err) {
       alert("Error deleting ad.");
@@ -68,12 +70,10 @@ const page = () => {
   };
 
   const handleExportWithDateRange = () => {
-    // Use filteredData instead of all data
     if (filteredData.length === 0) {
       alert("No data to export.");
       return;
     }
-    // Filter by export date range (on top of filters)
     const exportData = filteredData.filter(d => {
       if (!d.date) return false;
       const dDate = new Date(d.date).setHours(0, 0, 0, 0);
@@ -89,29 +89,42 @@ const page = () => {
       return;
     }
     
-    // Use the new admin export API for inventory
     exportRef.current.exportData(exportData, 'inventory');
   };
 
-  const filteredData = data.filter(d =>
-    (selectedStatus ? d.status === selectedStatus : true) &&
-    (selectedCity ? d.city === selectedCity : true) &&
-    (selectedType ? d.type === selectedType : true) &&
-    (selectedClient ? d.clientname === selectedClient : true) &&
-    (
-      selectedFromDate || selectedToDate
-        ? (() => {
-            if (!d.date) return false;
-            const dDate = new Date(d.date).setHours(0, 0, 0, 0);
-            const from = selectedFromDate ? new Date(selectedFromDate).setHours(0, 0, 0, 0) : null;
-            const to = selectedToDate ? new Date(selectedToDate).setHours(0, 0, 0, 0) : null;
-            if (from && dDate < from) return false;
-            if (to && dDate > to) return false;
-            return true;
-          })()
-        : true
-    )
-  );
+  // Fixed filtering logic
+  const filteredData = data.filter(d => {
+    if (selectedStatus && d.status !== selectedStatus) return false;
+    if (selectedCity && d.city !== selectedCity) return false;
+    if (selectedType && d.type !== selectedType) return false;
+    
+    if (selectedClient) {
+      const clientName = d.clientname || d.clientName || '';
+      if (clientName !== selectedClient) return false;
+    }
+    
+    if (selectedFromDate || selectedToDate) {
+      if (!d.date) return false;
+      
+      const dDate = new Date(d.date);
+      const fromDate = selectedFromDate ? new Date(selectedFromDate) : null;
+      const toDate = selectedToDate ? new Date(selectedToDate) : null;
+      
+      if (fromDate) {
+        fromDate.setHours(0, 0, 0, 0);
+        dDate.setHours(0, 0, 0, 0);
+        if (dDate < fromDate) return false;
+      }
+      
+      if (toDate) {
+        toDate.setHours(23, 59, 59, 999);
+        dDate.setHours(23, 59, 59, 999);
+        if (dDate > toDate) return false;
+      }
+    }
+    
+    return true;
+  });
 
   // Sort by date
   const sortedData = [...filteredData].sort((a, b) => {
@@ -127,13 +140,18 @@ const page = () => {
   const statusOptions = Array.from(new Set(data.map(d => d.status).filter(Boolean)));
   const cityOptions = Array.from(new Set(data.map(d => d.city).filter(Boolean)));
   const typeOptions = Array.from(new Set(data.map(d => d.type).filter(Boolean)));
-  const clientOptions = Array.from(new Set(data.map(d => d.clientname).filter(Boolean)));
+  const clientOptions = Array.from(new Set(data.map(d => d.clientname || d.clientName).filter(Boolean)));
+
+  const resetPage = () => setPage(1);
 
   if (status === "loading") {
     return (
       <AdminNav>
-        <div className="w-full h-screen flex items-center justify-center text-black text-center">
-          Hold on While we fetching data - JMD <br />Showa.online
+        <div className="w-full min-h-screen flex items-center justify-center text-black text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <div>Hold on While we fetching data - JMD<br />Showa.online</div>
+          </div>
         </div>
       </AdminNav>
     );
@@ -142,8 +160,8 @@ const page = () => {
   if (status === "authenticated") {
     return (
       <AdminNav>
-        <div className='w-full md:h-9/10 flex flex-col items-center justify-start gap-4 p-2 md:p-6 bg-[#E9E9E9]'>
-          {/* top nav */}
+        <div className='w-full min-h-screen flex flex-col gap-4 p-4 bg-[#F5F5F5]'>
+          {/* Navigation Tabs */}
           <div className='w-full h-auto bg-white flex flex-col md:flex-row items-center justify-center rounded-md overflow-hidden'>
             <Link href="/admin/inventory/manage" className="w-full md:w-1/2">
               <span className={`block w-full py-2 text-center font-bold text-lg md:text-2xl cursor-pointer transition rounded-none md:rounded-md
@@ -159,181 +177,204 @@ const page = () => {
             </Link>
           </div>
 
-          {/* main */}
-          <div className="bg-white w-full h-auto min-h-[400px] text-black rounded-lg shadow p-2 md:p-4">
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {/* Status filter */}
-              <select
-                className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
-                value={selectedStatus}
-                onChange={e => {
-                  setSelectedStatus(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">Status</option>
-                {statusOptions.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-              {/* City filter */}
-              <select
-                className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
-                value={selectedCity}
-                onChange={e => {
-                  setSelectedCity(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">City</option>
-                {cityOptions.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-              {/* Type filter */}
-              <select
-                className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
-                value={selectedType}
-                onChange={e => {
-                  setSelectedType(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">Type</option>
-                {typeOptions.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-              {/* Client Name filter */}
-              <select
-                className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
-                value={selectedClient}
-                onChange={e => {
-                  setSelectedClient(e.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">Client Name</option>
-                {clientOptions.map(client => (
-                  <option key={client} value={client}>{client}</option>
-                ))}
-              </select>
-              {/* From Date filter */}
-              <input
-                type="date"
-                className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
-                value={selectedFromDate}
-                id="datefrom"
-                title='from date'
-                onChange={e => {
-                  setSelectedFromDate(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="From"
-              />
-              {/* To Date filter */}
-              <input
-                type="date"
-                className="border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm"
-                value={selectedToDate}
-                title='to date'
-                onChange={e => {
-                  setSelectedToDate(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="To"
-              />
+          {/* Main Content */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800 mb-2">Media Inventory</h1>
+                <p className="text-gray-600">Manage all your media listings</p>
+              </div>
               <button
-                className="md:ml-auto md:mx-0 mx-auto border rounded px-2 py-1 text-xs md:px-3 md:py-1 md:text-sm flex items-center gap-1"
-                onClick={() => setDateSortAsc(prev => !prev)}
+                className="mt-4 lg:mt-0 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
+                onClick={() => setShowExportPopup(true)}
               >
-                Filter according to date added
-                <span className="text-xs">{dateSortAsc ? "↑" : "↓"}</span>
+                <MdDownloading />
+                Export to Excel
               </button>
             </div>
-            {/* Table */}
-            <div className="overflow-x-auto flex flex-col rounded-2xl bg-[#E9E9E9]">
-              <div className='w-full flex flex-col md:flex-row items-center justify-between mb-2 px-2 md:px-4 pt-2 gap-2'>
-                <span className="text-base md:text-lg font-bold text-black">All Media List - JMD Advertisement </span>
-                <button
-                  className="mx-auto md:ml-auto md:mx-0 bg-blue-100 hover:bg-blue-200 cursor-pointer text-blue-700 px-2 py-1 md:px-3 md:py-1 rounded flex items-center gap-1 duration-200 text-xs md:text-base"
-                  onClick={() => setShowExportPopup(true)}
+
+            {/* Filters */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Filters</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4">
+                <select
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={selectedStatus}
+                  onChange={e => { setSelectedStatus(e.target.value); resetPage(); }}
                 >
-                  <span className='flex flex-row items-center justify-center text-center gap-1'>
-                    <MdDownloading /> Export to Excel
-                  </span>
-                  <ExportToExcel ref={exportRef} />
+                  <option value="">All Status</option>
+                  {statusOptions.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={selectedCity}
+                  onChange={e => { setSelectedCity(e.target.value); resetPage(); }}
+                >
+                  <option value="">All Cities</option>
+                  {cityOptions.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={selectedType}
+                  onChange={e => { setSelectedType(e.target.value); resetPage(); }}
+                >
+                  <option value="">All Types</option>
+                  {typeOptions.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={selectedClient}
+                  onChange={e => { setSelectedClient(e.target.value); resetPage(); }}
+                >
+                  <option value="">All Clients</option>
+                  {clientOptions.map(client => (
+                    <option key={client} value={client}>{client}</option>
+                  ))}
+                </select>
+
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={selectedFromDate}
+                  onChange={e => { setSelectedFromDate(e.target.value); resetPage(); }}
+                  title="From date"
+                />
+
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={selectedToDate}
+                  onChange={e => { setSelectedToDate(e.target.value); resetPage(); }}
+                  title="To date"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm transition-colors duration-200"
+                  onClick={() => {
+                    setSelectedStatus('');
+                    setSelectedCity('');
+                    setSelectedType('');
+                    setSelectedClient('');
+                    setSelectedFromDate('');
+                    setSelectedToDate('');
+                    resetPage();
+                  }}
+                >
+                  Clear Filters
+                </button>
+                <button
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm flex items-center gap-1 transition-colors duration-200"
+                  onClick={() => setDateSortAsc(prev => !prev)}
+                >
+                  Sort by Date {dateSortAsc ? "↑" : "↓"}
                 </button>
               </div>
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-[700px] md:min-w-full text-xs md:text-sm">
-                  <thead className="bg-gray-100 sticky top-0">
+            </div>
+
+            {/* Results Info */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm text-gray-600">
+                Showing {filteredData.length} of {data.length} records
+                {(selectedStatus || selectedCity || selectedType || selectedClient || selectedFromDate || selectedToDate) && (
+                  <span className="ml-2 text-blue-600 font-medium">(filtered)</span>
+                )}
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-2 py-2 text-left">Status</th>
-                      <th className="px-2 py-2 text-left">Title</th>
-                      <th className="px-2 py-2 text-left">Client Name</th>
-                      <th className="px-2 py-2 text-left">Media Code</th>
-                      <th className="px-2 py-2 text-left">City</th>
-                      <th className="px-2 py-2 text-left">Type</th>
-                      <th className="px-2 py-2 text-left">Price PM</th>
-                      <th className="px-2 py-2 text-left">Uploaded By</th>
-                      <th className="px-2 py-2 text-center">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price/Month</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded By</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {paginated.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="text-center py-4">No bookings found.</td>
+                        <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                          {filteredData.length === 0 && data.length > 0 ? 
+                            "No records match the selected filters." : 
+                            "No records found."
+                          }
+                        </td>
                       </tr>
                     ) : (
                       paginated.map((row, i) => (
-                        <tr key={i} className={`hover:bg-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-100"}`}>
-                          <td className="px-2 py-2">
-                            <span className={`inline-block w-3 h-3 rounded-full ${row.status === "Booked" ? "bg-red-500" : "bg-green-500"}`}></span>
+                        <tr key={i} className="hover:bg-gray-50 transition-colors duration-150">
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                              ${row.status === "Booked" 
+                                ? "bg-red-100 text-red-800" 
+                                : row.status === "Hold" 
+                                ? "bg-yellow-100 text-yellow-800" 
+                                : "bg-green-100 text-green-800"}`}>
+                              {row.status}
+                            </span>
                           </td>
-                          <td className="px-2 py-2">{row.title}</td>
-                          <td className="px-2 py-2">{row.clientname || "-"}</td>
-                          <td className="px-2 py-2">{row.mediacode}</td>
-                          <td className="px-2 py-2">{row.city}</td>
-                          <td className="px-2 py-2">{row.type}</td>
-                          <td className="px-2 py-2">{row.pricepermonth}</td>
-                          <td className="px-2 py-2">
+                          <td className="px-4 py-3 text-sm text-gray-900">{row.title}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{row.clientname || row.clientName || "-"}</td>
+                          <td className="px-4 py-3 text-sm font-mono text-gray-900">{row.mediacode}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{row.city}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{row.type}</td>
+                          <td className="px-4 py-3 text-sm font-semibold text-gray-900">₹{row.pricepermonth}</td>
+                          <td className="px-4 py-3 text-xs">
                             {row.uploadedBy ? (
-                              <div className="text-xs">
-                                <div className="font-medium">{row.uploadedBy.name || "Unknown"}</div>
-                                <div className="text-gray-600">{row.uploadedBy.email || "Unknown"}</div>
+                              <div>
+                                <div className="font-medium text-gray-900">{row.uploadedBy.name || "Unknown"}</div>
+                                <div className="text-gray-500">{row.uploadedBy.email || "Unknown"}</div>
                               </div>
                             ) : (
-                              <span className="text-gray-400 text-xs">Not Available</span>
+                              <span className="text-gray-400">Not Available</span>
                             )}
                           </td>
-                          <td className="px-2 py-2 text-center">
-                            <div className="flex items-center justify-center gap-1">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-center space-x-2">
                               <button
-                                className="text-blue-600 hover:text-blue-700"
+                                className="text-blue-600 hover:text-blue-800 transition-colors duration-150"
                                 onClick={() => setViewAd(row)}
-                                title="View"
+                                title="View Details"
                               >
-                                <FaEye />
+                                <FaEye className="w-4 h-4" />
                               </button>
                               <Link href={`/admin/inventory/manage/${row.mediacode}`}>
                                 <button
-                                  className="text-green-600 hover:text-green-700"
+                                  className="text-green-600 hover:text-green-800 transition-colors duration-150"
                                   title="Edit"
                                 >
-                                  <FaPen />
+                                  <FaPen className="w-4 h-4" />
                                 </button>
                               </Link>
                               <button
-                                className="text-red-600 hover:text-red-700"
+                                className="text-red-600 hover:text-red-800 transition-colors duration-150"
                                 onClick={() => {
                                   setAdToDelete(row);
                                   setConfirmDelete(true);
                                 }}
                                 title="Delete"
                               >
-                                <FaTrash />
+                                <FaTrash className="w-4 h-4" />
                               </button>
                             </div>
                           </td>
@@ -364,22 +405,24 @@ const page = () => {
             </div>
           </div>
 
-          {/* Delete Confirmation */}
+          <ExportToExcel ref={exportRef} />
+
+          {/* Delete Confirmation Modal */}
           {confirmDelete && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 min-w-[300px] text-center">
-                <h3 className="text-lg font-bold mb-4">Confirm Delete</h3>
-                <p className="mb-4">Are you sure you want to delete this ad?</p>
-                <div className="flex gap-3 justify-center">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Confirm Delete</h3>
+                <p className="text-gray-600 mb-6">Are you sure you want to delete this ad? This action cannot be undone.</p>
+                <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => setConfirmDelete(false)}
-                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDelete}
-                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-150"
                   >
                     Delete
                   </button>
@@ -388,45 +431,45 @@ const page = () => {
             </div>
           )}
 
-          {/* Export Date Range Popup */}
+          {/* Export Modal */}
           {showExportPopup && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 min-w-[350px] text-center">
-                <h3 className="text-lg font-bold mb-4">Export to Excel</h3>
-                <p className="mb-4 text-sm">Select date range for export (optional)</p>
-                <div className="flex flex-col gap-3 mb-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm text-left">From Date:</label>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Export to Excel</h3>
+                <p className="text-gray-600 mb-4">Select date range for export (optional)</p>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">From Date:</label>
                     <input
                       type="date"
                       value={exportFromDate}
                       onChange={e => setExportFromDate(e.target.value)}
-                      className="border rounded px-3 py-2"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm text-left">To Date:</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">To Date:</label>
                     <input
                       type="date"
                       value={exportToDate}
                       onChange={e => setExportToDate(e.target.value)}
-                      className="border rounded px-3 py-2"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                 </div>
-                <div className="flex gap-3 justify-center">
+                <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => {
                       setShowExportPopup(false);
                       setExportFromDate('');
                       setExportToDate('');
                     }}
-                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
                   >
                     Cancel
                   </button>
                   <button
-                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-150"
                     onClick={() => {
                       handleExportWithDateRange();
                       setShowExportPopup(false);
@@ -438,56 +481,65 @@ const page = () => {
               </div>
             </div>
           )}
-          {/* View Ad Details Popup */}
+
+          {/* View Ad Modal */}
           {viewAd && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-lg p-6 min-w-[350px] max-w-[95vw] max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-lg">Media Details</span>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900">Media Details</h3>
                   <button
-                    className="text-red-500 font-bold text-lg"
+                    className="text-gray-400 hover:text-gray-600 transition-colors duration-150"
                     onClick={() => setViewAd(null)}
                   >
-                    ×
+                    <span className="text-2xl">×</span>
                   </button>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="p-6">
                   {viewAd.imageUrl && (
                     <img
                       src={viewAd.imageUrl}
                       alt={viewAd.title}
-                      className="w-full max-h-56 object-cover rounded mb-2"
+                      className="w-full h-48 object-cover rounded-lg mb-6"
                     />
                   )}
-                  <div><b>Title:</b> {viewAd.title}</div>
-                  <div><b>Media Code:</b> {viewAd.mediacode}</div>
-                  <div><b>Status:</b> {viewAd.status}</div>
-                  <div><b>Client Name:</b> {viewAd.clientname}</div>
-                  <div><b>City:</b> {viewAd.city}</div>
-                  {viewAd.locality && <div><b>Locality:</b> {viewAd.locality}</div>}
-                  <div><b>Type:</b> {viewAd.type}</div>
-                  <div><b>Size:</b> {viewAd.size}</div>
-                  {viewAd.height && viewAd.width && (
-                    <div><b>Dimensions:</b> {viewAd.height} x {viewAd.width} ft</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><strong>Title:</strong> {viewAd.title}</div>
+                    <div><strong>Media Code:</strong> {viewAd.mediacode}</div>
+                    <div><strong>Status:</strong> <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                      ${viewAd.status === "Booked" ? "bg-red-100 text-red-800" : viewAd.status === "Hold" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"}`}>
+                      {viewAd.status}
+                    </span></div>
+                    <div><strong>Client Name:</strong> {viewAd.clientname || viewAd.clientName || "N/A"}</div>
+                    <div><strong>City:</strong> {viewAd.city}</div>
+                    {viewAd.locality && <div><strong>Locality:</strong> {viewAd.locality}</div>}
+                    <div><strong>Type:</strong> {viewAd.type}</div>
+                    <div><strong>Size:</strong> {viewAd.size}</div>
+                    {viewAd.height && viewAd.width && (
+                      <div><strong>Dimensions:</strong> {viewAd.height} x {viewAd.width} ft</div>
+                    )}
+                    {viewAd.unit && <div><strong>Units Required:</strong> {viewAd.unit}</div>}
+                    {viewAd.printing && <div><strong>Printing Type:</strong> {viewAd.printing}</div>}
+                    {viewAd.mounting && <div><strong>Mounting Type:</strong> {viewAd.mounting}</div>}
+                    <div><strong>Lighting:</strong> {viewAd.lighting}</div>
+                    <div><strong>Price per Month:</strong> ₹{viewAd.pricepermonth}</div>
+                    <div><strong>Price per Day:</strong> ₹{viewAd.priceperday}</div>
+                    <div><strong>Booked From:</strong> {viewAd.bookedfrom}</div>
+                    <div><strong>Booked Till:</strong> {viewAd.bookedtill}</div>
+                    <div><strong>Show on site:</strong> {viewAd.show ? "Yes" : "No"}</div>
+                    <div><strong>Date Added:</strong> {viewAd.date ? new Date(viewAd.date).toLocaleDateString() : "N/A"}</div>
+                  </div>
+                  {viewAd.coordinates && (
+                    <div className="mt-4"><strong>Coordinates:</strong> {viewAd.coordinates.lat}, {viewAd.coordinates.lng}</div>
                   )}
-                  {viewAd.unit && <div><b>Units Required:</b> {viewAd.unit}</div>}
-                  {viewAd.printing && <div><b>Printing Type:</b> {viewAd.printing}</div>}
-                  {viewAd.mounting && <div><b>Mounting Type:</b> {viewAd.mounting}</div>}
-                  <div><b>Lighting:</b> {viewAd.lighting}</div>
-                  <div><b>Price per Month:</b> {viewAd.pricepermonth}</div>
-                  <div><b>Price per Day:</b> {viewAd.priceperday}</div>
-                  <div><b>Booked From:</b> {viewAd.bookedfrom}</div>
-                  <div><b>Booked Till:</b> {viewAd.bookedtill}</div>
-                  <div><b>Show on site:</b> {viewAd.show ? "yes" : "no"}</div>
-                  <div><b>Coordinates:</b> {viewAd.coordinates ? `${viewAd.coordinates.lat}, ${viewAd.coordinates.lng}` : "N/A"}</div>
-                  <div><b>Message:</b> {viewAd.message}</div>
+                  {viewAd.message && (
+                    <div className="mt-4"><strong>Message:</strong> {viewAd.message}</div>
+                  )}
                   {viewAd.uploadedBy && (
-                    <>
-                      <div><b>Uploaded By:</b> {viewAd.uploadedBy.name || "Unknown"}</div>
-                      <div><b>Uploader Email:</b> {viewAd.uploadedBy.email || "Unknown"}</div>
-                    </>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <strong>Uploaded By:</strong> {viewAd.uploadedBy.name || "Unknown"} ({viewAd.uploadedBy.email || "Unknown"})
+                    </div>
                   )}
-                  <div><b>Date Added:</b> {viewAd.date ? new Date(viewAd.date).toLocaleDateString() : "N/A"}</div>
                 </div>
               </div>
             </div>
@@ -498,4 +550,4 @@ const page = () => {
   }
 }
 
-export default page
+export default page;

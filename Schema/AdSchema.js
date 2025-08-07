@@ -78,7 +78,6 @@ const adSchema = new Schema({
     },
     priceperday:{
         type: String,
-        required: true
     },
     pricepermonth:{
         type: String,

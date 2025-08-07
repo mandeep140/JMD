@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { signOut, useSession } from 'next-auth/react';
 import { IoMdArrowDropdown } from "react-icons/io";
 import { MdDashboard, MdHome } from "react-icons/md";
-import { FaClipboardList, FaUsers } from "react-icons/fa";
+import { FaClipboardList, FaUsers, FaHistory } from "react-icons/fa";
 import { IoCalendarOutline, IoSearch } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
 import { IoHomeSharp } from "react-icons/io5";
@@ -15,6 +15,7 @@ const links = [
   { href: '/admin/dashboard', label: 'Dashboard' },
   { href: '/admin/inventory', label: 'Manage Inventory' },
   { href: '/admin/booking', label: 'Booking Request' },
+  { href: '/admin/history', label: 'Change History' },
   { href: '/admin/report', label: 'Report' },
   { href: '/admin/download-contact', label: 'Download Contact' },
   { href: '/admin/users', label: 'All Users' },
@@ -140,6 +141,7 @@ const AdminNav = ({ children }) => {
                   {link.label === 'Download Contact' && <MdDownload className='text-xl' />}
                   {link.label === 'All Users' && <FaUsers className='text-xl' />}
                   {link.label === 'Manage Home' && <MdHome className='text-xl' />}
+                  {link.label === 'Change History' && <FaHistory className='text-xl' />}
                   <h2 className='text-black/80'>{link.label}</h2>
                 </div>
               </Link>
@@ -182,6 +184,7 @@ const AdminNav = ({ children }) => {
                   {link.label === 'Download Contact' && <MdDownload className='text-lg' />}
                   {link.label === 'All Users' && <FaUsers className='text-lg' />}
                   {link.label === 'Manage Home' && <MdHome className='text-lg' />}
+                  {link.label === 'Change History' && <FaHistory className='text-lg' />}
                   <span className="text-[10px] font-medium text-center leading-tight">
                     {link.label === 'Manage Inventory' ? 'Inventory' : 
                      link.label === 'Booking Request' ? 'Booking' :

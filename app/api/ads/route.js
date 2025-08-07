@@ -4,12 +4,13 @@ import Ads from "@/Schema/AdSchema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import imagekit from "@/utils/imagekit";
+import { logAdChange } from "@/utils/historyHelper";
 
 function validateAdData(adData) {
     // Only fields that are always required
     const requiredFields = [
         "mediacode", "title", "city", "lighting", "status", "size",
-        "type", "priceperday", "pricepermonth",
+        "type", "pricepermonth",
         "message", "imageUrl", "show"
     ];
     for (const field of requiredFields) {
@@ -121,8 +122,16 @@ export async function POST(request) {
 
         // Save everything (including optional/extra fields like coordinates)
         const newAd = new Ads(adData);
-        await newAd.save();
-        return NextResponse.json(newAd, { status: 201 });
+        const savedAd = await newAd.save();
+
+        // Log history - only add this
+        await logAdChange('CREATE', savedAd, null, {
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email
+        }, request);
+
+        return NextResponse.json(savedAd, { status: 201 });
     } catch (error) {
         console.error("Error creating ad:", error);
         // Handle duplicate mediacode error
@@ -152,12 +161,24 @@ export async function DELETE(request) {
             return NextResponse.json({ error: "Media code is required" }, { status: 400 });
         }
 
+        // Get old data for history - only add this line
+        const oldAd = await Ads.findOne({ mediacode }).lean();
+
         const deleted = await Ads.findOneAndDelete({ mediacode });
         if (!deleted) {
             return NextResponse.json({ error: "Ad not found" }, { status: 404 });
         }
         if (deleted.imageId) {
             await imagekit.deleteFile(deleted.imageId);
+        }
+
+        // Log history - only add this
+        if (oldAd) {
+            await logAdChange('DELETE', oldAd, null, {
+                id: session.user.id,
+                name: session.user.name,
+                email: session.user.email
+            }, request);
         }
 
         return NextResponse.json({ message: "Ad deleted successfully" }, { status: 200 });

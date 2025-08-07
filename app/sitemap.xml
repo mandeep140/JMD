@@ -3,21 +3,21 @@
   
   <!-- Homepage -->
   <url>
-    <loc>https://jmd-kohl.vercel.app/</loc>
+    <loc>https://adjmd.com/</loc>
     <priority>1.0</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <!-- About Page -->
   <url>
-    <loc>https://jmd-kohl.vercel.app/about</loc>
+    <loc>https://adjmd.com/about</loc>
     <priority>0.8</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <!-- Find Hoardings - Main Search Page -->
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings</loc>
+    <loc>https://adjmd.com/find-hoardings</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
     <lastmod>2025-07-29</lastmod>
@@ -25,117 +25,117 @@
   
   <!-- Find Hoardings with Categories -->
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=billboard</loc>
+    <loc>https://adjmd.com/find-hoardings?type=billboard</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=digital_billboard</loc>
+    <loc>https://adjmd.com/find-hoardings?type=digital_billboard</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=airport_branding</loc>
+    <loc>https://adjmd.com/find-hoardings?type=airport_branding</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=mall_media</loc>
+    <loc>https://adjmd.com/find-hoardings?type=mall_media</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=transit_media</loc>
+    <loc>https://adjmd.com/find-hoardings?type=transit_media</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <!-- Major Cities -->
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Jamshedpur</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Jamshedpur</loc>
     <priority>0.8</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Kolkata</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Kolkata</loc>
     <priority>0.8</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Bhubaneswar</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Bhubaneswar</loc>
     <priority>0.8</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Ranchi</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Ranchi</loc>
     <priority>0.8</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Dhanbad</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Dhanbad</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Bokaro</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Bokaro</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Durgapur</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Durgapur</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Asansol</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Asansol</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Cuttack</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Cuttack</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?city=Bhagalpur</loc>
+    <loc>https://adjmd.com/find-hoardings?city=Bhagalpur</loc>
     <priority>0.6</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <!-- Popular Combinations -->
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=billboard&amp;city=Jamshedpur</loc>
+    <loc>https://adjmd.com/find-hoardings?type=billboard&amp;city=Jamshedpur</loc>
     <priority>0.8</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=digital_billboard&amp;city=Kolkata</loc>
+    <loc>https://adjmd.com/find-hoardings?type=digital_billboard&amp;city=Kolkata</loc>
     <priority>0.8</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=mall_media&amp;city=Bhubaneswar</loc>
+    <loc>https://adjmd.com/find-hoardings?type=mall_media&amp;city=Bhubaneswar</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
   
   <url>
-    <loc>https://jmd-kohl.vercel.app/find-hoardings?type=airport_branding&amp;city=Kolkata</loc>
+    <loc>https://adjmd.com/find-hoardings?type=airport_branding&amp;city=Kolkata</loc>
     <priority>0.7</priority>
     <lastmod>2025-07-29</lastmod>
   </url>
