@@ -467,7 +467,7 @@ const Page = () => {
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Area</label>
                       <div className="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-600">
-                        {form.height && form.width ? `${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)} sqft` : "Enter height and width"}
+                        {form.height && form.width ? `${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)} sqft` : "Total sqft"}
                       </div>
                     </div>
 
@@ -519,7 +519,7 @@ const Page = () => {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Mounting charges*</label>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Mounting charges</label>
                       <input
                         type="number"
                         name="mounting"
@@ -527,12 +527,12 @@ const Page = () => {
                         onChange={handleChange}
                         required
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="Type Here"
+                        placeholder="price per unit"
                       />
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Printing Charge*</label>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Printing Charge</label>
                       <input
                         type="number"
                         name="printing"
@@ -540,7 +540,7 @@ const Page = () => {
                         onChange={handleChange}
                         required
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="Type Here"
+                        placeholder="price per sqft"
                       />
                     </div>
                   </div>
@@ -621,33 +621,51 @@ const Page = () => {
                   />
                 </div>
 
-                {/* CURRENT IMAGE SECTION */}
+                {/* IMAGE DISPLAY SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Current Image</h3>
-                  <div className="flex flex-col items-start">
-                    {form.imageUrl ? (
-                      <img src={form.imageUrl} alt="Current Ad" className="max-w-xs rounded border shadow-sm" />
-                    ) : (
-                      <span className="text-gray-500">No image available</span>
-                    )}
-                  </div>
+                  {form.imageUrl && (
+                    <div className="flex justify-center">
+                      <img 
+                        src={form.imageUrl} 
+                        alt={form.title} 
+                        className="max-w-md w-full h-auto rounded-lg border shadow-sm" 
+                      />
+                    </div>
+                  )}
+                  {!form.imageUrl && (
+                    <div className="text-center text-gray-500 py-8">
+                      No image uploaded for this advertisement
+                    </div>
+                  )}
                 </div>
 
-                {/* Submit button */}
+                {/* Submit Button */}
                 <div className="flex justify-center pt-6 pb-2">
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
-                      loading
-                        ? 'bg-gray-400 cursor-not-allowed text-white'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
-                    }`}
+                    className={`
+                      ${loading
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-green-500 hover:bg-green-600 active:bg-green-700'
+                      } 
+                      text-white font-bold py-3 px-8 rounded-lg transition-all duration-200 
+                      w-full md:w-auto min-w-[200px] text-lg shadow-lg
+                      ${!loading ? 'hover:shadow-xl transform hover:-translate-y-0.5' : ''}
+                    `}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    {loading ? "Updating Advertisement..." : "Update Advertisement"}
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Updating Advertisement...
+                      </span>
+                    ) : (
+                      "💾 Update Advertisement"
+                    )}
                   </button>
                 </div>
               </form>

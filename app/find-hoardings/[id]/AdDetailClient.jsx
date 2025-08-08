@@ -5,8 +5,7 @@ import { redirect, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import GoogleMap from '@/app/component/GoogleMap';
-import { FaShoppingBag, FaTag  } from "react-icons/fa";
-import { FaT } from 'react-icons/fa6';
+import { FaShoppingBag, FaTag, FaMapMarkedAlt, FaRegImage } from "react-icons/fa";
 
 const AdDetailClient = ({ initialAd, adId }) => {
   const [showMap, setShowMap] = useState(false);
@@ -17,6 +16,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
   const [similarAdsFetched, setSimilarAdsFetched] = useState(false);
   const [cartItems, setCartItems] = useState([]); // Add cart state
   const [cartLoaded, setCartLoaded] = useState(false); // Add cart loaded state
+  const [additionalPacks, setAdditionalPacks] = useState([]); // Add additional packs state
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
@@ -28,9 +28,29 @@ const AdDetailClient = ({ initialAd, adId }) => {
   const [submitting, setSubmitting] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
 
-  // Load cart from localStorage on component mount
+  // Define additional packs data
+  const additionalPacksData = [
+    {
+      id: 'mounting',
+      title: 'Mounting Charge',
+      unit: 'per unit',
+      image: '/images/mounting.png',
+      description: 'Professional mounting service for your hoarding'
+    },
+    {
+      id: 'printing',
+      title: 'Printing Charge',
+      unit: 'per sqft',
+      image: '/images/printing.png',
+      description: 'High-quality printing service for your advertisement'
+    }
+  ];
+
+  // Load cart and additional packs from localStorage on component mount
   useEffect(() => {
     const savedCart = localStorage.getItem('jmd_cart_items');
+    const savedAdditionalPacks = localStorage.getItem('jmd_additional_packs');
+
     if (savedCart) {
       try {
         const parsedCart = JSON.parse(savedCart);
@@ -40,15 +60,27 @@ const AdDetailClient = ({ initialAd, adId }) => {
         localStorage.removeItem('jmd_cart_items');
       }
     }
+
+    if (savedAdditionalPacks) {
+      try {
+        const parsedAdditionalPacks = JSON.parse(savedAdditionalPacks);
+        setAdditionalPacks(parsedAdditionalPacks);
+      } catch (error) {
+        console.error('Error parsing additional packs from localStorage:', error);
+        localStorage.removeItem('jmd_additional_packs');
+      }
+    }
+
     setCartLoaded(true);
   }, []);
 
-  // Save cart to localStorage whenever cartItems changes - but only after cart is loaded
+  // Save cart and additional packs to localStorage whenever they change - but only after cart is loaded
   useEffect(() => {
     if (cartLoaded) {
       localStorage.setItem('jmd_cart_items', JSON.stringify(cartItems));
+      localStorage.setItem('jmd_additional_packs', JSON.stringify(additionalPacks));
     }
-  }, [cartItems, cartLoaded]);
+  }, [cartItems, additionalPacks, cartLoaded]);
 
   useEffect(() => {
     if (!adId) {
@@ -99,28 +131,28 @@ const AdDetailClient = ({ initialAd, adId }) => {
           const res = await fetch('/api/ads');
           if (res.ok) {
             const allAds = await res.json();
-            
+
             // Filter out current ad and only show available ads
-            const availableAds = allAds.filter(item => 
-              item.mediacode !== ad.mediacode && 
+            const availableAds = allAds.filter(item =>
+              item.mediacode !== ad.mediacode &&
               item.status === 'Available' &&
               item.show !== false
             );
-            
+
             // Sort by priority: same city + same type > same city > same type > others
             const sortedAds = availableAds.sort((a, b) => {
               const aIsSameCity = a.city === ad.city;
               const aIsSameType = a.type === ad.type;
               const bIsSameCity = b.city === ad.city;
               const bIsSameType = b.type === ad.type;
-              
+
               // Priority scoring
               const aScore = (aIsSameCity && aIsSameType ? 4 : 0) + (aIsSameCity ? 2 : 0) + (aIsSameType ? 1 : 0);
               const bScore = (bIsSameCity && bIsSameType ? 4 : 0) + (bIsSameCity ? 2 : 0) + (bIsSameType ? 1 : 0);
-              
+
               return bScore - aScore;
             });
-            
+
             // Take first 8 ads for display
             setSimilarAds(sortedAds.slice(0, 8));
             setSimilarAdsFetched(true);
@@ -138,7 +170,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
   // Cart functions
   const addToCart = () => {
     if (!ad) return;
-    
+
     setCartItems(prev => {
       const isAlreadyInCart = prev.some(item => item._id === ad._id);
       if (isAlreadyInCart) {
@@ -152,6 +184,23 @@ const AdDetailClient = ({ initialAd, adId }) => {
 
   const isInCart = () => {
     return cartItems.some(item => item._id === ad._id);
+  };
+
+  // Additional pack functions
+  const addAdditionalPackToCart = (pack) => {
+    setAdditionalPacks(prev => {
+      const isAlreadyInCart = prev.some(item => item.id === pack.id);
+      if (isAlreadyInCart) {
+        return prev;
+      }
+      const newPacks = [...prev, pack];
+      console.log('Adding additional pack to cart:', pack.title, 'New packs size:', newPacks.length);
+      return newPacks;
+    });
+  };
+
+  const isAdditionalPackInCart = (packId) => {
+    return additionalPacks.some(item => item.id === packId);
   };
 
   // Handle sharing
@@ -217,7 +266,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
       });
       if (res.ok) {
         alert("Booking request sent!");
-        setForm({ name: "", email: "", phone: "", message: "", callback: true});
+        setForm({ name: "", email: "", phone: "", message: "", callback: true });
       } else {
         alert("Failed to send booking request.");
       }
@@ -247,7 +296,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
       Loading...
     </div>
   );
-  
+
   if (!ad) return (
     <div className="w-full h-screen flex items-center justify-center text-black text-center">
       Ad not found
@@ -258,27 +307,27 @@ const AdDetailClient = ({ initialAd, adId }) => {
     <>
       {/* section 1 - Ad Details */}
       <div className='w-full min-h-[100vh] bg-red-500 flex items-center justify-center relative'>
-        <div className='w-[98%] md:w-[80%] min-h-[80vh] border-white border-2 mt-25
-         md:mt-25 bg-white/40 backdrop-blur-md rounded-3xl p-2 md:p-6 flex flex-col md:flex-row gap-4 md:gap-0 overflow-hidden relative'>
-          
+        <div className='w-[95%] min-h-[80vh] mt-25
+         md:mt-25 bg-white backdrop-blur-md rounded-t-sm p-2 md:p-6 flex flex-col md:flex-row gap-4    md:gap-0 overflow-hidden relative'>
+
           {/* Share Button - Card Top Right */}
-          <button 
+          <button
             className='absolute top-4 right-4 md:top-6 md:right-6 z-10 w-10 h-10 md:w-12 md:h-12 bg-red-500/80 backdrop-blur-sm border border-white/30 hover:bg-red-600 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center group shadow-lg'
             onClick={handleShare}
             title="Share this ad"
           >
-            <svg 
-              className="w-4 h-4 md:w-5 md:h-5 text-white group-hover:scale-110 transition-transform duration-200" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
+            <svg
+              className="w-4 h-4 md:w-5 md:h-5 text-white group-hover:scale-110 transition-transform duration-200"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
               />
             </svg>
           </button>
@@ -291,9 +340,9 @@ const AdDetailClient = ({ initialAd, adId }) => {
           )}
 
           {/* Left: Image and Map */}
-          <div className="w-full md:w-1/2 h-[40vh] md:h-auto flex flex-col gap-4 p-2 md:p-5 rounded-3xl">
+          <div className="w-full md:w-1/2 h-[40vh] md:h-[80vh] flex flex-col gap-4 p-2 md:p-5 rounded-3xl">
             {/* Image Box */}
-            <div 
+            <div
               className={`w-full ${!showMap ? 'h-2/3' : 'h-1/3'} duration-300 ease-in-out aspect-video overflow-hidden relative cursor-pointer`}
               onClick={() => setShowMap(false)}
             >
@@ -301,15 +350,15 @@ const AdDetailClient = ({ initialAd, adId }) => {
                 src={ad.imageUrl || "/images/find/test.png"}
                 alt={`${ad.title} - ${ad.type} in ${ad.city}`}
                 fill
-                className="object-cover rounded-2xl"
+                className="object-cover rounded-md"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
             </div>
 
             {/* Map Box */}
-            <div 
-              className={`w-full ${showMap ? 'h-2/3' : 'h-1/3'} duration-300 ease-in-out aspect-video rounded-2xl overflow-hidden cursor-pointer relative`} 
+            <div
+              className={`w-full ${showMap ? 'h-2/3' : 'h-1/3'} duration-300 ease-in-out aspect-video rounded-md overflow-hidden cursor-pointer relative`}
               onClick={() => setShowMap(true)}
             >
               <GoogleMap coordinates={ad.coordinates} />
@@ -329,29 +378,29 @@ const AdDetailClient = ({ initialAd, adId }) => {
           </div>
 
           {/* Right: Details and Key Insights */}
-          <div className="w-full md:w-1/2 flex flex-col justify-between p-2 md:p-5 tracking-widest mt-3 md:mt-0">
+          <div className="w-full md:w-1/2 flex flex-col justify-between p-2 md:p-5 tracking-widest">
             {/* Title Section */}
-            <div>
-              <h2 className='text-3xl md:text-5xl font-bold'>{ad.type}</h2>
-              <h1 className='text-xl md:text-3xl font-extrabold mt-2 md:mt-3'>{ad.locality && ad.locality + ","} {ad.city}</h1>
-              <h4 className='text-xs md:text-sm opacity-75'>CODE: {ad.mediacode}</h4>
-            </div>
+            <div className='flex flex-col gap-3'>
+              <div>
+                <h2 className='text-3xl md:text-5xl font-bold'>{ad.type}</h2>
+                <h1 className='text-xl md:text-2xl font-semibold mt-2 md:mt-3'>{ad.locality && ad.locality + ","} {ad.city}</h1>
+              </div>
 
-            {/* Description */}
-            <p className='mt-4 text-sm md:text-base leading-relaxed'>
-             {ad.message}
-            </p>
+              {/* Description */}
+              <p className='mt-4 text-sm md:text-base leading-relaxed'>
+                {ad.message}
+              </p>
+            </div>
 
             {/* Action Buttons */}
             <div className='flex flex-wrap gap-3 mt-6'>
-              <button 
+              <button
                 onClick={addToCart}
                 disabled={isInCart()}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  isInCart()
-                    ? 'bg-green-500 text-white cursor-not-allowed'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
+                className={`flex items-center font-bold gap-2 p-4 rounded-sm transition-colors duration-200 ${isInCart()
+                  ? 'bg-green-500 text-white cursor-not-allowed'
+                  : 'bg-red-500 hover:bg-red-600 text-white'
+                  }`}
               >
                 <FaShoppingBag className='w-4 h-4' />
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,10 +410,10 @@ const AdDetailClient = ({ initialAd, adId }) => {
                 </svg>
                 {isInCart() ? 'Added to Cart' : 'Add to Cart'}
               </button>
-              
+
               <Link
                 href={`/find-hoardings/${adId}/#contact-us`}
-                className='flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200'
+                className='flex items-center gap-2 p-4 bg-red-500 font-bold text-white rounded-sm hover:bg-red-600 transition-colors duration-200'
                 onClick={async () => {
                   await fetch("/api/conversion", {
                     method: "POST",
@@ -377,41 +426,83 @@ const AdDetailClient = ({ initialAd, adId }) => {
                 Book Now
               </Link>
 
-              <button 
+              <button
                 onClick={() => setShowMap(!showMap)}
-                className='flex items-center gap-2 px-4 py-2 bg-white/20 border border-white/30 rounded-lg hover:bg-white/30 transition-colors duration-200'
+                className='flex items-center gap-2 px-4 py-2 bg-red-500 border border-white/30 text-white rounded-sm hover:bg-red-600 transition-colors duration-200'
                 title={showMap ? "Show Image Larger" : "Show Map Larger"}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {showMap ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  )}
-                </svg>
-                {showMap ? 'Show Image' : 'Show Map'}
+                {!showMap ? <FaMapMarkedAlt className='w-4 h-4' /> : <FaRegImage className='w-4 h-4' />}
               </button>
             </div>
 
             {/* Key Insights Section */}
             <div className='mt-8'>
-              <h3 className='text-xl md:text-2xl font-bold mb-4'>Key Insights</h3>
+              <h3 className='text-xl md:text-3xl font-extrabold mb-4'>Key Insights</h3>
               <div className='grid grid-cols-2 gap-3'>
-                <div className='bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-3 text-center'>
-                  <div className='text-lg md:text-xl font-bold'>{ad.views || 0}</div>
-                  <div className='text-xs md:text-sm opacity-75'>Post Views</div>
+                <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>
+                  <div className='text-lg md:text-xl '>{ad.visibility || "Single"}</div>
+                  <div className='text-xs md:text-sm font-extrabold'>Visibility</div>
                 </div>
-                <div className='bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-3 text-center'>
-                  <div className='text-lg md:text-xl font-bold'>{ad.size}</div>
-                  <div className='text-xs md:text-sm opacity-75'>Size</div>
+                <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>
+                  <div className='text-lg md:text-xl'>{ad.size}</div>
+                  <div className='text-xs md:text-sm font-extrabold'>Size</div>
                 </div>
-                <div className='bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-3 text-center'>
-                  <div className='text-lg md:text-xl font-bold'>{ad.lighting}</div>
-                  <div className='text-xs md:text-sm opacity-75'>Lighting</div>
+                <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>
+                  <div className='text-lg md:text-xl'>{ad.lighting}</div>
+                  <div className='text-xs md:text-sm font-extrabold'>Lighting</div>
                 </div>
-                <div className='bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg p-3 text-center'>
-                  <div className='text-lg md:text-xl font-bold'>₹{ad.pricepermonth}</div>
-                  <div className='text-xs md:text-sm opacity-75'>Per Month</div>
+                <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>
+                  <div className='text-lg md:text-xl'>₹{ad.pricepermonth}</div>
+                  <div className='text-xs md:text-sm font-extrabold'>Per Month</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Packs Section */}
+      <div className='w-full bg-red-500 flex items-start justify-center'>
+        <div className='w-[95%] bg-white backdrop-blur-sm p-4 md:p-8'>
+          <h2 className='text-2xl md:text-4xl font-bold text-black mb-6 md:mb-8'>
+            ADDITIONAL CHARGES:
+          </h2>
+          <div className='flex flex-row gap-6'>
+            <div className='bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200'>
+              <div className='relative h-40 md:h-48 w-80'>
+                <Image
+                  src={"/images/printing.png"}
+                  alt={"printing"}
+                  fill
+                  className='object-cover'
+                />
+              </div>
+              <div className='p-4'>
+                <h3 className='text-lg md:text-xl font-bold text-black'>Printing</h3>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <div className='text-sm text-gray-500 mb-2'>₹ {ad.printing} Per sqft</div>
+                    <div className='text-2xl font-semibold text-black w-75 px-4 py-2 rounded-md bg-red-300'>₹ {ad.printing}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className='bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200'>
+              <div className='relative h-40 md:h-48 w-80'>
+                <Image
+                  src={"/images/mounting.png"}
+                  alt={"mounting"}
+                  fill
+                  className='object-cover'
+                />
+              </div>
+              <div className='p-4'>
+                <h3 className='text-lg md:text-xl font-bold text-black'>Mounting</h3>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <div className='text-sm text-gray-500 mb-2'>₹ {ad.mounting} Per Unit</div>
+                    <div className='text-2xl font-semibold text-black w-75 px-4 py-2 rounded-md bg-red-300'>₹ {ad.unit * ad.mounting}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -420,26 +511,26 @@ const AdDetailClient = ({ initialAd, adId }) => {
       </div>
 
       {/* Similar Products Section */}
-      <div className='w-full min-h-[60vh] bg-red-500 flex items-center justify-center py-10'>
-        <div className='w-[95%] md:w-[90%] bg-white/20 backdrop-blur-sm border border-white/30 rounded-3xl p-4 md:p-8'>
-          <div className='flex items-center justify-between mb-6 md:mb-8'>
-            <h2 className='text-2xl md:text-4xl font-bold text-white'>
+      <div className='w-full min-h-[60vh] bg-red-500 flex items-start justify-center'>
+        <div className='w-[95%] bg-white backdrop-blur-sm rounded-b-sm p-4 md:p-8'>
+          <div className='flex items-center justify-between mb-6 md:mb-8 mt-4'>
+            <h2 className='text-2xl md:text-4xl font-bold text-black'>
               SIMILAR PRODUCTS:
             </h2>
             <div className='flex gap-2'>
-              <button 
-                className='w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-white/30 border border-white/30 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer'
+              <button
+                className='w-10 h-10 md:w-12 md:h-12 bg-red-500/50 hover:bg-red-500/30 border border-red-500 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer'
                 onClick={handleScrollLeft}
               >
-                <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <button 
-                className='w-10 h-10 md:w-12 md:h-12 bg-white/20 hover:bg-white/30 border border-white/30 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer'
+              <button
+                className='w-10 h-10 md:w-12 md:h-12 bg-red-500/50 hover:bg-red-500/30 border border-red-500 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer'
                 onClick={handleScrollRight}
               >
-                <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 md:w-6 md:h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
@@ -451,11 +542,11 @@ const AdDetailClient = ({ initialAd, adId }) => {
               <div className='text-white text-lg'>Loading similar products...</div>
             </div>
           ) : similarAds.length > 0 ? (
-            <div 
+            <div
               id="similarContainer"
               className='flex gap-4 md:gap-6 overflow-x-auto pb-4'
-              style={{ 
-                scrollbarWidth: 'none', 
+              style={{
+                scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
               }}
             >
@@ -474,16 +565,16 @@ const AdDetailClient = ({ initialAd, adId }) => {
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       sizes="(max-width: 768px) 256px, 288px"
                     />
-                    
+
                     {/* Badge for same city/type */}
                     {(similarAd.city === ad.city || similarAd.type === ad.type) && (
                       <div className='absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs rounded-full'>
                         {similarAd.city === ad.city && similarAd.type === ad.type ? 'Same City & Type' :
-                         similarAd.city === ad.city ? 'Same City' : 'Same Type'}
+                          similarAd.city === ad.city ? 'Same City' : 'Same Type'}
                       </div>
                     )}
                   </div>
-                  
+
                   <div className='p-4'>
                     <h3 className='font-bold text-lg text-gray-800 truncate'>
                       {similarAd.title}
@@ -496,7 +587,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
                         {similarAd.type}
                       </span>
                       <span className='text-red-500 font-bold'>
-                        ₹{similarAd.priceperday}/day
+                        ₹{similarAd.pricepermonth}/month
                       </span>
                     </div>
                     <Link
@@ -519,7 +610,73 @@ const AdDetailClient = ({ initialAd, adId }) => {
 
       {/* Contact Form Section (existing code continues...) */}
       <div id="contact-us" className='w-full min-h-[70vh] bg-red-500 flex items-center justify-center py-10'>
-        {/* Add your existing contact form code here */}
+        <div className='w-full min-h-[100vh] bg-gradient-to-b from-red-500 to-black/90 flex items-center justify-center'>
+          <div className='w-full mb- text-center mb-10'>
+            <span className='flex flex-col items-center gap-2 mt-10 md:mt-24'>
+              <h1 className='text-2xl md:text-4xl font-extrabold text-black/70'><span className='text-white/80'>Connect</span> With Us!</h1>
+            </span>
+            <div className='h-auto md:h-[70vh] w-[98%] md:w-[80%] mx-auto flex flex-col md:flex-row items-center justify-center mt-8 bg-[#E2CFCF] rounded-3xl'>
+              <div className='w-full md:w-[35%] h-full flex flex-col p-5 items-center justify-center text-start bg-red-500 rounded-t-3xl md:rounded-3xl me-auto'>
+                <h1 className='md:text-2xl text-lg text-white font-extrabold'>Why Choose JMD?</h1>
+                <div className='h-[3px] w-[60vw] md:w-[13vw] bg-white rounded-md mx-auto mt-6'></div>
+                <ul className='list-disc text-white mt-6 text-base md:text-lg px-5 ms-3'>
+                  <li>19+ Years of Outdoor Advertising Excellence</li>
+                  <li>1000+ Successful Campaigns Executed</li>
+                  <li>Coverage Across 7+ East Indian States</li>
+                  <li>Trusted by Top Brands & Local Businesses</li>
+                </ul>
+                <span className='flex flex-col items-center mt-6 pt-10 text-lg md:text-2xl font-extrabold' >
+                  <h2>Thinking of Branding</h2>
+                  <h2>Think JMD</h2>
+                </span>
+              </div>
+
+              <div className='w-full md:w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-0 md:ps-15 mt-6 p-5' id='contact-us'>
+                <h2 className='text-2xl font-extrabold text-black'>Book Free Consultation for media booking</h2>
+                <span className='flex flex-row items-center justify-between w-[90%] md:w-[80%] my-3 text-xl  text-black'>
+                  <h2>Media code: {ad.mediacode}</h2>
+                  <h2>Media Type: {ad.type}</h2>
+                </span>
+                <p className='text-[10px] me-auto mb-auto'>*Please fill all the details</p>
+                <div className='w-full md:w-[90%] mb-auto px-4 md:px-auto me-auto'>
+                  <form onSubmit={handleSubmit}>
+                    <span className='flex flex-col items-center gap-2 mb-4'>
+                      <label htmlFor="name" className='me-auto'>Name</label>
+                      <input type="text" name='name' id='name' value={form.name} onChange={handleChange} className='me-auto w-full md:w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Full Name' />
+                    </span>
+                    <span className='flex flex-col md:flex-row items-center gap-2 mb-4'>
+                      <span className='flex flex-col items-center gap-2 w-full'>
+                        <label htmlFor="email" className='me-auto'>Email</label>
+                        <input type="email" name='email' id='email' value={form.email} onChange={handleChange} className='me-auto w-full md:w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='email' />
+                      </span>
+                      <span className='flex flex-col items-center gap-2 ms-0 md:ms-6 w-full'>
+                        <label htmlFor="phone" className='me-auto'>Phone</label>
+                        <input type="tel" name='phone' id='phone' value={form.phone} onChange={handleChange} className='me-auto w-full md:w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='01 2345 6789' />
+                      </span>
+                    </span>
+                    <span className='flex flex-col items-center gap-2 mb-2'>
+                      <label htmlFor="message" className='me-auto'>Message</label>
+                      <textarea rows={1} name='message' id='message' value={form.message} onChange={handleChange} className='me-auto w-full md:w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='Message' />
+                    </span>
+                    <span className='flex flex-col md:flex-row justify-between items-center gap-2 mt-8'>
+                      <span className='flex flex-row items-center gap-2'>
+                        <input type="checkbox" name='callback' id='checkbox' checked={form.callback} onChange={handleChange} className='' />
+                        <label htmlFor="checkbox" className='me-auto'>Request Callback</label>
+                      </span>
+                      <button
+                        className='me-0 md:me-12 bg-red-500 px-9 py-3 text-white font-bold text-lg rounded-lg cursor-pointer hover:bg-red-800 duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                        type='submit'
+                        disabled={submitting}
+                      >
+                        {submitting ? "Sending..." : "Send Message"}
+                      </button>
+                    </span>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

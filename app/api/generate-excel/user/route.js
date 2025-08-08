@@ -146,26 +146,28 @@ function generateUserExcel(data) {
         sheetData.push(new Array(13).fill(''));
         sheetData.push(new Array(13).fill(''));
 
-        // Terms and Conditions
-        sheetData.push(['Terms and Condition...', '', '', '', '', '', '', '', '', '', '', '', '']);
+        // Terms and Conditions - Create merged header row
+        const termsHeaderRow = new Array(13).fill('');
+        termsHeaderRow[0] = 'Terms and Condition...';
+        sheetData.push(termsHeaderRow);
         
         const terms = [
-            ['1', 'Inventries will be provided absolutely on First Come n\' First Serve basis'],
-            ['2', 'To prevent loosing a perticular inventory, quick booking is advisable.'],
-            ['3', 'Please confirm the availability at the time of booking.'],
-            ['4', 'Please inform atleast 10 days before to drop out the inventory by mail only.'],
-            ['5', 'Raise an Work Order duly Sealed n\' Signature by the client at the time of booking confirmation.'],
-            ['6', 'The company will not been responsible for any damage or lost of the flex once installed.'],
-            ['7', 'Except Authorised mail all other medium of conversation will be treated as null n\' void.'],
-            ['8', '50% advance along with a Security Cheque along with xerox copy of Aadhar and GST Certificate is required'],
-            ['9', 'Any payment made is only in favour of "JAI MATA DI" only.'],
-            ['10', 'Any dispute is subject to Jamshedpur Juridiction only.']
+            'Inventries will be provided absolutely on First Come n\' First Serve basis',
+            'To prevent loosing a perticular inventory, quick booking is advisable.',
+            'Please confirm the availability at the time of booking.',
+            'Please inform atleast 10 days before to drop out the inventory by mail only.',
+            'Raise an Work Order duly Sealed n\' Signature by the client at the time of booking confirmation.',
+            'The company will not been responsible for any damage or lost of the flex once installed.',
+            'Except Authorised mail all other medium of conversation will be treated as null n\' void.',
+            '50% advance along with a Security Cheque along with xerox copy of Aadhar and GST Certificate is required',
+            'Any payment made is only in favour of "JAI MATA DI" only.',
+            'Any dispute is subject to Jamshedpur Juridiction only.'
         ];
 
-        terms.forEach(term => {
+        // Add each term as a merged row
+        terms.forEach((term, index) => {
             const termRow = new Array(13).fill('');
-            termRow[0] = term[0];
-            termRow[1] = term[1];
+            termRow[0] = `${index + 1}. ${term}`;
             sheetData.push(termRow);
         });
 
@@ -175,7 +177,7 @@ function generateUserExcel(data) {
         // Set column widths to match attachment
         const colWidths = [
             { wch: 20 },  // City
-            { wch: 90 },  // Medium
+            { wch: 22 },  // Medium
             { wch: 6 },   // Type (Lighting)
             { wch: 50 },  // Location
             { wch: 6 },   // Hor
@@ -190,14 +192,30 @@ function generateUserExcel(data) {
         ];
         worksheet['!cols'] = colWidths;
 
-        // Merge cells for QUOTATION header (A1:M1)
-        worksheet['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } }
+        // Calculate terms header row index
+        const dataEndRow = 2 + (data.ads?.length || 0) - 1;
+        const termsStartRow = dataEndRow + 3;
+
+        // Create merge array for all terms rows
+        const merges = [
+            // QUOTATION header (A1:M1)
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } },
+            // Terms and Condition header (merge across all columns)
+            { s: { r: termsStartRow, c: 0 }, e: { r: termsStartRow, c: 12 } }
         ];
+
+        // Add merges for all 10 terms rows
+        for (let i = 1; i <= 10; i++) {
+            merges.push({
+                s: { r: termsStartRow + i, c: 0 }, 
+                e: { r: termsStartRow + i, c: 12 }
+            });
+        }
+
+        worksheet['!merges'] = merges;
 
         // Get the range
         const range = XLSX.utils.decode_range(worksheet['!ref']);
-        const dataEndRow = 2 + (data.ads?.length || 0) - 1;
 
         // Style QUOTATION header (Row 1) - Red background like attachment
         const quotationCell = 'A1';
@@ -253,51 +271,54 @@ function generateUserExcel(data) {
             }
         }
 
-        // Style Terms header
-        const termsStartRow = dataEndRow + 3;
+        // Style Terms header - merged and styled like QUOTATION
         const termsHeaderCell = XLSX.utils.encode_cell({ r: termsStartRow, c: 0 });
         if (worksheet[termsHeaderCell]) {
-            worksheet[termsHeaderCell].s = {
-                font: { bold: true, sz: 12 }
+            worksheet[termsHeaderCell] = {
+                v: 'Terms and Condition...',
+                t: 's',
+                s: {
+                    font: { bold: true, sz: 14, color: { rgb: "000000" } },
+                    alignment: { horizontal: 'center', vertical: 'center' },
+                    fill: { fgColor: { rgb: "D3D3D3" } }, // Light gray background
+                    border: {
+                        top: { style: "thick", color: { rgb: "000000" } },
+                        bottom: { style: "thick", color: { rgb: "000000" } },
+                        left: { style: "thick", color: { rgb: "000000" } },
+                        right: { style: "thick", color: { rgb: "000000" } }
+                    }
+                }
             };
         }
 
-        // Set row heights
+        // Set normal row heights for all rows
         worksheet['!rows'] = [];
         worksheet['!rows'][0] = { hpt: 25 }; // QUOTATION header height
         worksheet['!rows'][1] = { hpt: 20 }; // Column headers height
         
-        // Set heights for terms section
-        worksheet['!rows'][termsStartRow] = { hpt: 25 }; // "Terms and Condition..." header
+        // Normal height for terms header
+        worksheet['!rows'][termsStartRow] = { hpt: 25 }; // Terms header - normal height
 
-        // Make terms rows taller for better readability
+        // Set normal heights for terms rows (remove the increased height)
         for (let i = 1; i <= 10; i++) {
             const termRowIndex = termsStartRow + i;
-            worksheet['!rows'][termRowIndex] = { hpt: 35 }; // Increased height for terms rows
+            worksheet['!rows'][termRowIndex] = { hpt: 20 }; // Normal height for terms rows
         }
 
-        // Style terms rows with better spacing
+        // Style all terms rows - merged across all columns
         for (let i = 1; i <= 10; i++) {
             const termRow = termsStartRow + i;
+            const termCell = XLSX.utils.encode_cell({ r: termRow, c: 0 });
             
-            // Number column
-            const numCell = XLSX.utils.encode_cell({ r: termRow, c: 0 });
-            if (worksheet[numCell]) {
-                worksheet[numCell].s = {
-                    font: { bold: true, sz: 11 },
-                    alignment: { horizontal: 'center', vertical: 'center' }
-                };
-            }
-
-            // Text column with better formatting
-            const textCell = XLSX.utils.encode_cell({ r: termRow, c: 1 });
-            if (worksheet[textCell]) {
-                worksheet[textCell].s = {
+            if (worksheet[termCell]) {
+                worksheet[termCell].s = {
                     font: { sz: 10 },
-                    alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+                    alignment: { horizontal: 'left', vertical: 'center' },
                     border: {
                         top: { style: "thin", color: { rgb: "CCCCCC" } },
-                        bottom: { style: "thin", color: { rgb: "CCCCCC" } }
+                        bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+                        left: { style: "thin", color: { rgb: "CCCCCC" } },
+                        right: { style: "thin", color: { rgb: "CCCCCC" } }
                     }
                 };
             }

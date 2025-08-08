@@ -507,7 +507,7 @@ const page = () => {
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Area</label>
                       <div className="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-600">
-                        {form.height && form.width ? `${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)} sqft` : "INR 2555"}
+                        {form.height && form.width ? `${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)} sqft` : "Total Sqft"}
                       </div>
                     </div>
 
@@ -567,7 +567,7 @@ const page = () => {
                         onChange={handleChange}
                         required
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="Type Here"
+                        placeholder="price per unit"
                       />
                     </div>
 
@@ -580,7 +580,7 @@ const page = () => {
                         onChange={handleChange}
                         required
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="Type Here"
+                        placeholder="price per sqft"
                       />
                     </div>
                   </div>
