@@ -115,6 +115,12 @@ const CartPage = () => {
     const calculateTotalCost = () => {
         return calculateMainCost() + calculateAdditionalCost();
     };
+    const calculateTaxCost = () => {
+        return calculateTotalCost() * 0.18;
+    };
+    const calculateTotalWithTax = () => {
+        return calculateTotalCost() + calculateTaxCost();
+    };
 
     // Contact form handlers
     const handleContactFormChange = (e) => {
@@ -351,13 +357,13 @@ const CartPage = () => {
     return (
         <>
             <div className="min-h-screen bg-red-500 py-25">
-                <div className="max-w-7xl mx-auto px-4 lg:px-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                         {/* Header */}
-                        <div className="p-6 border-b border-gray-200">
-                            <div className="flex justify-between items-center mb-4">
-                                <h1 className="text-2xl font-bold text-gray-900">Campaign Summary</h1>
-                                <div className="text-sm text-gray-600">
+                        <div className="p-4 sm:p-6 border-b border-gray-200">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Campaign Summary</h1>
+                                <div className="text-xs sm:text-sm text-gray-600">
                                     Campaign Date: {new Date().toLocaleDateString('en-GB', { 
                                         day: '2-digit', 
                                         month: 'long', 
@@ -404,8 +410,8 @@ const CartPage = () => {
                             </div>
                         ) : (
                             <>
-                                {/* Table Header */}
-                                <div className="bg-red-100 px-6 py-3">
+                                {/* Table Header - Desktop */}
+                                <div className="bg-red-100 px-4 sm:px-6 py-3 hidden md:block">
                                     <div className="grid grid-cols-12 gap-4 text-sm font-semibold text-gray-700">
                                         <div className="col-span-1"></div>
                                         <div className="col-span-4">Media</div>
@@ -419,8 +425,9 @@ const CartPage = () => {
                                 {/* Table Body */}
                                 <div className="divide-y divide-gray-200">
                                     {cartItems.map((item) => (
-                                        <div key={item._id} className="px-6 py-4">
-                                            <div className="grid grid-cols-12 gap-4 items-center">
+                                        <div key={item._id} className="px-4 sm:px-6 py-4">
+                                            {/* Desktop Layout */}
+                                            <div className="hidden md:grid grid-cols-12 gap-4 items-center">
                                                 {/* Checkbox */}
                                                 <div className="col-span-1">
                                                     <input 
@@ -466,12 +473,55 @@ const CartPage = () => {
                                                     <div className="text-sm font-semibold text-gray-900">₹ {item.pricepermonth}</div>
                                                 </div>
                                             </div>
+
+                                            {/* Mobile Layout */}
+                                            <div className="md:hidden">
+                                                <div className="flex items-start gap-3">
+                                                    {/* Checkbox */}
+                                                    <input 
+                                                        type="checkbox"
+                                                        checked={selectedItems.includes(item._id)}
+                                                        onChange={(e) => handleSelectItem(item._id, e.target.checked)}
+                                                        className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 mt-1"
+                                                    />
+                                                    
+                                                    {/* Content */}
+                                                    <div className="flex-1">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <div className="text-sm font-medium text-gray-900">
+                                                                    Hoarding - {item.locality || item.city}
+                                                                </div>
+                                                                <Link 
+                                                                    href={`/find-hoardings/${item.mediacode}`}
+                                                                    className="text-xs text-red-500 hover:text-red-700"
+                                                                >
+                                                                    View
+                                                                </Link>
+                                                            </div>
+                                                            <div className="text-sm font-semibold text-gray-900">₹ {item.pricepermonth}</div>
+                                                        </div>
+                                                        
+                                                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                                                            <div>
+                                                                <span className="font-medium">Quantity:</span> 30 Day(s)
+                                                            </div>
+                                                            <div>
+                                                                <span className="font-medium">Type:</span> {item.type}
+                                                            </div>
+                                                            <div className="col-span-2">
+                                                                <span className="font-medium">Other Cost:</span> ₹ {((parseFloat(item.printing) || 0) + (parseFloat(item.mounting) || 0))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Add Media Button */}
-                                <div className="px-6 py-3 border-t border-gray-200">
+                                <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
                                     <Link
                                         href="/find-hoardings"
                                         className="text-red-500 hover:text-red-700 text-sm font-medium"
@@ -481,26 +531,27 @@ const CartPage = () => {
                                 </div>
 
                                 {/* Final Price Section */}
-                                <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                                    <div className="flex justify-between items-center">
+                                <div className="bg-gray-50 px-4 sm:px-6 py-4 border-t border-gray-200">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                         <div>
                                             <h3 className="text-lg font-bold text-gray-900">Final Price</h3>
-                                            <p className="text-xs text-gray-600">Excl. of Taxes</p>
+                                            <p className="text-xs text-gray-600">18% tax included</p>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-xl font-bold text-gray-900">
-                                                ₹ {calculateMainCost()} + ₹ {calculateAdditionalCost()} = ₹ {calculateTotalCost()}
+                                        <div className="text-left md:text-right">
+                                            <div className="text-lg sm:text-xl font-bold text-gray-900">
+                                                <span className="block sm:inline">₹ {calculateMainCost()} + ₹ {calculateAdditionalCost()} + ₹ {calculateTaxCost()}</span>
+                                                <span className="block sm:inline sm:ml-2">= ₹ {calculateTotalWithTax()}</span>
                                             </div>
                                             <div className="text-xs text-gray-600">
-                                                Main Cost + Other Cost (monthly)
+                                                Main Cost (monthly) + Other Cost + taxes
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="px-6 py-6 bg-white border-t border-gray-200">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="px-4 sm:px-6 py-6 bg-white border-t border-gray-200">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                         {/* Left Column */}
                                         <div>
                                             <button
@@ -544,7 +595,7 @@ const CartPage = () => {
             {/* Contact Form Modal - Request Callback */}
             {showContactForm && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                             <h3 className="text-xl font-bold text-gray-900">
                                 Connect With Us!
@@ -558,7 +609,7 @@ const CartPage = () => {
                         </div>
                         
                         <div className="p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Left Column - Info */}
                                 <div className="bg-red-500 text-white p-6 rounded-lg">
                                     <h4 className="text-lg font-bold mb-4">What can JMD Advertisement help you with?</h4>
@@ -587,7 +638,7 @@ const CartPage = () => {
                                             />
                                         </div>
                                         
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                                     Email
@@ -634,7 +685,7 @@ const CartPage = () => {
                                             />
                                         </div>
                                         
-                                        <div className="flex justify-between items-center pt-4">
+                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4">
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="checkbox"
@@ -648,7 +699,7 @@ const CartPage = () => {
                                             <button
                                                 type="submit"
                                                 disabled={isSubmittingForm}
-                                                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:bg-gray-400"
+                                                className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:bg-gray-400"
                                             >
                                                 {isSubmittingForm ? 'Sending...' : 'Send Message'}
                                             </button>

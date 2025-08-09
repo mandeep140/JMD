@@ -240,7 +240,7 @@ const HistoryPage = () => {
                           <div className="text-xs text-gray-600 bg-gray-100 rounded p-2 mt-2 overflow-hidden">
                             <strong>Detailed Changes:</strong>
                             <div className="mt-1 space-y-1 max-h-32 overflow-y-auto">
-                              {record.changes.slice(0, 5).map((change, idx) => (
+                              {record.changes.map((change, idx) => (
                                 <div key={idx} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 py-1">
                                   <span className="font-medium flex-shrink-0">{change.field}:</span>
                                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
@@ -250,11 +250,6 @@ const HistoryPage = () => {
                                   </div>
                                 </div>
                               ))}
-                              {record.changes.length > 5 && (
-                                <div className="text-gray-500 pt-1 border-t border-gray-200">
-                                  ... and {record.changes.length - 5} more changes
-                                </div>
-                              )}
                             </div>
                           </div>
                         )}
