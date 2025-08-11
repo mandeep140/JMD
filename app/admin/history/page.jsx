@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import AdminNav from '@/app/component/AdminNav';
 import { FaHistory, FaUser, FaCalendarAlt, FaFilter } from 'react-icons/fa';
+import * as XLSX from 'xlsx'; // install xlsx if not present
 
 const HistoryPage = () => {
   const { data: session, status } = useSession();
@@ -20,6 +21,11 @@ const HistoryPage = () => {
     page: 1,
     limit: 20
   });
+
+  const [showExportPopup, setShowExportPopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -92,6 +98,55 @@ const HistoryPage = () => {
     }
   };
 
+  // Export to Excel function
+  const handleExportToExcel = async () => {
+    setExporting(true);
+    try {
+      // Fetch all history from backend (not just paginated)
+      const response = await fetch('/api/history?all=true');
+      const data = await response.json();
+      const records = data.history || [];
+
+      // Prepare data for Excel
+      const excelData = records.map(r => ({
+        Name: r.changedBy?.userName || '',
+        Email: r.changedBy?.userEmail || '',
+        Summary: r.summary || '',
+      }));
+
+      // Create worksheet and workbook
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'History');
+
+      // Download Excel file
+      XLSX.writeFile(workbook, 'AD_history_export.xlsx');
+    } catch (err) {
+      alert('Error exporting history!');
+    }
+    setExporting(false);
+    setShowExportPopup(false);
+  };
+
+  // Delete all history function
+  const handleDeleteAllHistory = async () => {
+    setDeleting(true);
+    await handleExportToExcel(); // Export before delete
+    try {
+      const response = await fetch('/api/history', { method: 'DELETE' });
+      if (response.ok) {
+        alert('All history deleted!');
+        fetchHistory(); // Refresh
+      } else {
+        alert('Error deleting history!');
+      }
+    } catch (err) {
+      alert('Error deleting history!');
+    }
+    setDeleting(false);
+    setShowDeletePopup(false);
+  };
+
   if (status === "loading") {
     return (
       <AdminNav>
@@ -120,6 +175,68 @@ const HistoryPage = () => {
   return (
     <AdminNav>
       <div className='w-full min-h-screen flex flex-col gap-4 p-2 md:p-6 bg-[#E9E9E9] overflow-hidden'>
+        {/* Export/Delete Buttons */}
+        <div className="flex gap-2 mb-2">
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold"
+            onClick={() => setShowExportPopup(true)}
+            disabled={exporting}
+          >
+            Export to Excel
+          </button>
+          <button
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold"
+            onClick={() => setShowDeletePopup(true)}
+            disabled={deleting}
+          >
+            Delete All History
+          </button>
+        </div>
+
+        {/* Export Popup */}
+        {showExportPopup && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+              <h2 className="text-lg font-bold mb-2">Export to Excel</h2>
+              <p className="mb-4">All history records from the database will be exported to Excel. Only Name, Email, and Change Summary will be included.</p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  className="bg-gray-200 px-4 py-2 rounded"
+                  onClick={() => setShowExportPopup(false)}
+                  disabled={exporting}
+                >Cancel</button>
+                <button
+                  className="bg-green-600 text-white px-4 py-2 rounded"
+                  onClick={handleExportToExcel}
+                  disabled={exporting}
+                >{exporting ? 'Exporting...' : 'Export'}</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Popup */}
+        {showDeletePopup && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+              <h2 className="text-lg font-bold mb-2">Delete All History</h2>
+              <p className="mb-4">Before deleting, all history will be exported to Excel. Are you sure you want to delete all history records?</p>
+              <div className="flex gap-2 justify-end">
+                <button
+                  className="bg-gray-200 px-4 py-2 rounded"
+                  onClick={() => setShowDeletePopup(false)}
+                  disabled={deleting}
+                >Cancel</button>
+                <button
+                  className="bg-red-600 text-white px-4 py-2 rounded"
+                  onClick={handleDeleteAllHistory}
+                  disabled={deleting}
+                >{deleting ? 'Deleting...' : 'Delete & Export'}</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="bg-white w-full flex-1 text-black rounded-lg shadow flex flex-col overflow-hidden">
           <div className="p-2 md:p-4 flex-shrink-0">

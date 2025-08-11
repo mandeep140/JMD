@@ -10,7 +10,7 @@ function validateAdData(adData) {
     // Only fields that are always required
     const requiredFields = [
         "mediacode", "title", "city", "lighting", "status", "size",
-        "type", "pricepermonth",
+        "type", "pricepermonth", "state",
         "message", "imageUrl", "show"
     ];
     for (const field of requiredFields) {

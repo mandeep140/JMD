@@ -230,6 +230,7 @@ const CartPage = () => {
                 subtitle: `Generated on ${new Date().toLocaleDateString()}`,
                 ads: cartItems.map(ad => ({
                     id: ad._id,
+                    state: ad.state,
                     title: ad.title,
                     type: ad.type,
                     city: ad.city,
@@ -287,6 +288,7 @@ const CartPage = () => {
                 subtitle: `Generated on ${new Date().toLocaleDateString()}`,
                 ads: cartItems.map(ad => ({
                     id: ad._id,
+                    state: ad.state,
                     title: ad.title,
                     type: ad.type,
                     city: ad.city,

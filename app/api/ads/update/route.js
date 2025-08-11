@@ -8,7 +8,7 @@ import { logAdChange } from "@/utils/historyHelper";
 // Validation function (updated for new fields)
 function validateAdData(adData) {
     const requiredFields = [
-        "mediacode", "title", "city", "lighting", "status", "size",
+        "title", "city", "lighting", "status", "size", "state",
         "type", "pricepermonth", "show", "message", "imageUrl", "imageId"
     ];
     for (const field of requiredFields) {
@@ -58,6 +58,12 @@ export async function PUT(request) {
 
         if (!mediacode) {
             return NextResponse.json({ error: "Media code is required" }, { status: 400 });
+        }
+
+        // Validate the ad data
+        const validationError = validateAdData(adData);
+        if (validationError) {
+            return NextResponse.json({ error: validationError }, { status: 400 });
         }
 
         // Get old data for history comparison

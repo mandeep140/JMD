@@ -85,8 +85,8 @@ function generateUserExcel(data) {
         
         // Row 2: Column headers
         sheetData.push([
-            'City', 'Medium', 'Type', 'Location', 'Hor', 'Ver', 'Faci', 'Units', 'SQFT', 
-            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost'
+            'State', 'City', 'Medium', 'Type', 'Location', 'Hor', 'Ver', 'Faci', 'Units', 'SQFT', 
+            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST'
         ]);
 
         // Data rows
@@ -124,10 +124,13 @@ function generateUserExcel(data) {
                 : monthlyRate > 0 
                     ? monthlyRate.toLocaleString() 
                     : 'N/A';
-            
+
+            const calgst = (totalCost * 0.18).toLocaleString();
+            const totalwithgst = (totalCost + totalCost * 0.18).toLocaleString();
             sheetData.push([
+                ad.state || '',
                 ad.city || '',
-                ad.type || 'Billboard',
+                ad.type || '',
                 getLightingCode(ad.lighting),
                 ad.title || '',
                 sizeInfo.horizontal || '',
@@ -138,7 +141,10 @@ function generateUserExcel(data) {
                 monthlyRate ? monthlyRate.toLocaleString() : '',
                 printingResult.display, // Will show cost if numeric, type if text
                 mountingResult.display,  // Will show cost if numeric, type if text
-                displayTotalCost
+                displayTotalCost,
+                '18%',
+                calgst || 'N/A',
+                totalwithgst || 'N/A'
             ]);
         });
 
@@ -176,6 +182,7 @@ function generateUserExcel(data) {
         
         // Set column widths to match attachment
         const colWidths = [
+            { wch: 10 },  // State
             { wch: 20 },  // City
             { wch: 22 },  // Medium
             { wch: 6 },   // Type (Lighting)
@@ -185,10 +192,13 @@ function generateUserExcel(data) {
             { wch: 6 },   // Faci
             { wch: 8 },   // Units
             { wch: 8 },   // SQFT
-            { wch: 20 },  // Display Charges Per Month
+            { wch: 23 },  // Display Charges Per Month
             { wch: 12 },  // Printing
             { wch: 12 },  // Mounting
-            { wch: 15 }   // Total Cost
+            { wch: 15 },  // Cost
+            { wch: 15 },  // gst
+            { wch: 15 },  // gst cost
+            { wch: 18 }   // total cost with gst
         ];
         worksheet['!cols'] = colWidths;
 

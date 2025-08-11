@@ -8,20 +8,20 @@ import AdminNav from '@/app/component/AdminNav';
 
 // Updated cities list with Bihar, Jharkhand, West Bengal, Chhattisgarh, and Odisha cities
 const indianCities = [
-  // Bihar
-  "Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga", "Purnia", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra (Saran)", "Danapur", "Hajipur", "Siwan", "Motihari", "Bettiah", "Sasaram", "Dehri", "Samastipur", "Aurangabad", "Buxar", "Sitamarhi", "Jamalpur", "Nawada", "Khagaria", "Jehanabad", "Madhubani", "Supaul", "Lakhisarai", "Sheikhpura", "Arwal", "Kishanganj", "Madhepura", "Vaishali",
-
   // Jharkhand
   "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Chirkunda", "Lohardaga", "Chaibasa (West Singhbhum)", "Gumla", "Medininagar (Daltonganj)", "Dumka", "Sahebganj", "Jamtara", "Pakur", "Godda", "Latehar", "Khunti", "Simdega", "Chatra", "Koderma", "Barhi", "Phusro", "Chakradharpur", "Adityapur", "Saraikela",
+
+  // Bihar
+  "Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga", "Purnia", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra (Saran)", "Danapur", "Hajipur", "Siwan", "Motihari", "Bettiah", "Sasaram", "Dehri", "Samastipur", "Aurangabad", "Buxar", "Sitamarhi", "Jamalpur", "Nawada", "Khagaria", "Jehanabad", "Madhubani", "Supaul", "Lakhisarai", "Sheikhpura", "Arwal", "Kishanganj", "Madhepura", "Vaishali",
 
   // West Bengal
   "Kolkata", "Howrah", "Asansol", "Siliguri", "Durgapur", "Bardhaman", "Kharagpur", "Haldia", "Malda (English Bazar)", "Berhampore",
 
-  // Chhattisgarh
-  "Raipur", "Bhilai", "Durg", "Bilaspur", "Korba", "Raigarh", "Jagdalpur", "Ambikapur",
-
   // Odisha
   "Bhubaneswar", "Cuttack", "Rourkela", "Berhampur (Brahmapur)", "Sambalpur", "Balasore", "Baripada", "Jharsuguda", "Puri", "Angul",
+
+  // Chhattisgarh
+  "Raipur", "Bhilai", "Durg", "Bilaspur", "Korba", "Raigarh", "Jagdalpur", "Ambikapur",
 
   // Other major cities
   "Agra", "Ahmedabad", "Ajmer", "Allahabad", "Amritsar", "Bangalore", "Bareilly", "Belgaum", "Bhavnagar", "Bhopal", "Bikaner", "Chandigarh", "Chennai", "Coimbatore", "Dehradun", "Delhi", "Faridabad", "Firozabad", "Ghaziabad", "Gorakhpur", "Guntur", "Gurgaon", "Guwahati", "Gwalior", "Hubli–Dharwad", "Hyderabad", "Indore", "Jabalpur", "Jaipur", "Jalandhar", "Jammu", "Jamnagar", "Jhansi", "Jodhpur", "Kakinada", "Kannur", "Kanpur", "Kochi", "Kolhapur", "Kota", "Kozhikode", "Kurnool", "Lucknow", "Ludhiana", "Madurai", "Malappuram", "Mangalore", "Mathura", "Meerut", "Moradabad", "Mumbai", "Mysore", "Nagpur", "Nashik", "Nellore", "New Delhi", "Noida", "Pondicherry", "Pune", "Rajkot", "Salem", "Sangli", "Shimla", "Solapur", "Srinagar", "Surat", "Thiruvananthapuram", "Thrissur", "Tiruchirappalli", "Tirunelveli", "Tiruppur", "Ujjain", "Vadodara", "Varanasi", "Vasai-Virar", "Vijayawada", "Visakhapatnam", "Warangal"
@@ -33,6 +33,10 @@ const lightingOptions = [
   "Fully Light",
   "Front Light",
   "Back Light",
+];
+
+const indianStates = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
 
 const initialForm = {
@@ -57,6 +61,9 @@ const initialForm = {
   latitude: "",
   longitude: "",
   show: true,
+  state: "",
+  holdBookedBy: "",
+  mediaOwner: "",
   visibility: "Single",
   message: "",
   imageUrl: "",
@@ -113,13 +120,15 @@ const Page = () => {
           latitude: ad.coordinates?.lat || "",
           longitude: ad.coordinates?.lng || "",
           visibility: ad.visibility || "Single",
-          // Handle new fields with fallbacks for existing ads
           height: ad.height || height || "",
           width: ad.width || width || "",
           unit: ad.unit || 1,
           printing: ad.printing || "",
           mounting: ad.mounting || "",
           locality: ad.locality || "",
+          state: ad.state || "",
+          holdBookedBy: ad.holdBookedBy || "",
+          mediaOwner: ad.mediaOwner || "",
           city: cityInList ? ad.city : "Other",
           customCity: cityInList ? "" : ad.city
         });
@@ -190,6 +199,9 @@ const Page = () => {
         printing: form.printing, // Store printing type
         mounting: form.mounting, // Store mounting type
         locality: form.locality, // Store locality
+        state: form.state, // Store state
+        holdBookedBy: form.holdBookedBy, // Store hold booked by
+        mediaOwner: form.mediaOwner, // Store media owner
         coordinates: {
           lat: parseFloat(form.latitude) || 0,
           lng: parseFloat(form.longitude) || 0
@@ -257,11 +269,11 @@ const Page = () => {
 
             <div className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
               <form onSubmit={handleSubmit} className="space-y-6">
-                
+
                 {/* BASIC DETAILS SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Basic Details</h3>
-                  
+
                   {/* Row 1 - Media Code & Title */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
@@ -274,7 +286,7 @@ const Page = () => {
                         className="w-full bg-gray-200 border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                       />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Title*</label>
                       <input
@@ -313,7 +325,7 @@ const Page = () => {
                         <option>Digital Marketing</option>
                       </select>
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Lighting*</label>
                       <select
@@ -363,7 +375,7 @@ const Page = () => {
                 {/* LOCATION AND SIZE SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Location and Size</h3>
-                  
+
                   {/* Row 1 - Locality, City, Latitude, Longitude */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
@@ -377,6 +389,7 @@ const Page = () => {
                         placeholder="Type Here"
                       />
                     </div>
+
 
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">City*</label>
@@ -405,6 +418,22 @@ const Page = () => {
                           placeholder="Enter custom city name"
                         />
                       )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs md:text-sm font-semibold mb-1">State*</label>
+                      <select
+                        name="state"
+                        value={form.state}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                      >
+                        <option value="">Select</option>
+                        {indianStates.map((state) => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -490,7 +519,7 @@ const Page = () => {
                 {/* PRICING, BOOKING & OTHERS SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Pricing, Booking & Others</h3>
-                  
+
                   {/* Row 1 - Price per Day, Price per Month, Mounting charges, Printing Charge */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
@@ -546,7 +575,7 @@ const Page = () => {
                   </div>
 
                   {/* Row 2 - Status, Client Name, Booked From, Booked Till */}
-                  <div className="flex flex-col md:flex-row gap-3 w-full">
+                  <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Status*</label>
                       <select
@@ -605,6 +634,33 @@ const Page = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Row 3 - hold/booked by, media owner */}
+                  <div className="flex flex-col md:flex-row gap-3 w-full">
+                    <div className='flex-1 min-w-0'>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Hold/Booked By</label>
+                      <input
+                        type="text"
+                        name="holdBookedBy"
+                        value={form.holdBookedBy}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="Type Here"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Media Owner</label>
+                      <input
+                        type="text"
+                        name="mediaOwner"
+                        value={form.mediaOwner}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="Type Here"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* MESSAGE SECTION */}
@@ -626,10 +682,10 @@ const Page = () => {
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Current Image</h3>
                   {form.imageUrl && (
                     <div className="flex justify-center">
-                      <img 
-                        src={form.imageUrl} 
-                        alt={form.title} 
-                        className="max-w-md w-full h-auto rounded-lg border shadow-sm" 
+                      <img
+                        src={form.imageUrl}
+                        alt={form.title}
+                        className="max-w-md w-full h-auto rounded-lg border shadow-sm"
                       />
                     </div>
                   )}

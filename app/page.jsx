@@ -84,7 +84,7 @@ const Home = () => {
   const [submitting, setSubmitting] = useState(false);
   const [activeMedia, setActiveMedia] = useState(null);
   const [isContactExpanded, setIsContactExpanded] = useState(false);
-  
+
   // --- Dynamic Video Cards State ---
   const [videoCards, setVideoCards] = useState([]);
   const [videosLoading, setVideosLoading] = useState(true);
@@ -112,7 +112,7 @@ const Home = () => {
               title: video.title,
               videoId: video.videoId
             }));
-          
+
           setVideoCards(transformedVideos);
         } else {
           throw new Error('Failed to fetch videos');
@@ -193,16 +193,16 @@ const Home = () => {
 
   // --- Service Cards ---
   const serviceCards = [
-    { title: "Hoardings", link: "/find-hoardings?type=billboard#results", image: "/images/billboard.png" },
-    { title: "Digital Hoardings", link: "/find-hoardings?type=digital_billboard#results", image: "/images/digital_billboard.png" },
-    { title: "Transit Media", link: "/find-hoardings?type=transit_media#results", image: "/images/transit_media.png" },
-    { title: "Airport Branding", link: "/find-hoardings?type=airport_branding#results", image: "/images/airport_branding.png" },
-    { title: "Mall Media", link: "/find-hoardings?type=mall_media#results", image: "/images/mall_media.png" },
-    { title: "Pole Kiosk", link: "/find-hoardings?type=pole_kiosk#results", image: "/images/pole_kiosk.png" },
-    { title: "Railway Station Branding", link: "/find-hoardings?type=railway_station_branding#results", image: "/images/railway_station_branding.png" },
-    { title: "Unipole", link: "/find-hoardings?type=unipole#results", image: "/images/unipole.png" },
-    { title: "Bus Shelter Branding", link: "/find-hoardings?type=bus_shelter_branding#results", image: "/images/bus_shelter_branding.png" },
-    { title: "Digital Marketing", link: "/find-hoardings?type=digital_marketing#results", image: "/images/digital_marketing.png" }
+    { title: "Hoardings", link: "/find-hoardings?type=billboard", image: "/images/billboard.png" },
+    { title: "Digital Hoardings", link: "/find-hoardings?type=digital_billboard", image: "/images/digital_billboard.png" },
+    { title: "Transit Media", link: "/find-hoardings?type=transit_media", image: "/images/transit_media.png" },
+    { title: "Airport Branding", link: "/find-hoardings?type=airport_branding", image: "/images/airport_branding.png" },
+    { title: "Mall Media", link: "/find-hoardings?type=mall_media", image: "/images/mall_media.png" },
+    { title: "Pole Kiosk", link: "/find-hoardings?type=pole_kiosk", image: "/images/pole_kiosk.png" },
+    { title: "Railway Station Branding", link: "/find-hoardings?type=railway_station_branding", image: "/images/railway_station_branding.png" },
+    { title: "Unipole", link: "/find-hoardings?type=unipole", image: "/images/unipole.png" },
+    { title: "Bus Shelter Branding", link: "/find-hoardings?type=bus_shelter_branding", image: "/images/bus_shelter_branding.png" },
+    { title: "Digital Marketing", link: "/find-hoardings?type=digital_marketing", image: "/images/digital_marketing.png" }
   ];
 
   const s3cards = [
@@ -393,29 +393,32 @@ const Home = () => {
           {/* First Row - 5 Cards */}
           <div className="flex flex-nowrap items-start justify-center gap-4">
             {serviceCards.slice(0, 5).map((card, index) => (
-              <div
-                key={index}
-                onMouseEnter={() => setHoveredCard(index)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className={`w-[220px] h-[300px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== index
-                  ? 'opacity-40 scale-95'
-                  : 'opacity-100 scale-100'
-                  }`}
-              >
-                <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
-                <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
-                  <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
-                  <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
-                    Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
-                  </Link>
+              <Link href={card.link} key={index}>
+                <div
+                  key={index}
+                  onMouseEnter={() => setHoveredCard(index)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  className={`w-[220px] h-[300px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== index
+                    ? 'opacity-40 scale-95'
+                    : 'opacity-100 scale-100'
+                    }`}
+                >
+                  <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
+                  <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
+                    <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
+                    <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
+                      Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
-          
+
           {/* Second Row - 5 Cards */}
           <div className="flex flex-nowrap items-start justify-center gap-4">
             {serviceCards.slice(5, 10).map((card, index) => (
+              <Link href={card.link} key={index + 5}>
               <div
                 key={index + 5}
                 onMouseEnter={() => setHoveredCard(index + 5)}
@@ -428,11 +431,12 @@ const Home = () => {
                 <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
                 <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
                   <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
-                  <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
+                  <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
                     Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
-                  </Link>
+                  </p>
                 </div>
               </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -624,7 +628,7 @@ const Home = () => {
         </div>
         <div className='z-1 w-full min-h-[40vh] mt-50 flex flex-col items-center justify-center text-center max-md:mt-8'>
           <h1 className='text-4xl font-black text-white max-md:text-2xl'>Videos</h1>
-          
+
           {/* Loading State */}
           {videosLoading ? (
             <div className="mt-10 text-white">
@@ -634,14 +638,14 @@ const Home = () => {
           ) : (
             <div className='flex flex-row max-md:gap-1'>
               {/* Left Navigation Button */}
-              <button 
-                className={`mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`} 
+              <button
+                className={`mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={decVideoNav}
                 disabled={videoCards.length <= 3}
               >
                 <Image src="/svg/left-arr.svg" alt="Left arrow" width={24} height={24} className='max-md:w-4' />
               </button>
-              
+
               {/* Videos Container */}
               <div className='w-[70vw] h-[20vh] md:h-[40vh] mt-10 rounded-2xl bg-white/60 flex flex-row px-10 overflow-auto md:overflow-x-hidden gap-6 items-center py-8 scrollbar-hide scroll-smooth max-md:w-[95vw] max-md:mt-4 max-md:px-2 max-md:gap-2 max-md:py-2 mix-blend-normal'>
                 {videoCards.length === 0 ? (
@@ -654,8 +658,8 @@ const Home = () => {
                       key={idx}
                       className="md:w-[320px] md:h-[240px] bg-black/70 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 duration-200 flex flex-col items-center flex-shrink-0 w-[140px] h-[100px] mix-blend-normal"
                       onClick={() => setActiveVideo(video)}
-                      style={{ 
-                        transform: videoCards.length > 3 ? `translateX(-${videoNav * 110}%)` : 'translateX(0)' 
+                      style={{
+                        transform: videoCards.length > 3 ? `translateX(-${videoNav * 110}%)` : 'translateX(0)'
                       }}
                     >
                       <Image
@@ -673,10 +677,10 @@ const Home = () => {
                   ))
                 )}
               </div>
-              
+
               {/* Right Navigation Button */}
-              <button 
-                className={`mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`} 
+              <button
+                className={`mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={incVideoNav}
                 disabled={videoCards.length <= 3}
               >
@@ -685,7 +689,7 @@ const Home = () => {
             </div>
           )}
         </div>
-        
+
         {/* Video Modal */}
         {activeVideo && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -775,14 +779,14 @@ const Home = () => {
               {/* Navigation Arrows */}
               {testimonials.length > 3 && (
                 <>
-                  <button 
+                  <button
                     onClick={() => setTestimonialStartIndex(prev => prev > 0 ? prev - 3 : Math.max(0, testimonials.length - 3))}
                     className='absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 hover:scale-110'
                     disabled={testimonialStartIndex === 0}
                   >
                     <FaChevronLeft className={`text-lg ${testimonialStartIndex === 0 ? 'text-gray-300' : 'text-red-500'}`} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => setTestimonialStartIndex(prev => prev + 3 < testimonials.length ? prev + 3 : 0)}
                     className='absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 hover:scale-110'
                     disabled={testimonialStartIndex + 3 >= testimonials.length}
@@ -791,7 +795,7 @@ const Home = () => {
                   </button>
                 </>
               )}
-              
+
               {/* Desktop Cards */}
               <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 px-16'>
                 {testimonials.slice(testimonialStartIndex, testimonialStartIndex + 3).map((testimonial, index) => (
@@ -817,11 +821,10 @@ const Home = () => {
                     <button
                       key={index}
                       onClick={() => setTestimonialStartIndex(index * 3)}
-                      className={`h-3 rounded-full transition-all duration-300 ${
-                        Math.floor(testimonialStartIndex / 3) === index 
-                          ? 'bg-red-500 w-8' 
+                      className={`h-3 rounded-full transition-all duration-300 ${Math.floor(testimonialStartIndex / 3) === index
+                          ? 'bg-red-500 w-8'
                           : 'bg-red-300 w-3 hover:bg-red-400'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -834,13 +837,13 @@ const Home = () => {
                 {/* Mobile Navigation Arrows */}
                 {testimonials.length > 1 && (
                   <>
-                    <button 
+                    <button
                       onClick={() => setCurrentTestimonial(prev => prev > 0 ? prev - 1 : testimonials.length - 1)}
                       className='absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300'
                     >
                       <FaChevronLeft className='text-red-500' />
                     </button>
-                    <button 
+                    <button
                       onClick={() => setCurrentTestimonial(prev => prev < testimonials.length - 1 ? prev + 1 : 0)}
                       className='absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300'
                     >
@@ -848,7 +851,7 @@ const Home = () => {
                     </button>
                   </>
                 )}
-                
+
                 {/* Mobile Card */}
                 <div className='bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 shadow-lg mx-4 border border-red-200'>
                   <div className='flex items-center gap-4 mb-4'>
@@ -871,11 +874,10 @@ const Home = () => {
                     <button
                       key={index}
                       onClick={() => setCurrentTestimonial(index)}
-                      className={`h-3 rounded-full transition-all duration-300 ${
-                        index === currentTestimonial 
-                          ? 'bg-red-500 w-8' 
+                      className={`h-3 rounded-full transition-all duration-300 ${index === currentTestimonial
+                          ? 'bg-red-500 w-8'
                           : 'bg-red-300 w-3 hover:bg-red-400'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -1002,8 +1004,8 @@ const Home = () => {
           <button
             onClick={() => setIsContactExpanded(!isContactExpanded)}
             className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 ${isContactExpanded
-                ? 'bg-gray-600 text-white'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
+              ? 'bg-gray-600 text-white'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
               }`}
             aria-label="Contact information"
           >

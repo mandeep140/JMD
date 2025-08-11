@@ -8,20 +8,20 @@ import AdminNav from '@/app/component/AdminNav';
 
 // Updated cities list with Bihar, Jharkhand, West Bengal, Chhattisgarh, and Odisha cities
 const indianCities = [
-  // Bihar
-  "Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga", "Purnia", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra (Saran)", "Danapur", "Hajipur", "Siwan", "Motihari", "Bettiah", "Sasaram", "Dehri", "Samastipur", "Aurangabad", "Buxar", "Sitamarhi", "Jamalpur", "Nawada", "Khagaria", "Jehanabad", "Madhubani", "Supaul", "Lakhisarai", "Sheikhpura", "Arwal", "Kishanganj", "Madhepura", "Vaishali",
-
   // Jharkhand
   "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Chirkunda", "Lohardaga", "Chaibasa (West Singhbhum)", "Gumla", "Medininagar (Daltonganj)", "Dumka", "Sahebganj", "Jamtara", "Pakur", "Godda", "Latehar", "Khunti", "Simdega", "Chatra", "Koderma", "Barhi", "Phusro", "Chakradharpur", "Adityapur", "Saraikela",
+
+  // Bihar
+  "Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga", "Purnia", "Bihar Sharif", "Arrah", "Begusarai", "Katihar", "Munger", "Chhapra (Saran)", "Danapur", "Hajipur", "Siwan", "Motihari", "Bettiah", "Sasaram", "Dehri", "Samastipur", "Aurangabad", "Buxar", "Sitamarhi", "Jamalpur", "Nawada", "Khagaria", "Jehanabad", "Madhubani", "Supaul", "Lakhisarai", "Sheikhpura", "Arwal", "Kishanganj", "Madhepura", "Vaishali",
 
   // West Bengal
   "Kolkata", "Howrah", "Asansol", "Siliguri", "Durgapur", "Bardhaman", "Kharagpur", "Haldia", "Malda (English Bazar)", "Berhampore",
 
-  // Chhattisgarh
-  "Raipur", "Durg", "Bilaspur", "Korba", "Raigarh", "Jagdalpur", "Ambikapur",
-
   // Odisha
   "Bhubaneswar", "Cuttack", "Rourkela", "Berhampur (Brahmapur)", "Sambalpur", "Balasore", "Baripada", "Jharsuguda", "Puri", "Angul",
+
+  // Chhattisgarh
+  "Raipur", "Durg", "Bilaspur", "Korba", "Raigarh", "Jagdalpur", "Ambikapur",
 
   // Other major cities
   "Agra", "Ahmedabad", "Ajmer", "Allahabad", "Amritsar", "Bangalore", "Bareilly", "Belgaum", "Bhavnagar", "Bhilai", "Bhopal", "Bikaner", "Chandigarh", "Chennai", "Coimbatore", "Dehradun", "Delhi", "Faridabad", "Firozabad", "Ghaziabad", "Gorakhpur", "Guntur", "Gurgaon", "Guwahati", "Gwalior", "Hubli–Dharwad", "Hyderabad", "Indore", "Jabalpur", "Jaipur", "Jalandhar", "Jammu", "Jamnagar", "Jhansi", "Jodhpur", "Kakinada", "Kannur", "Kanpur", "Kochi", "Kolhapur", "Kota", "Kozhikode", "Kurnool", "Lucknow", "Ludhiana", "Madurai", "Malappuram", "Mangalore", "Mathura", "Meerut", "Moradabad", "Mumbai", "Mysore", "Nagpur", "Nashik", "Nellore", "New Delhi", "Noida", "Pondicherry", "Pune", "Rajkot", "Salem", "Sangli", "Shimla", "Solapur", "Srinagar", "Surat", "Thiruvananthapuram", "Thrissur", "Tiruchirappalli", "Tirunelveli", "Tiruppur", "Ujjain", "Vadodara", "Varanasi", "Vasai-Virar", "Vijayawada", "Visakhapatnam", "Warangal"
@@ -33,6 +33,37 @@ const lightingOptions = [
   "Fully Light",
   "Front Light",
   "Back Light",
+];
+
+const indianStates = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal"
 ];
 
 const initialForm = {
@@ -56,9 +87,12 @@ const initialForm = {
   bookedtill: "",
   priceperday: "",
   pricepermonth: "",
-  printing: "", 
-  mounting: "", 
+  printing: "",
+  mounting: "",
   message: "",
+  state: "",
+  holdBookedBy: "",
+  mediaOwner: ""
 };
 
 const page = () => {
@@ -197,6 +231,9 @@ const page = () => {
         printing: form.printing, // Store printing type
         mounting: form.mounting, // Store mounting type
         locality: form.locality, // Store locality
+        state: form.state, // Store state
+        holdBookedBy: form.holdBookedBy, // Store hold booked by
+        mediaOwner: form.mediaOwner,
         imageUrl,
         imageId,
         visibility: form.visibility,
@@ -264,11 +301,11 @@ const page = () => {
 
             <div className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
               <form onSubmit={handleSubmit} className="space-y-6">
-                
+
                 {/* BASIC DETAILS SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Basic Details</h3>
-                  
+
                   {/* Row 1 - Media Code & Title */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
@@ -314,7 +351,7 @@ const page = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Title*</label>
                       <input
@@ -353,7 +390,7 @@ const page = () => {
                         <option>Digital Marketing</option>
                       </select>
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Lighting*</label>
                       <select
@@ -403,7 +440,7 @@ const page = () => {
                 {/* LOCATION AND SIZE SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Location and Size</h3>
-                  
+
                   {/* Row 1 - Locality, City, Latitude, Longitude */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
@@ -445,6 +482,22 @@ const page = () => {
                           placeholder="Enter custom city name"
                         />
                       )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs md:text-sm font-semibold mb-1">State*</label>
+                      <select
+                        name="state"
+                        value={form.state}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                      >
+                        <option value="">Select</option>
+                        {indianStates.map((state) => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -530,7 +583,7 @@ const page = () => {
                 {/* PRICING, BOOKING & OTHERS SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Pricing, Booking & Others</h3>
-                  
+
                   {/* Row 1 - Price per Day, Price per Month, Mounting charges, Printing Charge */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
@@ -586,7 +639,7 @@ const page = () => {
                   </div>
 
                   {/* Row 2 - Status, Client Name, Booked From, Booked Till */}
-                  <div className="flex flex-col md:flex-row gap-3 w-full">
+                  <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Status*</label>
                       <select
@@ -645,6 +698,33 @@ const page = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Row 3 - hold/booked by, media owner */}
+                  <div className="flex flex-col md:flex-row gap-3 w-full">
+                    <div className='flex-1 min-w-0'>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Hold/Booked By</label>
+                      <input
+                        type="text"
+                        name="holdBookedBy"
+                        value={form.holdBookedBy}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="Type Here"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Media Owner</label>
+                      <input
+                        type="text"
+                        name="mediaOwner"
+                        value={form.mediaOwner}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="Type Here"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* MESSAGE SECTION */}
@@ -666,7 +746,7 @@ const page = () => {
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Upload Image</h3>
                   <div className="flex flex-col items-start">
                     <span className="text-xs text-gray-400 mb-2">Only JPG and PNG file supported</span>
-                    
+
                     <div className="flex gap-4 items-center">
                       <button
                         type="button"
@@ -678,15 +758,14 @@ const page = () => {
                         </svg>
                         Upload Image
                       </button>
-                      
+
                       <button
                         type="submit"
                         disabled={loading || mediacodeExists || !form.mediacode}
-                        className={`px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
-                          loading || mediacodeExists || !form.mediacode
-                            ? 'bg-gray-400 cursor-not-allowed text-white'
-                            : 'bg-green-600 hover:bg-green-700 text-white'
-                        }`}
+                        className={`px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 ${loading || mediacodeExists || !form.mediacode
+                          ? 'bg-gray-400 cursor-not-allowed text-white'
+                          : 'bg-green-600 hover:bg-green-700 text-white'
+                          }`}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -703,7 +782,7 @@ const page = () => {
                       required
                       className="hidden"
                     />
-                    
+
                     {imageFile && (
                       <span className="text-xs text-green-600 mt-2">{imageFile.name}</span>
                     )}

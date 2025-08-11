@@ -17,6 +17,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
   const [cartItems, setCartItems] = useState([]); // Add cart state
   const [cartLoaded, setCartLoaded] = useState(false); // Add cart loaded state
   const [additionalPacks, setAdditionalPacks] = useState([]); // Add additional packs state
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
@@ -186,23 +187,6 @@ const AdDetailClient = ({ initialAd, adId }) => {
     return cartItems.some(item => item._id === ad._id);
   };
 
-  // Additional pack functions
-  const addAdditionalPackToCart = (pack) => {
-    setAdditionalPacks(prev => {
-      const isAlreadyInCart = prev.some(item => item.id === pack.id);
-      if (isAlreadyInCart) {
-        return prev;
-      }
-      const newPacks = [...prev, pack];
-      console.log('Adding additional pack to cart:', pack.title, 'New packs size:', newPacks.length);
-      return newPacks;
-    });
-  };
-
-  const isAdditionalPackInCart = (packId) => {
-    return additionalPacks.some(item => item.id === packId);
-  };
-
   // Handle sharing
   const handleShare = async () => {
     const shareData = {
@@ -345,9 +329,10 @@ const AdDetailClient = ({ initialAd, adId }) => {
             <div
               className={`w-full ${!showMap ? 'h-2/3' : 'h-1/3'} duration-300 ease-in-out aspect-video overflow-hidden relative cursor-pointer`}
               onClick={() => setShowMap(false)}
+              onDoubleClick={() => setIsFullscreen(true)}
             >
               <Image
-                src={ad.imageUrl || "/images/find/test.png"}
+                src={ad.imageUrl || "/images/find/jmd_logo.png"}
                 alt={`${ad.title} - ${ad.type} in ${ad.city}`}
                 fill
                 className="object-cover rounded-md"
@@ -559,7 +544,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
                 <div key={similarAd.mediacode} className='flex-shrink-0 w-64 md:w-72 bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group'>
                   <div className='relative h-40 md:h-48 overflow-hidden'>
                     <Image
-                      src={similarAd.imageUrl || "/images/find/test.png"}
+                      src={similarAd.imageUrl || "/images/find/jmd_logo.png"}
                       alt={`${similarAd.title} - ${similarAd.type}`}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -678,6 +663,16 @@ const AdDetailClient = ({ initialAd, adId }) => {
           </div>
         </div>
       </div>
+
+      {/* Full screen image */}
+      {!showMap && isFullscreen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75">
+          <button onClick={() => setIsFullscreen(false)} className="absolute top-10 right-14 text-white bg-red-400 border-2 border-red-600 rounded-xl px-4 py-1 cursor-pointer hover:bg-red-500">
+            X
+          </button>
+          <img src={ad.imageUrl || "/images/find/jmd_logo.png"} alt={ad.title} className="max-w-full max-h-full" />
+        </div>
+      )}
     </>
   );
 };

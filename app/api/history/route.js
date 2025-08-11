@@ -67,6 +67,29 @@ export async function GET(request) {
   }
 }
 
+export async function DELETE() {
+  try {
+    // Check if user is authenticated and admin
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!session.user.isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
+
+    await connectdb();
+
+    // Delete all history records
+    await ChangeHistory.deleteMany({});
+    return NextResponse.json({ message: 'All history records deleted' });
+  } catch (error) {
+    console.error('Error deleting history:', error);
+    return NextResponse.json({ error: 'Failed to delete history' }, { status: 500 });
+  }
+}
+
 // Helper function to create history record
 export async function createHistoryRecord(data) {
   try {
