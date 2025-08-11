@@ -203,8 +203,8 @@ const Home = () => {
 
   // --- Service Cards ---
   const serviceCards = [
-    { title: "Hoardings", link: "/find-hoardings?type=billboard", image: "/images/billboard.png" },
-    { title: "Digital Hoardings", link: "/find-hoardings?type=digital_billboard", image: "/images/digital_billboard.png" },
+    { title: "Hoardings", link: "/find-hoardings?type=hoarding", image: "/images/billboard.png" },
+    { title: "Digital Hoardings", link: "/find-hoardings?type=digital_hoarding", image: "/images/digital_billboard.png" },
     { title: "Transit Media", link: "/find-hoardings?type=transit_media", image: "/images/transit_media.png" },
     { title: "Airport Branding", link: "/find-hoardings?type=airport_branding", image: "/images/airport_branding.png" },
     { title: "Mall Media", link: "/find-hoardings?type=mall_media", image: "/images/mall_media.png" },

@@ -90,6 +90,9 @@ function generateUserExcel(data) {
         ]);
 
         // Data rows
+        let gstTotal = 0;
+        let totalWithGstTotal = 0;
+
         data.ads?.forEach((ad, index) => {
             const sizeInfo = parseSizeAndCalculateSqft(ad.size, ad.height, ad.width);
             const monthlyRate = ad.pricePerMonth ? parseInt(ad.pricePerMonth.toString().replace(/[^0-9]/g, '')) || 0 : 0;
@@ -117,7 +120,13 @@ function generateUserExcel(data) {
             
             // Calculate total cost (only add numeric values)
             const totalCost = monthlyRate + printingResult.value + mountingResult.value;
-            
+            const gstCost = totalCost * 0.18;
+            const totalWithGst = totalCost + gstCost;
+
+            // Accumulate totals
+            gstTotal += gstCost;
+            totalWithGstTotal += totalWithGst;
+
             // Display total cost
             const displayTotalCost = (printingResult.value > 0 || mountingResult.value > 0) 
                 ? totalCost.toLocaleString() 
@@ -125,8 +134,6 @@ function generateUserExcel(data) {
                     ? monthlyRate.toLocaleString() 
                     : 'N/A';
 
-            const calgst = (totalCost * 0.18).toLocaleString();
-            const totalwithgst = (totalCost + totalCost * 0.18).toLocaleString();
             sheetData.push([
                 ad.state || '',
                 ad.city || '',
@@ -143,20 +150,27 @@ function generateUserExcel(data) {
                 mountingResult.display,  // Will show cost if numeric, type if text
                 displayTotalCost,
                 '18%',
-                calgst || 'N/A',
-                totalwithgst || 'N/A'
+                gstCost.toLocaleString(),
+                totalWithGst.toLocaleString()
             ]);
         });
 
-        // Add empty rows before terms
-        sheetData.push(new Array(13).fill(''));
-        sheetData.push(new Array(13).fill(''));
+        // Add "Total" row after all ads
+        const totalRow = new Array(14).fill('');
+        totalRow[15] = gstTotal.toLocaleString(); // GST total column
+        totalRow[16] = totalWithGstTotal.toLocaleString(); // Total with GST column
+        totalRow[14] = 'Total'; // Label in first column
+        sheetData.push(totalRow);
 
-        // Terms and Conditions - Create merged header row
-        const termsHeaderRow = new Array(13).fill('');
+        // Add empty rows before terms (only once)
+        sheetData.push(new Array(17).fill(''));
+        sheetData.push(new Array(17).fill(''));
+
+        // Terms and Conditions - Create merged header row (only once)
+        const termsHeaderRow = new Array(17).fill('');
         termsHeaderRow[0] = 'Terms and Condition...';
         sheetData.push(termsHeaderRow);
-        
+
         const terms = [
             'Inventries will be provided absolutely on First Come n\' First Serve basis',
             'To prevent loosing a perticular inventory, quick booking is advisable.',
@@ -167,12 +181,12 @@ function generateUserExcel(data) {
             'Except Authorised mail all other medium of conversation will be treated as null n\' void.',
             '50% advance along with a Security Cheque along with xerox copy of Aadhar and GST Certificate is required',
             'Any payment made is only in favour of "JAI MATA DI" only.',
-            'Any dispute is subject to Jamshedpur Juridiction only.'
+            'Any dispute is subject to Jamshedpur Juridiction only.',
         ];
 
         // Add each term as a merged row
         terms.forEach((term, index) => {
-            const termRow = new Array(13).fill('');
+            const termRow = new Array(17).fill('');
             termRow[0] = `${index + 1}. ${term}`;
             sheetData.push(termRow);
         });
@@ -215,7 +229,7 @@ function generateUserExcel(data) {
         ];
 
         // Add merges for all 10 terms rows
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= 11; i++) {
             merges.push({
                 s: { r: termsStartRow + i, c: 0 }, 
                 e: { r: termsStartRow + i, c: 12 }
@@ -279,26 +293,6 @@ function generateUserExcel(data) {
                     };
                 }
             }
-        }
-
-        // Style Terms header - merged and styled like QUOTATION
-        const termsHeaderCell = XLSX.utils.encode_cell({ r: termsStartRow, c: 0 });
-        if (worksheet[termsHeaderCell]) {
-            worksheet[termsHeaderCell] = {
-                v: 'Terms and Condition...',
-                t: 's',
-                s: {
-                    font: { bold: true, sz: 14, color: { rgb: "000000" } },
-                    alignment: { horizontal: 'center', vertical: 'center' },
-                    fill: { fgColor: { rgb: "D3D3D3" } }, // Light gray background
-                    border: {
-                        top: { style: "thick", color: { rgb: "000000" } },
-                        bottom: { style: "thick", color: { rgb: "000000" } },
-                        left: { style: "thick", color: { rgb: "000000" } },
-                        right: { style: "thick", color: { rgb: "000000" } }
-                    }
-                }
-            };
         }
 
         // Set normal row heights for all rows

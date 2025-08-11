@@ -115,9 +115,9 @@ const Dashboard = () => {
           // Filter ads that will become free in next 7 days (only booked ads)
           const today = new Date();
           today.setHours(0, 0, 0, 0); // Reset time to start of day
-          const next7Days = new Date();
-          next7Days.setDate(today.getDate() + 7);
-          next7Days.setHours(23, 59, 59, 999); // End of the 7th day
+          const next15Days = new Date();
+          next15Days.setDate(today.getDate() + 15);
+          next15Days.setHours(23, 59, 59, 999); // End of the 15th day
 
           const expiring = data.filter(ad => {
             // Only include ads that are currently booked
@@ -142,7 +142,7 @@ const Dashboard = () => {
               bookedTillDate.setHours(23, 59, 59, 999); // End of the day
               
               // Check if booking ends within next 7 days (inclusive)
-              return bookedTillDate >= today && bookedTillDate <= next7Days;
+              return bookedTillDate >= today && bookedTillDate <= next15Days;
             } catch (error) {
               console.error('Error parsing date:', ad.bookedtill, error);
               return false;
@@ -266,7 +266,7 @@ const Dashboard = () => {
             {/* Expiring Bookings Table */}
             <div className='w-full bg-white rounded-2xl flex flex-col items-start p-2 md:p-3 justify-start'>
               <h2 className='text-base md:text-lg font-bold text-orange-600'>
-                Booked Hoardings becoming free in next 7 days ({expiringBookings.length})
+                Booked Hoardings becoming free in next 15 days ({expiringBookings.length})
               </h2>
               <div className="w-full overflow-hidden text-black mt-2 md:mt-4 flex-1">
                 <div className="h-64 overflow-y-auto w-full">
@@ -284,7 +284,7 @@ const Dashboard = () => {
                     <tbody>
                       {expiringBookings.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="text-center py-4">No booked hoardings becoming free in next 7 days.</td>
+                          <td colSpan={6} className="text-center py-4">No booked hoardings becoming free in next 15 days.</td>
                         </tr>
                       ) : (
                         expiringBookings.map((ad, index) => {
