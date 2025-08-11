@@ -29,25 +29,35 @@ const cityToState = {
 };
 
 const cityImages = [
-  { name: "asansol", file: "asansol.png" },
-  { name: "bhagalpur", file: "bhagalpur.png" },
-  { name: "bhubaneswar", file: "bhubaneswar.png" },
-  { name: "bilaspur", file: "bilaspur.png" },
+  // Jharkhand
   { name: "bokaro", file: "bokaro.png" },
-  { name: "cuttack", file: "cuttack.png" },
   { name: "dhanbad", file: "dhanbad.png" },
-  { name: "durgapur", file: "durgapur.png" },
-  { name: "durgbhilai", file: "durgbhilai.png" },
-  { name: "gaya", file: "gaya.png" },
   { name: "jamshedpur", file: "jamshedpur.png" },
-  { name: "kolkata", file: "kolkata.png" },
+  { name: "ranchi", file: "ranchi.png" },
+
+  // Bihar
+  { name: "bhagalpur", file: "bhagalpur.png" },
+  { name: "gaya", file: "gaya.png" },
   { name: "muzaffarpur", file: "muzaffarpur.png" },
   { name: "patna", file: "patna.png" },
-  { name: "raipur", file: "raipur.png" },
-  { name: "ranchi", file: "ranchi.png" },
+
+  // West Bengal
+  { name: "asansol", file: "asansol.png" },
+  { name: "durgapur", file: "durgapur.png" },
+  { name: "kolkata", file: "kolkata.png" },
+  { name: "siliguri", file: "siliguri.png" },
+
+  // Odisha
+  { name: "bhubaneswar", file: "bhubaneswar.png" },
+  { name: "cuttack", file: "cuttack.png" },
   { name: "rourkela", file: "rourkela.png" },
-  { name: "siliguri", file: "siliguri.png" }
+
+  // Chhattisgarh
+  { name: "bilaspur", file: "bilaspur.png" },
+  { name: "durgbhilai", file: "durgbhilai.png" },
+  { name: "raipur", file: "raipur.png" }
 ];
+
 
 // Build state-to-cities mapping dynamically
 const stateToCities = {};
