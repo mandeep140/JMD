@@ -76,7 +76,6 @@ const Footer = () => {
                                 <p className='font-extralight text-white'>B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002)</p>
                             </span>
                             <span>
-                                <Link href="https://maps.app.goo.gl/kUD7KdiPQBYQwFU46" target='_blank' className='font-bold text-black/60 hover:text-black cursor-pointer'>View on Maps</Link>
                             </span>
                         </span>
                     </div>

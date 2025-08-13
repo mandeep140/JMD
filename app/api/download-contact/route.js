@@ -3,12 +3,21 @@ import connectdb from '@/utils/connectdb';
 import DownloadContact from '@/Schema/DownloadContactSchema';
 import { sendDownloadFormNotification } from '@/utils/emailService';
 
+// Add the calculateTotal function
+const calculateTotal = (selectedAds, additionalPacks) => {
+    const mainCost = selectedAds.reduce((sum, ad) => sum + (parseFloat(ad.pricepermonth) || 0), 0);
+    const additionalCost = additionalPacks?.reduce((sum, pack) => sum + (pack.cost || 0), 0) || 0;
+    const totalCost = mainCost + additionalCost;
+    const taxCost = totalCost * 0.18;
+    return (totalCost + taxCost).toLocaleString();
+};
+
 export async function POST(request) {
     try {
         await connectdb();
         
         const data = await request.json();
-        const { name, email, mobile, reason, downloadType, selectedAds } = data;
+        const { name, email, mobile, reason, downloadType, selectedAds, additionalPacks } = data;
         
         // Generate unique request ID
         const reqid = `DL${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
@@ -18,7 +27,8 @@ export async function POST(request) {
             mediaCode: ad.mediacode || ad.mediaCode,
             title: ad.title,
             city: ad.city,
-            type: ad.type
+            type: ad.type,
+            pricePerMonth: ad.pricepermonth
         }));
         
         // Create new download contact record
@@ -30,27 +40,24 @@ export async function POST(request) {
             reason: reason.trim(),
             downloadType,
             selectedAds: adsData,
+            additionalPacks: additionalPacks || [],
             totalAdsCount: selectedAds.length
         });
         
         await downloadContact.save();
-
-        // Send email notification to admin
-        try {
-            await sendDownloadFormNotification({
-                reqid,
-                name: name.trim(),
-                email: email.trim(),
-                mobile: mobile.trim(),
-                reason: reason.trim(),
-                downloadType,
-                selectedAds: adsData,
-                totalAdsCount: selectedAds.length
-            });
-        } catch (emailError) {
-            console.error('Failed to send email notification:', emailError);
-            // Don't fail the request if email fails
-        }
+        
+        // Send email notification using the proper function
+        await sendDownloadFormNotification({
+            name: name.trim(),
+            email: email.trim(),
+            mobile: mobile.trim(),
+            reason: reason.trim(),
+            downloadType,
+            selectedAds: adsData,
+            additionalPacks: additionalPacks || [],
+            reqid,
+            totalValue: calculateTotal(selectedAds, additionalPacks)
+        });
         
         return NextResponse.json({ 
             success: true, 

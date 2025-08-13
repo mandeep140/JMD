@@ -27,11 +27,6 @@ const page = () => {
   const [selectedFromDate, setSelectedFromDate] = useState('');
   const [selectedToDate, setSelectedToDate] = useState('');
 
-  // Export popup states
-  const [showExportPopup, setShowExportPopup] = useState(false);
-  const [exportFromDate, setExportFromDate] = useState('');
-  const [exportToDate, setExportToDate] = useState('');
-
   // Pagination
   const [page, setPage] = useState(1);
   const PER_PAGE = 10;
@@ -74,27 +69,29 @@ const page = () => {
     setAdToDelete(null);
   };
 
-  const handleExportWithDateRange = () => {
+  const handleExportWithCurrentFilters = () => {
     if (filteredData.length === 0) {
-      alert("No data to export.");
+      alert("No data to export with current filters.");
       return;
     }
-    const exportData = filteredData.filter(d => {
-      if (!d.date) return false;
-      const dDate = new Date(d.date).setHours(0, 0, 0, 0);
-      const from = exportFromDate ? new Date(exportFromDate).setHours(0, 0, 0, 0) : null;
-      const to = exportToDate ? new Date(exportToDate).setHours(0, 0, 0, 0) : null;
-      if (from && dDate < from) return false;
-      if (to && dDate > to) return false;
-      return true;
-    });
-
-    if (exportData.length === 0) {
-      alert("No data found in selected date range.");
-      return;
-    }
-
-    exportRef.current.exportData(exportData, 'inventory');
+    
+    // Use the current filtered data directly
+    exportRef.current.exportData(filteredData, 'inventory');
+    
+    // Show confirmation message with filter info
+    const filterInfo = [];
+    if (selectedStatus) filterInfo.push(`Status: ${selectedStatus}`);
+    if (selectedCity) filterInfo.push(`City: ${selectedCity}`);
+    if (selectedType) filterInfo.push(`Type: ${selectedType}`);
+    if (selectedClient) filterInfo.push(`Client: ${selectedClient}`);
+    if (selectedFromDate) filterInfo.push(`From: ${selectedFromDate}`);
+    if (selectedToDate) filterInfo.push(`To: ${selectedToDate}`);
+    
+    const message = filterInfo.length > 0 
+      ? `Exported ${filteredData.length} records with filters: ${filterInfo.join(', ')}`
+      : `Exported all ${filteredData.length} records`;
+      
+    alert(message);
   };
 
   // Fixed filtering logic
@@ -205,10 +202,11 @@ if (status === "authenticated") {
             </div>
             <button
               className="mt-4 lg:mt-0 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
-              onClick={() => setShowExportPopup(true)}
+              onClick={handleExportWithCurrentFilters}
+              disabled={filteredData.length === 0}
             >
               <MdDownloading />
-              Export to Excel
+              Export to Excel ({filteredData.length} records)
             </button>
           </div>
 
@@ -443,57 +441,6 @@ if (status === "authenticated") {
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors duration-150"
                 >
                   Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Export Modal */}
-        {showExportPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Export to Excel</h3>
-              <p className="text-gray-600 mb-4">Select date range for export (optional)</p>
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">From Date:</label>
-                  <input
-                    type="date"
-                    value={exportFromDate}
-                    onChange={e => setExportFromDate(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">To Date:</label>
-                  <input
-                    type="date"
-                    value={exportToDate}
-                    onChange={e => setExportToDate(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => {
-                    setShowExportPopup(false);
-                    setExportFromDate('');
-                    setExportToDate('');
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-150"
-                  onClick={() => {
-                    handleExportWithDateRange();
-                    setShowExportPopup(false);
-                  }}
-                >
-                  Export
                 </button>
               </div>
             </div>

@@ -103,12 +103,10 @@ const CartPage = () => {
         return cartItems.reduce((sum, item) => sum + (parseFloat(item.pricepermonth) || 0), 0);
     };
 
-    // Fixed: Calculate additional cost from ads' printing and mounting
+    // Update the calculateAdditionalCost function
     const calculateAdditionalCost = () => {
-        return cartItems.reduce((sum, item) => {
-            const printing = parseFloat(item.printing) || 0;
-            const mounting = parseFloat(item.mounting) || 0;
-            return sum + printing + mounting;
+        return additionalPacks.reduce((sum, pack) => {
+            return sum + (pack.cost || 0);
         }, 0);
     };
 
@@ -186,20 +184,37 @@ const CartPage = () => {
                 body: JSON.stringify({
                     ...downloadForm,
                     selectedAds: cartItems,
+                    additionalPacks: additionalPacks,
                     downloadType: downloadType
                 }),
             });
 
             if (response.ok) {
-                alert('Contact form submitted successfully! You can now proceed with the download.');
+                alert('Contact form submitted successfully! Starting downloads...');
                 setShowDownloadForm(false);
                 setDownloadForm({ name: '', email: '', mobile: '', reason: '' });
                 
-                // Proceed with download
-                if (downloadType === 'PPT') {
+                // Download both files with delay
+                if (downloadType === 'BOTH') {
                     await generatePPT();
+                    // Add 2 second delay between downloads
+                    setTimeout(async () => {
+                        await generateExcel();
+                        // Clear cart after both downloads complete
+                        setTimeout(() => {
+                            clearCart();
+                        }, 1000);
+                    }, 2000);
+                } else if (downloadType === 'PPT') {
+                    await generatePPT();
+                    setTimeout(() => {
+                        clearCart();
+                    }, 1000);
                 } else if (downloadType === 'Excel') {
                     await generateExcel();
+                    setTimeout(() => {
+                        clearCart();
+                    }, 1000);
                 }
             } else {
                 throw new Error('Failed to submit contact form');
@@ -344,6 +359,27 @@ const CartPage = () => {
         }
     };
 
+    // Add this function to remove additional packs
+    const removeAdditionalPack = (packId) => {
+        setAdditionalPacks(prev => prev.filter(pack => pack.id !== packId));
+    };
+
+    // Add function to get additional cost for specific item
+    const getItemAdditionalCost = (item) => {
+        // Get additional packs for this specific item
+        const itemPacks = additionalPacks.filter(pack => pack.adId === item._id);
+        return itemPacks.reduce((sum, pack) => sum + (pack.cost || 0), 0);
+    };
+
+    const clearCart = () => {
+        setCartItems([]);
+        setAdditionalPacks([]);
+        setSelectedItems([]);
+        localStorage.removeItem('jmd_cart_items');
+        localStorage.removeItem('jmd_additional_packs');
+        alert('Cart cleared successfully! Thank you for choosing JMD Advertisement.');
+    };
+
     // Show loading state while cart is being loaded
     if (!cartLoaded) {
         return (
@@ -388,7 +424,7 @@ const CartPage = () => {
                                     onClick={removeSelectedItems}
                                     className="text-red-500 hover:text-red-700 text-sm"
                                 >
-                                    🗑️
+                                    {selectedItems.length === cartItems.length || selectedItems.length === 0 ? 'Remove All' : 'Remove Selected'}
                                 </button>
                             </div>
                         </div>
@@ -463,10 +499,10 @@ const CartPage = () => {
                                                     <span className="text-sm text-gray-900">{item.type}</span>
                                                 </div>
                                                 
-                                                {/* Other - Show ad's own printing and mounting costs */}
+                                                {/* Other - Show actual added additional costs */}
                                                 <div className="col-span-2">
                                                     <div className="text-xs text-gray-600">
-                                                        ₹ {((parseFloat(item.printing) || 0) + (parseFloat(item.mounting) || 0))}
+                                                        ₹ {getItemAdditionalCost(item)}
                                                     </div>
                                                 </div>
                                                 
@@ -512,7 +548,7 @@ const CartPage = () => {
                                                                 <span className="font-medium">Type:</span> {item.type}
                                                             </div>
                                                             <div className="col-span-2">
-                                                                <span className="font-medium">Other Cost:</span> ₹ {((parseFloat(item.printing) || 0) + (parseFloat(item.mounting) || 0))}
+                                                                <span className="font-medium">Other Cost:</span> ₹ {getItemAdditionalCost(item)}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -521,6 +557,32 @@ const CartPage = () => {
                                         </div>
                                     ))}
                                 </div>
+
+                                {/* Additional Packs Section in Cart */}
+                                {additionalPacks.length > 0 && (
+                                    <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200">
+                                        <h3 className="text-lg font-bold mb-4">Other Cost</h3>
+                                        <div className="space-y-2">
+                                            {additionalPacks.map((pack) => (
+                                                <div key={pack.id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                                                    <div>
+                                                        <h4 className="font-semibold text-sm">{pack.title}</h4>
+                                                        <p className="text-xs text-gray-600">₹{pack.unitCost} {pack.unit}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <span className="font-bold text-sm">₹{pack.cost}</span>
+                                                        <button
+                                                            onClick={() => removeAdditionalPack(pack.id)}
+                                                            className="text-red-500 hover:text-red-700 text-sm"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Add Media Button */}
                                 <div className="px-4 sm:px-6 py-3 border-t border-gray-200">
@@ -569,22 +631,18 @@ const CartPage = () => {
                                             </ul>
                                         </div>
                                         
-                                        {/* Right Column */}
+                                        {/* Right Column - Combined Download Button */}
                                         <div className="space-y-3">
                                             <button
-                                                onClick={() => handleDownload('PPT')}
-                                                disabled={cartItems.length === 0 || isGeneratingPPT}
+                                                onClick={() => handleDownload('BOTH')}
+                                                disabled={cartItems.length === 0 || isGeneratingPPT || isGeneratingExcel}
                                                 className="w-full bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
                                             >
-                                                {isGeneratingPPT ? 'Generating...' : 'Download PPT'}
+                                                {(isGeneratingPPT || isGeneratingExcel) ? 'Generating Files...' : 'Download PPT & Excel'}
                                             </button>
-                                            <button
-                                                onClick={() => handleDownload('Excel')}
-                                                disabled={cartItems.length === 0 || isGeneratingExcel}
-                                                className="w-full bg-white hover:bg-gray-50 border border-red-500 text-red-500 px-6 py-3 rounded-lg font-semibold transition-colors"
-                                            >
-                                                {isGeneratingExcel ? 'Generating...' : 'Download Excel'}
-                                            </button>
+                                            <p className="text-xs text-gray-600 text-center">
+                                                Downloads both PPT and Excel files
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -723,7 +781,13 @@ const CartPage = () => {
                                 Contact Information Required
                             </h3>
                             <p className="text-sm text-gray-600 mt-1">
-                                Please fill in your details to proceed with {downloadType === 'PPT' ? 'PPT' : 'Excel'} download
+                                Please fill in your details to proceed with {
+                                    downloadType === 'BOTH' 
+                                        ? 'PPT & Excel downloads' 
+                                        : downloadType === 'PPT' 
+                                            ? 'PPT download' 
+                                            : 'Excel download'
+                                }
                             </p>
                         </div>
                         
@@ -784,6 +848,15 @@ const CartPage = () => {
                                         placeholder="Tell us about your advertising needs..."
                                     />
                                 </div>
+
+                                {downloadType === 'BOTH' && (
+                                    <div className="bg-blue-50 p-3 rounded-lg">
+                                        <p className="text-xs text-blue-800">
+                                            📁 Both PPT and Excel files will be downloaded with a small delay between them.
+                                            Your cart will be cleared after successful downloads.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                             
                             <div className="flex justify-end gap-3 mt-6">
@@ -799,7 +872,8 @@ const CartPage = () => {
                                     disabled={isSubmittingDownloadForm}
                                     className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-400 transition-colors"
                                 >
-                                    {isSubmittingDownloadForm ? 'Submitting...' : 'Submit & Download'}
+                                    {isSubmittingDownloadForm ? 'Submitting...' : 
+                                     downloadType === 'BOTH' ? 'Submit & Download Both' : 'Submit & Download'}
                                 </button>
                             </div>
                         </form>

@@ -240,7 +240,11 @@ const page = () => {
         uploadedBy: {
           name: session?.user?.name || "Unknown",
           email: session?.user?.email || "Unknown"
-        }
+        },
+        coordinates: {
+          lat: parseFloat(form.latitude) || 0,
+          lng: parseFloat(form.longitude) || 0
+        },
       };
 
       // Remove form-specific fields that shouldn't be sent to API
@@ -620,7 +624,7 @@ const page = () => {
                         onChange={handleChange}
                         required
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="price per unit"
+                        placeholder="price per sqft"
                       />
                     </div>
 
@@ -701,13 +705,17 @@ const page = () => {
 
                   {/* Row 3 - hold/booked by, media owner */}
                   <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className='flex-1 min-w-0'>
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Hold/Booked By</label>
+                    <div className={`flex-1 min-w-0 ${form.status !== "Hold" && form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">
+                        Hold/Booked By{(form.status === "Hold" || form.status === "Booked") && "*"}
+                      </label>
                       <input
                         type="text"
                         name="holdBookedBy"
                         value={form.holdBookedBy}
                         onChange={handleChange}
+                        required={form.status === "Hold" || form.status === "Booked"}
+                        disabled={form.status !== "Hold" && form.status !== "Booked"}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
                       />

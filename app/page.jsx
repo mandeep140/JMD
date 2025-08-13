@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaWhatsapp, FaPhone, FaEnvelope, FaMapMarkerAlt, FaLongArrowAltRight, FaUser, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Head from 'next/head';
+import GoogleMap from '@/app/component/GoogleMap';
 
 // --- City/State Data (update as needed) ---
 const cityToState = {
@@ -27,6 +28,12 @@ const cityToState = {
   rourkela: "Odisha",
   siliguri: "West Bengal"
 };
+
+// coordinates
+const officeCordinates = {
+  lat: 22.760073,
+  lng: 86.189797
+}
 
 const cityImages = [
   // Jharkhand
@@ -429,23 +436,23 @@ const Home = () => {
           <div className="flex flex-nowrap items-start justify-center gap-4">
             {serviceCards.slice(5, 10).map((card, index) => (
               <Link href={card.link} key={index + 5}>
-              <div
-                key={index + 5}
-                onMouseEnter={() => setHoveredCard(index + 5)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className={`w-[220px] h-[300px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== (index + 5)
-                  ? 'opacity-40 scale-95'
-                  : 'opacity-100 scale-100'
-                  }`}
-              >
-                <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
-                <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
-                  <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
-                  <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
-                    Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
-                  </p>
+                <div
+                  key={index + 5}
+                  onMouseEnter={() => setHoveredCard(index + 5)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  className={`w-[220px] h-[300px] flex flex-col items-center justify-center overflow-hidden bg-white backdrop-blur-lg rounded-2xl hover:scale-110 duration-300 shadow-md hover:shadow-2xl transition-all cursor-pointer flex-shrink-0 ${hoveredCard !== null && hoveredCard !== (index + 5)
+                    ? 'opacity-40 scale-95'
+                    : 'opacity-100 scale-100'
+                    }`}
+                >
+                  <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
+                  <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
+                    <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
+                    <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
+                      Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
+                    </p>
+                  </div>
                 </div>
-              </div>
               </Link>
             ))}
           </div>
@@ -455,23 +462,25 @@ const Home = () => {
           <div className="w-full max-w-sm">
             <div className="relative w-full">
               {serviceCards.map((card, index) => (
-                <div
-                  key={index}
-                  className={`w-full transition-all duration-700 ease-out transform ${index === mobileCardIndex
-                    ? 'block opacity-100 translate-x-0 scale-100'
-                    : 'hidden opacity-0 translate-x-4 scale-95'
-                    }`}
-                >
-                  <div className="w-full bg-white backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden">
-                    <Image src={card.image} alt={card.title} width={320} height={192} className="w-full h-48 object-cover" />
-                    <div className="w-full p-6 text-center">
-                      <h1 className="font-bold text-black/70 text-xl mb-4">{card.title}</h1>
-                      <Link href={card.link} className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-base duration-300 hover:scale-105">
-                        Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={16} height={16} className='w-4' />
-                      </Link>
+                <Link href={card.link} key={index}>
+                  <div
+                    key={index}
+                    className={`w-full transition-all duration-700 ease-out transform ${index === mobileCardIndex
+                      ? 'block opacity-100 translate-x-0 scale-100'
+                      : 'hidden opacity-0 translate-x-4 scale-95'
+                      }`}
+                  >
+                    <div className="w-full bg-white backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden">
+                      <Image src={card.image} alt={card.title} width={320} height={192} className="w-full h-48 object-cover" />
+                      <div className="w-full p-6 text-center">
+                        <h1 className="font-bold text-black/70 text-xl mb-4">{card.title}</h1>
+                        <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-base duration-300 hover:scale-105">
+                          Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={16} height={16} className='w-4' />
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
             <div className="flex justify-center mt-6 gap-3">
@@ -832,8 +841,8 @@ const Home = () => {
                       key={index}
                       onClick={() => setTestimonialStartIndex(index * 3)}
                       className={`h-3 rounded-full transition-all duration-300 ${Math.floor(testimonialStartIndex / 3) === index
-                          ? 'bg-red-500 w-8'
-                          : 'bg-red-300 w-3 hover:bg-red-400'
+                        ? 'bg-red-500 w-8'
+                        : 'bg-red-300 w-3 hover:bg-red-400'
                         }`}
                     />
                   ))}
@@ -885,8 +894,8 @@ const Home = () => {
                       key={index}
                       onClick={() => setCurrentTestimonial(index)}
                       className={`h-3 rounded-full transition-all duration-300 ${index === currentTestimonial
-                          ? 'bg-red-500 w-8'
-                          : 'bg-red-300 w-3 hover:bg-red-400'
+                        ? 'bg-red-500 w-8'
+                        : 'bg-red-300 w-3 hover:bg-red-400'
                         }`}
                     />
                   ))}
@@ -945,6 +954,16 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Google map */}
+      <div className='w-[80vw] h-[400px] mx-auto mb-50'>
+        <h1 className='text-4xl font-extrabold text-black/70 text-center mb-6'>Our Office <span className='text-red-500'>Location</span></h1>
+        <div className='border-2 border-red-500'>
+          <GoogleMap
+            coordinates={officeCordinates}
+          />
         </div>
       </div>
 

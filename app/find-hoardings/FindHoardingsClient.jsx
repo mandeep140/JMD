@@ -608,7 +608,7 @@ const FindHoardingsClient = ({ searchParams }) => {
                                                 </svg>
                                                 <span className="text-sm">Filters</span>
                                             </button>
-                                            <h1 className="text-xl lg:text-2xl font-bold text-gray-800">Hoardings</h1>
+                                            <h1 className="text-xl lg:text-2xl font-bold text-gray-800">Our Media</h1>
                                         </div>
                                         <div className="flex items-center gap-4 w-full sm:w-auto">
                                             <div className="flex items-center gap-2">

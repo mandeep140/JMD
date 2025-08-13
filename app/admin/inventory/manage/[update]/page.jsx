@@ -556,7 +556,7 @@ const Page = () => {
                         onChange={handleChange}
                         required
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="price per unit"
+                        placeholder="price per sqft"
                       />
                     </div>
 

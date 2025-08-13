@@ -79,17 +79,6 @@ const DownloadContactClient = () => {
                             className="w-full px-3 md:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
                         />
                     </div>
-                    <div>
-                        <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            className="w-full sm:w-auto px-3 md:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm md:text-base"
-                        >
-                            <option value="all">All Types</option>
-                            <option value="PPT">PowerPoint</option>
-                            <option value="Excel">Excel</option>
-                        </select>
-                    </div>
                 </div>
 
                 {/* Table */}

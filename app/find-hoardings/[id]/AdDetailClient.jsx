@@ -7,6 +7,8 @@ import Image from 'next/image';
 import GoogleMap from '@/app/component/GoogleMap';
 import { FaShoppingBag, FaTag, FaMapMarkedAlt, FaRegImage } from "react-icons/fa";
 
+
+
 const AdDetailClient = ({ initialAd, adId }) => {
   const [showMap, setShowMap] = useState(false);
   const [ad, setAd] = useState(initialAd);
@@ -28,6 +30,10 @@ const AdDetailClient = ({ initialAd, adId }) => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
+
+  // New state variables for additional charges
+  const [addPrinting, setAddPrinting] = useState(false);
+  const [addMounting, setAddMounting] = useState(false);
 
   // Define additional packs data
   const additionalPacksData = [
@@ -168,7 +174,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
     }
   }, [ad?.mediacode, ad?.city, ad?.type, similarAdsFetched]);
 
-  // Cart functions
+  // Update the addToCart function
   const addToCart = () => {
     if (!ad) return;
 
@@ -177,14 +183,83 @@ const AdDetailClient = ({ initialAd, adId }) => {
       if (isAlreadyInCart) {
         return prev;
       }
-      const newCart = [...prev, ad];
+      
+      // Calculate additional costs
+      const printingCost = addPrinting ? (ad.printing * ad.height * ad.width * ad.unit) : 0;
+      const mountingCost = addMounting ? (ad.mounting * ad.height * ad.width * ad.unit) : 0;
+      
+      // Add item with additional cost flags
+      const newCartItem = {
+        ...ad,
+        addPrinting,
+        addMounting,
+        printingCost,
+        mountingCost,
+      };
+      
+      const newCart = [...prev, newCartItem];
       console.log('Adding to cart:', ad.title, 'New cart size:', newCart.length);
       return newCart;
     });
   };
 
+  // Add the missing isInCart function
   const isInCart = () => {
     return cartItems.some(item => item._id === ad._id);
+  };
+
+  // Add functions to handle individual additional cost additions
+  const addPrintingToCart = () => {
+    if (!ad) return;
+    
+    setAdditionalPacks(prev => {
+      const isAlreadyAdded = prev.some(pack => pack.adId === ad._id && pack.type === 'printing');
+      if (isAlreadyAdded) return prev;
+      
+      const printingPack = {
+        id: `printing_${ad._id}`,
+        adId: ad._id,
+        type: 'printing',
+        title: `Printing for ${ad.title}`,
+        cost: ad.printing * ad.height * ad.width * ad.unit,
+        unitCost: ad.printing,
+        unit: 'per sqft',
+        mediacode: ad.mediacode,
+      };
+      
+      return [...prev, printingPack];
+    });
+  };
+
+  const addMountingToCart = () => {
+    if (!ad) return;
+    
+    setAdditionalPacks(prev => {
+      const isAlreadyAdded = prev.some(pack => pack.adId === ad._id && pack.type === 'mounting');
+      if (isAlreadyAdded) return prev;
+      
+      const mountingPack = {
+        id: `mounting_${ad._id}`,
+        adId: ad._id,
+        type: 'mounting',
+        title: `Mounting for ${ad.title}`,
+        cost: ad.mounting * ad.height * ad.width * ad.unit,
+        unitCost: ad.mounting,
+        unit: 'per sqft',
+        mediacode: ad.mediacode,
+      };
+      
+      return [...prev, mountingPack];
+    });
+  };
+
+  // Check if printing/mounting is already added
+  const isPrintingAdded = () => {
+    return additionalPacks.some(pack => pack.adId === ad._id && pack.type === 'printing');
+  };
+
+  const isMountingAdded = () => {
+    return additionalPacks.some(pack => pack.adId === ad._id && pack.type === 'mounting');
   };
 
   // Handle sharing
@@ -327,16 +402,19 @@ const AdDetailClient = ({ initialAd, adId }) => {
           <div className="w-full md:w-1/2 h-[40vh] md:h-[80vh] flex flex-col gap-4 p-2 md:p-5 rounded-3xl">
             {/* Image Box */}
             <div
-              className={`w-full ${!showMap ? 'h-2/3' : 'h-1/3'} duration-300 ease-in-out aspect-video overflow-hidden relative cursor-pointer`}
-              onClick={() => setShowMap(false)}
-              onDoubleClick={() => setIsFullscreen(true)}
+              className={`w-full ${!showMap ? 'h-2/3' : 'h-1/3'
+                } duration-300 ease-in-out aspect-video overflow-hidden relative cursor-pointer`}
+              onClick={() => {
+                setShowMap(false);
+                setIsFullscreen(true);
+              }}
             >
               <Image
                 src={ad.imageUrl || "/images/find/jmd_logo.png"}
                 alt={`${ad.title} - ${ad.type} in ${ad.city}`}
                 fill
-                className="object-cover rounded-md"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain bg-white rounded-md"
+                sizes="(max-width: 1080px) 100vw, 50vw"
                 priority
               />
             </div>
@@ -452,7 +530,8 @@ const AdDetailClient = ({ initialAd, adId }) => {
           <h2 className='text-2xl md:text-4xl font-bold text-black mb-6 md:mb-8'>
             ADDITIONAL CHARGES:
           </h2>
-          <div className='flex flex-row gap-6'>
+          <div className='flex flex-col md:flex-row gap-6'>
+            {/* Printing Card */}
             <div className='bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200'>
               <div className='relative h-40 md:h-48 w-80'>
                 <Image
@@ -465,13 +544,31 @@ const AdDetailClient = ({ initialAd, adId }) => {
               <div className='p-4'>
                 <h3 className='text-lg md:text-xl font-bold text-black'>Printing</h3>
                 <div className='flex items-center justify-between'>
-                  <div>
+                  <div className='w-full'>
                     <div className='text-sm text-gray-500 mb-2'>₹ {ad.printing} Per sqft</div>
-                    <div className='text-2xl font-semibold text-black w-75 px-4 py-2 rounded-md bg-red-300'>₹ {ad.printing}</div>
+                    <div className='text-2xl font-semibold text-black w-full px-4 py-2 rounded-md bg-red-300 flex flex-row justify-between items-center'>
+                      <span>
+                        ₹ {(ad.printing * ad.height * ad.width * ad.unit)}
+                      </span>
+                      <button
+                        onClick={addPrintingToCart}
+                        disabled={isPrintingAdded()}
+                        className={`px-3 py-1 ml-2 rounded-md transition-colors duration-200 text-sm flex items-center ${
+                          isPrintingAdded() 
+                            ? 'bg-green-500 text-white cursor-not-allowed' 
+                            : 'bg-red-500 text-white hover:bg-red-600'
+                        }`}
+                      >
+                        <FaShoppingBag className='w-3 h-3' /> &nbsp;
+                        {isPrintingAdded() ? 'Added' : 'Add to cart'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            
+            {/* Mounting Card */}
             <div className='bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200'>
               <div className='relative h-40 md:h-48 w-80'>
                 <Image
@@ -484,9 +581,25 @@ const AdDetailClient = ({ initialAd, adId }) => {
               <div className='p-4'>
                 <h3 className='text-lg md:text-xl font-bold text-black'>Mounting</h3>
                 <div className='flex items-center justify-between'>
-                  <div>
-                    <div className='text-sm text-gray-500 mb-2'>₹ {ad.mounting} Per Unit</div>
-                    <div className='text-2xl font-semibold text-black w-75 px-4 py-2 rounded-md bg-red-300'>₹ {ad.unit * ad.mounting}</div>
+                  <div className='w-full'>
+                    <div className='text-sm text-gray-500 mb-2'>₹ {ad.mounting} Per sqft</div>
+                    <div className='text-2xl font-semibold text-black w-full px-4 py-2 rounded-md bg-red-300 flex flex-row justify-between items-center'>
+                      <span>
+                        ₹ {(ad.mounting * ad.height * ad.width * ad.unit)}
+                      </span>
+                      <button
+                        onClick={addMountingToCart}
+                        disabled={isMountingAdded()}
+                        className={`px-3 py-1 ml-2 rounded-md transition-colors duration-200 text-sm flex items-center ${
+                          isMountingAdded() 
+                            ? 'bg-green-500 text-white cursor-not-allowed' 
+                            : 'bg-red-500 text-white hover:bg-red-600'
+                        }`}
+                      >
+                        <FaShoppingBag className='w-3 h-3' /> &nbsp;
+                        {isMountingAdded() ? 'Added' : 'Add to cart'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

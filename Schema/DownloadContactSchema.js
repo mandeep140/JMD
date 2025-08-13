@@ -28,7 +28,7 @@ const DownloadContactSchema = new Schema({
     downloadType: {
         type: String,
         required: true,
-        enum: ['PPT', 'Excel']
+        enum: ['PPT', 'Excel', 'BOTH']
     },
     selectedAds: [{
         mediaCode: {
