@@ -243,7 +243,7 @@ async function generatePowerPoint(data) {
                 const lightingAbbr = getLightingAbbreviation(ad.lighting);
                 
                 // Create single line text with all information
-                let infoText = `${city} - ${title} - ${size}`;
+                let infoText = `${i+1}) ${city} - ${title} - ${size}`;
                 if (lightingAbbr) {
                     infoText += ` - ${lightingAbbr}`;
                 }

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export async function POST(request) {
     try {
         const data = await request.json();
         
-        const excelBuffer = generateUserExcel(data);
+        const excelBuffer = await generateUserExcel(data);
         
         if (!excelBuffer || excelBuffer.length < 100) {
             throw new Error('Generated Excel buffer is too small or empty');
@@ -28,10 +28,11 @@ export async function POST(request) {
     }
 }
 
-function generateUserExcel(data) {
+async function generateUserExcel(data) {
     try {
-        // Create a new workbook
-        const workbook = XLSX.utils.book_new();
+        // Create a new workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('JMD Quotation');
         
         // Helper function to parse size and get dimensions
         const parseSizeAndCalculateSqft = (sizeStr, height, width) => {
@@ -75,21 +76,113 @@ function generateUserExcel(data) {
             return lightingMap[lighting] || 'NL';
         };
 
-        // Build the complete sheet data
-        const sheetData = [];
-        
-        // Row 1: QUOTATION header (merged across columns)
-        const headerRow = new Array(13).fill('');
-        headerRow[0] = 'QUOTATION';
-        sheetData.push(headerRow);
-        
-        // Row 2: Column headers
-        sheetData.push([
-            'State', 'City', 'Medium', 'Type', 'Location', 'Hor', 'Ver', 'Faci', 'Units', 'SQFT', 
-            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST'
-        ]);
+        // Set column widths (added Sr No column)
+        worksheet.columns = [
+            { width: 6 },   // Sr No
+            { width: 12 },  // State
+            { width: 20 },  // City
+            { width: 25 },  // Medium
+            { width: 8 },   // Type (Lighting)
+            { width: 50 },  // Location
+            { width: 8 },   // Hor
+            { width: 8 },   // Ver
+            { width: 8 },   // Faci
+            { width: 10 },  // Units
+            { width: 10 },  // SQFT
+            { width: 25 },  // Display Charges Per Month
+            { width: 15 },  // Printing
+            { width: 15 },  // Mounting
+            { width: 18 },  // Total Cost
+            { width: 8 },   // GST
+            { width: 15 },  // GST cost
+            { width: 20 }   // Total Cost with GST
+        ];
 
-        // Data rows
+        // Row 1: Company header "From JMD - Advertisement"
+        worksheet.mergeCells('A1:R1');
+        const companyHeaderCell = worksheet.getCell('A1');
+        companyHeaderCell.value = {
+            richText: [
+                { text: 'From ', font: { size: 14, color: { argb: 'FF000000' } } },
+                { text: 'JMD - Advertisement', font: { bold: true, size: 14, color: { argb: 'FF000000' } } }
+            ]
+        };
+        companyHeaderCell.style = {
+            alignment: { horizontal: 'left', vertical: 'middle' },
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        };
+        worksheet.getRow(1).height = 25;
+
+        // Row 2: JMD Address
+        worksheet.mergeCells('A2:R2');
+        const addressCell = worksheet.getCell('A2');
+        addressCell.value = 'B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002) | Phone: +91-9204965321 | Email: info.jmd.jsr@gmail.com';
+        addressCell.style = {
+            font: { size: 11, color: { argb: 'FF666666' } },
+            alignment: { horizontal: 'left', vertical: 'middle' },
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        };
+        worksheet.getRow(2).height = 20;
+
+        // Row 3: Empty row for spacing
+        worksheet.getRow(3).height = 15;
+
+        // Row 4: Empty row for spacing
+        worksheet.getRow(4).height = 15;
+
+        // Row 5: QUOTATION header (merged across columns)
+        worksheet.mergeCells('A5:R5');
+        const quotationCell = worksheet.getCell('A5');
+        quotationCell.value = 'QUOTATION';
+        quotationCell.style = {
+            font: { bold: true, size: 16, color: { argb: 'FFFFFFFF' } },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF0000' } },
+            alignment: { horizontal: 'center', vertical: 'middle' },
+            border: {
+                top: { style: 'thick' },
+                left: { style: 'thick' },
+                bottom: { style: 'thick' },
+                right: { style: 'thick' }
+            }
+        };
+        worksheet.getRow(5).height = 30;
+
+        // Row 6: Column headers (added Sr No)
+        const headers = [
+            'Sr No', 'State', 'City', 'Medium', 'Type', 'Location', 'Hor', 'Ver', 'Faci', 'Units', 'SQFT', 
+            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST'
+        ];
+        
+        const headerRow = worksheet.getRow(6);
+        headers.forEach((header, index) => {
+            const cell = headerRow.getCell(index + 1);
+            cell.value = header;
+            cell.style = {
+                font: { bold: true, color: { argb: 'FF000000' } },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } },
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            };
+        });
+        headerRow.height = 25;
+
+        // Data rows (starting from row 7)
+        let currentRow = 7;
         let gstTotal = 0;
         let totalWithGstTotal = 0;
 
@@ -134,7 +227,10 @@ function generateUserExcel(data) {
                     ? monthlyRate.toLocaleString() 
                     : 'N/A';
 
-            sheetData.push([
+            // Add data row (added serial number as first column)
+            const dataRow = worksheet.getRow(currentRow);
+            const rowData = [
+                index + 1, // Sr No
                 ad.state || '',
                 ad.city || '',
                 ad.type || '',
@@ -146,30 +242,75 @@ function generateUserExcel(data) {
                 units,
                 sizeInfo.totalSqft || '',
                 monthlyRate ? monthlyRate.toLocaleString() : '',
-                printingResult.display, // Will show cost if numeric, type if text
-                mountingResult.display,  // Will show cost if numeric, type if text
+                printingResult.display,
+                mountingResult.display,
                 displayTotalCost,
                 '18%',
                 gstCost.toLocaleString(),
                 totalWithGst.toLocaleString()
-            ]);
+            ];
+
+            rowData.forEach((value, colIndex) => {
+                const cell = dataRow.getCell(colIndex + 1);
+                cell.value = value;
+                cell.style = {
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                };
+            });
+            dataRow.height = 20;
+            currentRow++;
         });
 
-        // Add "Total" row after all ads
-        const totalRow = new Array(14).fill('');
-        totalRow[15] = gstTotal.toLocaleString(); // GST total column
-        totalRow[16] = totalWithGstTotal.toLocaleString(); // Total with GST column
-        totalRow[14] = 'Total'; // Label in first column
-        sheetData.push(totalRow);
+        // Add "Total" row after all ads (updated column positions)
+        const totalRow = worksheet.getRow(currentRow);
+        totalRow.getCell(16).value = 'Total'; // Column P (16th column)
+        totalRow.getCell(17).value = gstTotal.toLocaleString(); // Column Q (17th column)
+        totalRow.getCell(18).value = totalWithGstTotal.toLocaleString(); // Column R (18th column)
+        
+        // Style total row
+        [16, 17, 18].forEach(colIndex => {
+            const cell = totalRow.getCell(colIndex);
+            cell.style = {
+                font: { bold: true },
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                },
+                fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE6E6E6' } }
+            };
+        });
+        totalRow.height = 20;
+        currentRow++;
 
-        // Add empty rows before terms (only once)
-        sheetData.push(new Array(17).fill(''));
-        sheetData.push(new Array(17).fill(''));
+        // Add empty rows before terms
+        currentRow += 2;
 
-        // Terms and Conditions - Create merged header row (only once)
-        const termsHeaderRow = new Array(17).fill('');
-        termsHeaderRow[0] = 'Terms and Condition...';
-        sheetData.push(termsHeaderRow);
+        // Terms and Conditions - Create merged header row (updated column range)
+        worksheet.mergeCells(`A${currentRow}:R${currentRow}`);
+        const termsHeaderCell = worksheet.getCell(`A${currentRow}`);
+        termsHeaderCell.value = 'Terms and Condition...';
+        termsHeaderCell.style = {
+            font: { bold: true, size: 12 },
+            alignment: { horizontal: 'left', vertical: 'middle' },
+            fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE6E6E6' } },
+            border: {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            }
+        };
+        worksheet.getRow(currentRow).height = 25;
+        currentRow++;
 
         const terms = [
             'Inventries will be provided absolutely on First Come n\' First Serve basis',
@@ -184,159 +325,27 @@ function generateUserExcel(data) {
             'Any dispute is subject to Jamshedpur Juridiction only.',
         ];
 
-        // Add each term as a merged row
+        // Add each term as a merged row (updated column range)
         terms.forEach((term, index) => {
-            const termRow = new Array(17).fill('');
-            termRow[0] = `${index + 1}. ${term}`;
-            sheetData.push(termRow);
-        });
-
-        // Create worksheet from array of arrays
-        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-        
-        // Set column widths to match attachment
-        const colWidths = [
-            { wch: 10 },  // State
-            { wch: 20 },  // City
-            { wch: 22 },  // Medium
-            { wch: 6 },   // Type (Lighting)
-            { wch: 50 },  // Location
-            { wch: 6 },   // Hor
-            { wch: 6 },   // Ver
-            { wch: 6 },   // Faci
-            { wch: 8 },   // Units
-            { wch: 8 },   // SQFT
-            { wch: 23 },  // Display Charges Per Month
-            { wch: 12 },  // Printing
-            { wch: 12 },  // Mounting
-            { wch: 15 },  // Cost
-            { wch: 15 },  // gst
-            { wch: 15 },  // gst cost
-            { wch: 18 }   // total cost with gst
-        ];
-        worksheet['!cols'] = colWidths;
-
-        // Calculate terms header row index
-        const dataEndRow = 2 + (data.ads?.length || 0) - 1;
-        const termsStartRow = dataEndRow + 3;
-
-        // Create merge array for all terms rows
-        const merges = [
-            // QUOTATION header (A1:M1)
-            { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } },
-            // Terms and Condition header (merge across all columns)
-            { s: { r: termsStartRow, c: 0 }, e: { r: termsStartRow, c: 12 } }
-        ];
-
-        // Add merges for all 10 terms rows
-        for (let i = 1; i <= 11; i++) {
-            merges.push({
-                s: { r: termsStartRow + i, c: 0 }, 
-                e: { r: termsStartRow + i, c: 12 }
-            });
-        }
-
-        worksheet['!merges'] = merges;
-
-        // Get the range
-        const range = XLSX.utils.decode_range(worksheet['!ref']);
-
-        // Style QUOTATION header (Row 1) - Red background like attachment
-        const quotationCell = 'A1';
-        worksheet[quotationCell] = { 
-            v: 'QUOTATION', 
-            t: 's', 
-            s: { 
-                font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } }, 
-                alignment: { horizontal: 'center', vertical: 'center' },
-                fill: { fgColor: { rgb: "FF0000" } }, // Red background
+            worksheet.mergeCells(`A${currentRow}:R${currentRow}`);
+            const termCell = worksheet.getCell(`A${currentRow}`);
+            termCell.value = `${index + 1}. ${term}`;
+            termCell.style = {
+                font: { size: 10 },
+                alignment: { horizontal: 'left', vertical: 'middle' },
                 border: {
-                    top: { style: "thick", color: { rgb: "000000" } },
-                    bottom: { style: "thick", color: { rgb: "000000" } },
-                    left: { style: "thick", color: { rgb: "000000" } },
-                    right: { style: "thick", color: { rgb: "000000" } }
+                    top: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+                    left: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+                    bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } },
+                    right: { style: 'thin', color: { argb: 'FFCCCCCC' } }
                 }
-            }
-        };
-
-        // Style column headers (Row 2) - Yellow background like attachment
-        for (let col = 0; col < 13; col++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: 1, c: col });
-            if (worksheet[cellAddress]) {
-                worksheet[cellAddress].s = {
-                    font: { bold: true, color: { rgb: "000000" } },
-                    fill: { fgColor: { rgb: "FFFF00" } }, // Yellow background
-                    border: {
-                        top: { style: "thin", color: { rgb: "000000" } },
-                        bottom: { style: "thin", color: { rgb: "000000" } },
-                        left: { style: "thin", color: { rgb: "000000" } },
-                        right: { style: "thin", color: { rgb: "000000" } }
-                    },
-                    alignment: { horizontal: 'center', vertical: 'center' }
-                };
-            }
-        }
-
-        // Style data rows with borders
-        for (let row = 2; row <= dataEndRow; row++) {
-            for (let col = 0; col < 13; col++) {
-                const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-                if (worksheet[cellAddress]) {
-                    worksheet[cellAddress].s = {
-                        border: {
-                            top: { style: "thin", color: { rgb: "000000" } },
-                            bottom: { style: "thin", color: { rgb: "000000" } },
-                            left: { style: "thin", color: { rgb: "000000" } },
-                            right: { style: "thin", color: { rgb: "000000" } }
-                        },
-                        alignment: { horizontal: 'center', vertical: 'center' }
-                    };
-                }
-            }
-        }
-
-        // Set normal row heights for all rows
-        worksheet['!rows'] = [];
-        worksheet['!rows'][0] = { hpt: 25 }; // QUOTATION header height
-        worksheet['!rows'][1] = { hpt: 20 }; // Column headers height
-        
-        // Normal height for terms header
-        worksheet['!rows'][termsStartRow] = { hpt: 25 }; // Terms header - normal height
-
-        // Set normal heights for terms rows (remove the increased height)
-        for (let i = 1; i <= 10; i++) {
-            const termRowIndex = termsStartRow + i;
-            worksheet['!rows'][termRowIndex] = { hpt: 20 }; // Normal height for terms rows
-        }
-
-        // Style all terms rows - merged across all columns
-        for (let i = 1; i <= 10; i++) {
-            const termRow = termsStartRow + i;
-            const termCell = XLSX.utils.encode_cell({ r: termRow, c: 0 });
-            
-            if (worksheet[termCell]) {
-                worksheet[termCell].s = {
-                    font: { sz: 10 },
-                    alignment: { horizontal: 'left', vertical: 'center' },
-                    border: {
-                        top: { style: "thin", color: { rgb: "CCCCCC" } },
-                        bottom: { style: "thin", color: { rgb: "CCCCCC" } },
-                        left: { style: "thin", color: { rgb: "CCCCCC" } },
-                        right: { style: "thin", color: { rgb: "CCCCCC" } }
-                    }
-                };
-            }
-        }
-
-        // Add the single worksheet to workbook
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'JMD Quotation');
-        
-        // Generate buffer
-        const buffer = XLSX.write(workbook, { 
-            type: 'buffer', 
-            bookType: 'xlsx',
-            compression: true 
+            };
+            worksheet.getRow(currentRow).height = 20;
+            currentRow++;
         });
+
+        // Generate buffer
+        const buffer = await workbook.xlsx.writeBuffer();
         
         return buffer;
         
