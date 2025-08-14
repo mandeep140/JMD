@@ -32,7 +32,7 @@ const FindHoardingsClient = ({ searchParams }) => {
     const router = useRouter();
 
     // Filter options
-    const mediaTypes = ['Hoarding', 'Unipole', 'Railway Station Branding', 'Pole Kiosk', 'Bus Shelter Branding', 'Transit Media', 'Mall Media', 'Airport Branding', 'Digital Hoarding', 'Digital Marketing'];
+    const mediaTypes = ['Hoarding', 'Unipole', 'Railway Station Branding', 'Pole Kiosk', 'Bus Shelter Branding', 'Transit Media', 'Mall Media', 'Airport Branding', 'Digital Hoarding', 'Digital Marketing', 'Gantry'];
     const topMediaTypes = mediaTypes.slice(0, 5);
     const moreMediaTypes = mediaTypes.slice(5);
     

@@ -423,6 +423,7 @@ const Page = () => {
                         <option>Unipole</option>
                         <option>Bus Shelter Branding</option>
                         <option>Digital Marketing</option>
+                        <option>Gantry</option>
                       </select>
                     </div>
 

@@ -54,6 +54,7 @@ const Footer = () => {
                             <Link href='/find-hoardings?type=unipole'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Unipole</p></Link>
                             <Link href='/find-hoardings?type=bus_shelter_branding'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Bus Shelter Branding</p></Link>
                             <Link href='/find-hoardings?type=digital_marketing'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Digital Marketing</p></Link>
+                            <Link href='/find-hoardings?type=gantry'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Gantry</p></Link>
                         </span>
                     </div>
 

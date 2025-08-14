@@ -67,7 +67,6 @@ const indianStates = [
 ];
 
 const initialForm = {
-  mediacode: "",
   title: "",
   city: "",
   customCity: "",
@@ -99,7 +98,6 @@ const page = () => {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
-  const [mediacodeExists, setMediacodeExists] = useState(false);
   const fileInputRef = useRef(null);
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -163,49 +161,8 @@ const page = () => {
     return { url: result.url, fileId: result.fileId };
   };
 
-  // Check if mediacode already exists
-  const checkMediacode = async (mediacode) => {
-    if (!mediacode) return;
-    try {
-      // Use the availability check endpoint
-      const res = await fetch(`/api/ads?mediacode=${encodeURIComponent(mediacode)}&check=availability`);
-      const data = await res.json();
-      setMediacodeExists(data.exists);
-    } catch (error) {
-      console.error("Error checking mediacode:", error);
-      setMediacodeExists(false);
-    }
-  };
-
-  //Get unique media code at the start of form
-  useEffect(() => {
-    const getUniqueMediaId = async () => {
-      const res = await fetch("/api/get-unique-mediaId");
-      const data = await res.json();
-      setForm((prev) => ({ ...prev, mediacode: data.mediaId }));
-    };
-    getUniqueMediaId();
-  }, []);
-
-  // Handle mediacode change with debounce
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (form.mediacode) {
-        checkMediacode(form.mediacode);
-      } else {
-        setMediacodeExists(false);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [form.mediacode]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (mediacodeExists) {
-      alert("Media code already exists. Please choose a different one.");
-      return;
-    }
 
     setLoading(true);
     try {
@@ -231,18 +188,19 @@ const page = () => {
       const sizeString = form.height && form.width ?
         `${form.height}*${form.width}ft (${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)}sqft)` : "";
 
+      // Prepare formData WITHOUT mediacode
       const formData = {
         ...form,
         city: finalCity,
-        size: sizeString, // Keep for backward compatibility
-        height: form.height, // Store separately
-        width: form.width, // Store separately
-        unit: form.unit, // Store number of units
-        printing: form.printing, // Store printing type
-        mounting: form.mounting, // Store mounting type
-        locality: form.locality, // Store locality
-        state: form.state, // Store state
-        holdBookedBy: form.holdBookedBy, // Store hold booked by
+        size: sizeString,
+        height: form.height,
+        width: form.width,
+        unit: form.unit,
+        printing: form.printing,
+        mounting: form.mounting,
+        locality: form.locality,
+        state: form.state,
+        holdBookedBy: form.holdBookedBy,
         mediaOwner: form.mediaOwner,
         imageUrl,
         imageId,
@@ -257,9 +215,9 @@ const page = () => {
         },
       };
 
-      // Remove form-specific fields that shouldn't be sent to API
       delete formData.customCity;
 
+      // POST to backend, backend will handle mediacode assignment
       const res = await fetch("/api/ads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -320,52 +278,8 @@ const page = () => {
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Basic Details</h3>
 
-                  {/* Row 1 - Media Code & Title */}
+                  {/* Row 1 - Title */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
-                    <div className="flex-1 min-w-0">
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Media Code*</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          name="mediacode"
-                          value={form.mediacode}
-                          onChange={handleChange}
-                          required
-                          className={`w-full bg-white border ${mediacodeExists
-                            ? 'border-red-500 focus:border-red-500'
-                            : form.mediacode && !mediacodeExists
-                              ? 'border-green-500 focus:border-green-500'
-                              : 'border-gray-300 focus:border-blue-400'
-                            } focus:outline-none rounded px-3 py-2 pr-10`}
-                          placeholder="JH01LT0865"
-                        />
-                        {form.mediacode && (
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            {mediacodeExists ? (
-                              <span className="text-red-500 text-lg">❌</span>
-                            ) : (
-                              <span className="text-green-500 text-lg">✅</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      {form.mediacode && (
-                        <div className="mt-1">
-                          {mediacodeExists ? (
-                            <p className="text-red-500 text-xs flex items-center gap-1">
-                              <span>⚠️</span>
-                              This media code already exists. Please choose a different one.
-                            </p>
-                          ) : (
-                            <p className="text-green-500 text-xs flex items-center gap-1">
-                              <span>✅</span>
-                              Media code is available!
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
                     <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Title*</label>
                       <input
@@ -402,6 +316,7 @@ const page = () => {
                         <option>Unipole</option>
                         <option>Bus Shelter Branding</option>
                         <option>Digital Marketing</option>
+                        <option>Gantry</option>
                       </select>
                     </div>
 
@@ -779,8 +694,8 @@ const page = () => {
 
                       <button
                         type="submit"
-                        disabled={loading || mediacodeExists || !form.mediacode}
-                        className={`px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 ${loading || mediacodeExists || !form.mediacode
+                        disabled={loading}
+                        className={`px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 ${loading
                           ? 'bg-gray-400 cursor-not-allowed text-white'
                           : 'bg-green-600 hover:bg-green-700 text-white'
                           }`}

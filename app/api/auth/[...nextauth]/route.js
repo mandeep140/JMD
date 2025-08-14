@@ -60,7 +60,10 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    // Remove maxAge completely so it uses normal session duration
+    maxAge: 60 * 60 * 10, // 10 hours
+  },
+  jwt: {
+    maxAge: 60 * 60 * 10, // 10 hours
   },
   cookies: {
     sessionToken: {
@@ -70,29 +73,12 @@ export const authOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        // Don't set maxAge - this makes it a session cookie (expires when browser closes)
+        maxAge: undefined, // Browser session cookie
       }
     },
-    callbackUrl: {
-      name: `next-auth.callback-url`,
-      options: {
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      }
-    },
-    csrfToken: {
-      name: `next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      }
-    }
   },
   pages: {
-    signIn: "/admin/login", // Custom sign-in page
+    signIn: "/admin/login",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -106,10 +92,22 @@ export const authOptions = {
     },
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id;
-        session.user.email = token.email;
-        session.user.name = token.name;
-        session.user.isAdmin = token.isAdmin;
+        // Check user existence and status on every session load
+        try {
+          await connectdb();
+          const dbUser = await User.findOne({ _id: token.id, status: 'active' });
+          if (!dbUser) {
+            // If user not found or not active, invalidate session
+            return null;
+          }
+          session.user.id = token.id;
+          session.user.email = token.email;
+          session.user.name = token.name;
+          session.user.isAdmin = token.isAdmin;
+        } catch (error) {
+          console.error('Session validation error:', error);
+          return null;
+        }
       }
       return session;
     },

@@ -21,6 +21,22 @@ function validateAdData(adData) {
     return null;
 }
 
+// Helper to get a unique media code (calls your sequential generator API and checks DB)
+async function getUniqueMediaCode() {
+    let tries = 0;
+    while (tries < 10) {
+        // Call your sequential code generator API
+        const res = await fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/get-unique-mediaId`);
+        const data = await res.json();
+        const code = data.mediaId;
+        // Check if code exists
+        const exists = await Ads.findOne({ mediacode: code });
+        if (!exists) return code;
+        tries++;
+    }
+    throw new Error("Could not generate unique media code after several attempts.");
+}
+
 export async function GET(request) {
     await connectDB();
     const mediacode = request.nextUrl.searchParams.get("mediacode");
@@ -114,7 +130,10 @@ export async function POST(request) {
         await connectDB();
         const adData = await request.json();
 
-        // Validate required fields
+        // Assign unique mediacode (ignore any mediacode sent from frontend)
+        adData.mediacode = await getUniqueMediaCode();
+
+        // Validate required fields (now mediacode is always present)
         const validationError = validateAdData(adData);
         if (validationError) {
             return NextResponse.json({ error: validationError }, { status: 400 });
@@ -134,9 +153,24 @@ export async function POST(request) {
         return NextResponse.json(savedAd, { status: 201 });
     } catch (error) {
         console.error("Error creating ad:", error);
-        // Handle duplicate mediacode error
+        // Handle duplicate mediacode error (should not happen, but just in case)
         if (error.code === 11000) {
-            return NextResponse.json({ error: "Media code must be unique" }, { status: 400 });
+            // Try again with a new mediacode
+            try {
+                await connectDB();
+                const adData = await request.json();
+                adData.mediacode = await getUniqueMediaCode();
+                const newAd = new Ads(adData);
+                const savedAd = await newAd.save();
+                await logAdChange('CREATE', savedAd, null, {
+                    id: session.user.id,
+                    name: session.user.name,
+                    email: session.user.email
+                }, request);
+                return NextResponse.json(savedAd, { status: 201 });
+            } catch (retryError) {
+                return NextResponse.json({ error: "Media code collision, please try again." }, { status: 500 });
+            }
         }
         return NextResponse.json({ error: "Failed to create ad" }, { status: 500 });
     }
