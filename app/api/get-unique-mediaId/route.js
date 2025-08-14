@@ -3,12 +3,14 @@ import Ads from "@/Schema/AdSchema";
 import connectDB from "@/utils/connectdb";
 
 export async function GET(request) {
-    let id = `JMD00${Math.floor(Math.random() * 9000) + 1000}`;
     await connectDB();
+    let id;
     while (true) {
+        // Generate a number between 1 and 9999, pad with zeros to 4 digits
+        const num = Math.floor(Math.random() * 9999) + 1;
+        id = `JMD${num.toString().padStart(4, "0")}`;
         const existingAd = await Ads.findOne({ mediaId: id });
         if (!existingAd) break;
-        id = `JMD00${Math.floor(Math.random() * 9000) + 1000}`;
     }
     return NextResponse.json({ mediaId: id });
 }
