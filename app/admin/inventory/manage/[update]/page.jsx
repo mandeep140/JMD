@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -67,6 +67,7 @@ const initialForm = {
   visibility: "Single",
   message: "",
   imageUrl: "",
+  imageId: "",
   date: "",
 };
 
@@ -90,9 +91,12 @@ const Page = () => {
   const pathname = usePathname();
   const params = useParams();
   const mediacode = params.update;
+  const fileInputRef = useRef(null);
 
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   // Fetch ad data on mount
   useEffect(() => {
@@ -129,6 +133,7 @@ const Page = () => {
           state: ad.state || "",
           holdBookedBy: ad.holdBookedBy || "",
           mediaOwner: ad.mediaOwner || "",
+          imageId: ad.imageId || "",
           city: cityInList ? ad.city : "Other",
           customCity: cityInList ? "" : ad.city
         });
@@ -149,6 +154,73 @@ const Page = () => {
     }
   }, [status, router]);
 
+  // Handle image file selection
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload image to ImageKit and return the URL
+  const uploadImage = async (file) => {
+    if (!file) return { url: "", fileId: "" };
+    
+    try {
+      // 1. Get auth params
+      const authRes = await fetch("/api/imagekit/auth");
+      const auth = await authRes.json();
+      
+      // 2. Prepare form data
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("publicKey", auth.publicKey);
+      formData.append("signature", auth.signature);
+      formData.append("expire", auth.expire);
+      formData.append("token", auth.token);
+      formData.append("fileName", file.name);
+      formData.append("folder", "/uploads");
+      
+      // 3. Upload
+      const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+        method: "POST",
+        body: formData,
+      });
+      
+      const result = await res.json();
+      return { url: result.url, fileId: result.fileId };
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
+    }
+  };
+
+  // Delete old image from ImageKit
+  const deleteOldImage = async (imageId) => {
+    if (!imageId) return;
+    
+    try {
+      const res = await fetch("/api/imagekit/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileId: imageId }),
+      });
+      
+      if (!res.ok) {
+        console.error("Failed to delete old image from ImageKit");
+      }
+    } catch (error) {
+      console.error("Error deleting old image:", error);
+    }
+  };
+
   // Update handleChange to handle city and customCity
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -165,6 +237,7 @@ const Page = () => {
         status: value,
         bookedfrom: value === "Available" ? "" : prev.bookedfrom,
         bookedtill: value === "Available" ? "" : prev.bookedtill,
+        holdBookedBy: value === "Available" ? "" : prev.holdBookedBy,
       }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
@@ -176,6 +249,22 @@ const Page = () => {
     setLoading(true);
 
     try {
+      let newImageUrl = form.imageUrl;
+      let newImageId = form.imageId;
+
+      // Handle image update if a new image is selected
+      if (imageFile) {
+        // Upload new image
+        const uploadResult = await uploadImage(imageFile);
+        newImageUrl = uploadResult.url;
+        newImageId = uploadResult.fileId;
+
+        // Delete old image if it exists
+        if (form.imageId) {
+          await deleteOldImage(form.imageId);
+        }
+      }
+
       // Use custom city if "Other" is selected, otherwise use selected city
       const finalCity = form.city === "Other" ? form.customCity : form.city;
 
@@ -202,6 +291,8 @@ const Page = () => {
         state: form.state, // Store state
         holdBookedBy: form.holdBookedBy, // Store hold booked by
         mediaOwner: form.mediaOwner, // Store media owner
+        imageUrl: newImageUrl,
+        imageId: newImageId,
         coordinates: {
           lat: parseFloat(form.latitude) || 0,
           lng: parseFloat(form.longitude) || 0
@@ -237,6 +328,15 @@ const Page = () => {
       alert("An error occurred while updating the advertisement. Please try again.");
     }
     setLoading(false);
+  };
+
+  // Clear image selection
+  const clearImageSelection = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   if (status === "loading" || loading) {
@@ -637,13 +737,17 @@ const Page = () => {
 
                   {/* Row 3 - hold/booked by, media owner */}
                   <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className='flex-1 min-w-0'>
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Hold/Booked By</label>
+                    <div className={`flex-1 min-w-0 ${form.status !== "Hold" && form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">
+                        Hold/Booked By{(form.status === "Hold" || form.status === "Booked") && "*"}
+                      </label>
                       <input
                         type="text"
                         name="holdBookedBy"
                         value={form.holdBookedBy}
                         onChange={handleChange}
+                        required={form.status === "Hold" || form.status === "Booked"}
+                        disabled={form.status !== "Hold" && form.status !== "Booked"}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
                       />
@@ -677,23 +781,87 @@ const Page = () => {
                   />
                 </div>
 
-                {/* IMAGE DISPLAY SECTION */}
+                {/* IMAGE UPDATE SECTION */}
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Current Image</h3>
-                  {form.imageUrl && (
-                    <div className="flex justify-center">
-                      <img
-                        src={form.imageUrl}
-                        alt={form.title}
-                        className="max-w-md w-full h-auto rounded-lg border shadow-sm"
+                  <h3 className="text-lg font-bold mb-4 text-gray-800 border-b border-gray-300 pb-2">Update Image</h3>
+                  
+                  {/* Current Image Display */}
+                  <div className="mb-4">
+                    <h4 className="text-md font-semibold mb-2 text-gray-700">Current Image:</h4>
+                    {form.imageUrl ? (
+                      <div className="flex justify-center">
+                        <img
+                          src={form.imageUrl}
+                          alt={form.title}
+                          className="max-w-md w-full h-auto rounded-lg border shadow-sm"
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-500 py-8 border border-dashed border-gray-300 rounded-lg">
+                        No image uploaded for this advertisement
+                      </div>
+                    )}
+                  </div>
+
+                  {/* New Image Selection */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-semibold mb-2 text-gray-700">Upload New Image (Optional):</span>
+                      <span className="text-xs text-gray-400 mb-2">Only JPG and PNG file supported. This will replace the current image.</span>
+
+                      <div className="flex gap-4 items-center flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          Choose New Image
+                        </button>
+
+                        {imageFile && (
+                          <button
+                            type="button"
+                            onClick={clearImageSelection}
+                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Clear Selection
+                          </button>
+                        )}
+                      </div>
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        ref={fileInputRef}
+                        className="hidden"
                       />
+
+                      {imageFile && (
+                        <div className="mt-4 w-full">
+                          <span className="text-sm font-semibold text-green-600 mb-2 block">New Image Selected:</span>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs text-green-600">{imageFile.name}</span>
+                            {imagePreview && (
+                              <div className="flex justify-center">
+                                <img
+                                  src={imagePreview}
+                                  alt="Preview"
+                                  className="max-w-xs w-full h-auto rounded-lg border shadow-sm"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {!form.imageUrl && (
-                    <div className="text-center text-gray-500 py-8">
-                      No image uploaded for this advertisement
-                    </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Submit Button */}

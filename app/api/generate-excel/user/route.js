@@ -190,9 +190,12 @@ async function generateUserExcel(data) {
             const sizeInfo = parseSizeAndCalculateSqft(ad.size, ad.height, ad.width);
             const monthlyRate = ad.pricePerMonth ? parseInt(ad.pricePerMonth.toString().replace(/[^0-9]/g, '')) || 0 : 0;
             const units = ad.unit || 1;
+            const height = parseFloat(ad.height) || 0;
+            const width = parseFloat(ad.width) || 0;
+            const totalArea = height * width * units; // Total area for all units
             
-            // Helper function to safely get cost value from printing/mounting fields
-            const getCostValue = (value) => {
+            // Helper function to safely get cost value and calculate total cost
+            const getCostValue = (value, multiplier = 1) => {
                 if (value === undefined || value === null || value === '' || value === 'N/A') {
                     return { value: 0, display: 'N/A', isNumeric: false };
                 }
@@ -200,16 +203,17 @@ async function generateUserExcel(data) {
                 // Check if it's a number (stored as string or actual number)
                 const parsed = parseFloat(value);
                 if (!isNaN(parsed) && parsed > 0) {
-                    return { value: parsed, display: parsed.toLocaleString(), isNumeric: true };
+                    const totalCost = parsed * multiplier;
+                    return { value: totalCost, display: totalCost.toLocaleString(), isNumeric: true };
                 }
                 
                 // If not numeric, treat as type (like "Vinyl Print", "Wall Mount")
                 return { value: 0, display: value.toString(), isNumeric: false };
             };
             
-            // Get printing and mounting costs/types
-            const printingResult = getCostValue(ad.printing);
-            const mountingResult = getCostValue(ad.mounting);
+            // Calculate printing and mounting costs with area multiplication
+            const printingResult = getCostValue(ad.printing, totalArea);
+            const mountingResult = getCostValue(ad.mounting, totalArea);
             
             // Calculate total cost (only add numeric values)
             const totalCost = monthlyRate + printingResult.value + mountingResult.value;

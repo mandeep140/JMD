@@ -16,7 +16,7 @@ export const logAdChange = async (actionType, adData, oldData, userInfo, req = n
         'title', 'status', 'clientname', 'city', 'locality', 'type', 
         'size', 'height', 'width', 'unit', 'printing', 'mounting',
         'lighting', 'pricepermonth', 'priceperday', 'bookedfrom', 
-        'bookedtill', 'show', 'message', 'state', 'holdBookedBy', 'mediaOwner'
+        'bookedtill', 'show', 'message', 'state', 'holdBookedBy', 'mediaOwner', 'imageUrl'
       ];
 
       fieldsToTrack.forEach(field => {

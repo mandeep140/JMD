@@ -22,10 +22,10 @@ const Footer = () => {
                         <p className='mt-4 text-sm font-extralight text-white text-left'>Jai Mata Di Advertising, based in Harhargutu, Jamshedpur, is a decade strong and the fastest growing advertising agency in East India, committed to delivering effective, result-driven campaigns. With a deep understanding of client needs,
                             we focus on crafting impactful outdoor advertising solutions marked by quality, consistency, and commitment.</p>
                         <span className='w-full flex items-start justify-start mt-8 text-black/70 text-2xl gap-4'>
-                            <FaFacebookSquare className='hover:text-black duration-100 cursor-pointer' />
-                            <FaSquareInstagram className='hover:text-black duration-100 cursor-pointer' />
-                            <FaSquareXTwitter className='hover:text-black duration-100 cursor-pointer' />
-                            <FaLinkedin className='hover:text-black duration-100 cursor-pointer' />
+                            <a href="https://www.facebook.com/people/Jmd-Advertisement/pfbid08LDt9iuyyaVvj23j1mFre394HAvkriZktnYQUNjtgmM6nLGa8zPWRVkX9ZbSbRm6l/" target='_blank'><FaFacebookSquare className='hover:text-black duration-100 cursor-pointer' /></a>
+                            <a href="https://www.instagram.com/jmd_advertisement/" target='_blank'><FaSquareInstagram className='hover:text-black duration-100 cursor-pointer' /></a>
+                            <a href="https://x.com/JMDAdds" target='_blank'><FaSquareXTwitter className='hover:text-black duration-100 cursor-pointer' /></a>
+                            <a href="https://www.linkedin.com/company/jmd-advertisement/" target='_blank'><FaLinkedin className='hover:text-black duration-100 cursor-pointer' /></a>
                         </span>
                     </div>
 

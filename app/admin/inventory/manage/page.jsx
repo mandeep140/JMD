@@ -177,6 +177,16 @@ const page = () => {
     }
   };
 
+  //Get unique media code at the start of form
+  useEffect(() => {
+    const getUniqueMediaId = async () => {
+      const res = await fetch("/api/get-unique-mediaId");
+      const data = await res.json();
+      setForm((prev) => ({ ...prev, mediacode: data.mediaId }));
+    };
+    getUniqueMediaId();
+  }, []);
+
   // Handle mediacode change with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
