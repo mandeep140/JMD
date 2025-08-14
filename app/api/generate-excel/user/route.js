@@ -159,7 +159,7 @@ async function generateUserExcel(data) {
 
         // Row 6: Column headers (added Sr No)
         const headers = [
-            'Sr No', 'State', 'City', 'Medium', 'Type', 'Location', 'Ver', 'Hor', 'Faci', 'Units', 'SQFT', 
+            'Sr No', 'State', 'City', 'Medium', 'Type', 'Location', 'hor', 'ver', 'Faci', 'Units', 'SQFT', 
             'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST'
         ];
         
@@ -248,8 +248,8 @@ async function generateUserExcel(data) {
                 ad.type || '',
                 getLightingCode(ad.lighting),
                 ad.title || '',
-                sizeInfo.vertical || '',
                 sizeInfo.horizontal || '',
+                sizeInfo.vertical || '',
                 ad.visibility === 'Double' ? 2 : 1,
                 units,
                 sizeInfo.totalSqft || '',
