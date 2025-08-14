@@ -507,7 +507,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
                   <div className='text-xs md:text-sm font-extrabold'>Visibility</div>
                 </div>
                 <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>
-                  <div className='text-lg md:text-xl'>{ad.size}</div>
+                  <div className='text-lg md:text-xl'>{ad.width}*{ad.height} - {ad.width * ad.height}sqft</div>
                   <div className='text-xs md:text-sm font-extrabold'>Size</div>
                 </div>
                 <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>

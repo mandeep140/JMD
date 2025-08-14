@@ -26,6 +26,8 @@ const page = () => {
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedFromDate, setSelectedFromDate] = useState('');
   const [selectedToDate, setSelectedToDate] = useState('');
+  const [selectedLocality, setSelectedLocality] = useState(''); // New filter
+  const [selectedHoldBookedBy, setSelectedHoldBookedBy] = useState(''); // New filter
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -84,6 +86,8 @@ const page = () => {
     if (selectedCity) filterInfo.push(`City: ${selectedCity}`);
     if (selectedType) filterInfo.push(`Type: ${selectedType}`);
     if (selectedClient) filterInfo.push(`Client: ${selectedClient}`);
+    if (selectedLocality) filterInfo.push(`Locality: ${selectedLocality}`);
+    if (selectedHoldBookedBy) filterInfo.push(`Hold/Booked By: ${selectedHoldBookedBy}`);
     if (selectedFromDate) filterInfo.push(`From: ${selectedFromDate}`);
     if (selectedToDate) filterInfo.push(`To: ${selectedToDate}`);
     
@@ -99,6 +103,12 @@ const page = () => {
     if (selectedStatus && d.status !== selectedStatus) return false;
     if (selectedCity && d.city !== selectedCity) return false;
     if (selectedType && d.type !== selectedType) return false;
+    
+    // Locality filter
+    if (selectedLocality && d.locality !== selectedLocality) return false;
+    
+    // Hold/Booked by filter
+    if (selectedHoldBookedBy && d.holdBookedBy !== selectedHoldBookedBy) return false;
 
     if (selectedClient) {
       const clientName = d.clientname || d.clientName || '';
@@ -143,6 +153,8 @@ const page = () => {
   const cityOptions = Array.from(new Set(data.map(d => d.city).filter(Boolean)));
   const typeOptions = Array.from(new Set(data.map(d => d.type).filter(Boolean)));
   const clientOptions = Array.from(new Set(data.map(d => d.clientname || d.clientName).filter(Boolean)));
+  const localityOptions = Array.from(new Set(data.map(d => d.locality).filter(Boolean))); // New options
+  const holdBookedByOptions = Array.from(new Set(data.map(d => d.holdBookedBy).filter(Boolean))); // New options
 
   const resetPage = () => setPage(1);
 
@@ -213,7 +225,7 @@ if (status === "authenticated") {
           {/* Filters */}
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Filters</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 mb-4">
               <select
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={selectedStatus}
@@ -238,6 +250,17 @@ if (status === "authenticated") {
 
               <select
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={selectedLocality}
+                onChange={e => { setSelectedLocality(e.target.value); resetPage(); }}
+              >
+                <option value="">All Localities</option>
+                {localityOptions.map(locality => (
+                  <option key={locality} value={locality}>{locality}</option>
+                ))}
+              </select>
+
+              <select
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={selectedType}
                 onChange={e => { setSelectedType(e.target.value); resetPage(); }}
               >
@@ -255,6 +278,17 @@ if (status === "authenticated") {
                 <option value="">All Clients</option>
                 {clientOptions.map(client => (
                   <option key={client} value={client}>{client}</option>
+                ))}
+              </select>
+
+              <select
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={selectedHoldBookedBy}
+                onChange={e => { setSelectedHoldBookedBy(e.target.value); resetPage(); }}
+              >
+                <option value="">All Hold/Booked By</option>
+                {holdBookedByOptions.map(holdBookedBy => (
+                  <option key={holdBookedBy} value={holdBookedBy}>{holdBookedBy}</option>
                 ))}
               </select>
 
@@ -283,6 +317,8 @@ if (status === "authenticated") {
                   setSelectedCity('');
                   setSelectedType('');
                   setSelectedClient('');
+                  setSelectedLocality('');
+                  setSelectedHoldBookedBy('');
                   setSelectedFromDate('');
                   setSelectedToDate('');
                   resetPage();
@@ -303,7 +339,7 @@ if (status === "authenticated") {
           <div className="flex justify-between items-center mb-4">
             <div className="text-sm text-gray-600">
               Showing {filteredData.length} of {data.length} records
-              {(selectedStatus || selectedCity || selectedType || selectedClient || selectedFromDate || selectedToDate) && (
+              {(selectedStatus || selectedCity || selectedType || selectedClient || selectedLocality || selectedHoldBookedBy || selectedFromDate || selectedToDate) && (
                 <span className="ml-2 text-blue-600 font-medium">(filtered)</span>
               )}
             </div>
@@ -449,7 +485,7 @@ if (status === "authenticated") {
 
         {/* View Ad Modal */}
         {viewAd && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center p-6 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">Media Details</h3>
@@ -479,13 +515,13 @@ if (status === "authenticated") {
                   <div><strong>City:</strong> {viewAd.city}</div>
                   {viewAd.locality && <div><strong>Locality:</strong> {viewAd.locality}</div>}
                   <div><strong>Type:</strong> {viewAd.type}</div>
-                  <div><strong>Size:</strong> {viewAd.size}</div>
-                  {viewAd.height && viewAd.width && (
-                    <div><strong>Dimensions:</strong> {viewAd.height} x {viewAd.width} ft</div>
+                  <div><strong>Size:</strong> {viewAd.width * viewAd.height}sqft</div>
+                  {viewAd.width && viewAd.height && (
+                    <div><strong>Dimensions:</strong> {viewAd.width} x {viewAd.height} ft</div>
                   )}
                   {viewAd.unit && <div><strong>Units Required:</strong> {viewAd.unit}</div>}
-                  {viewAd.printing && <div><strong>Printing Type:</strong> {viewAd.printing}</div>}
-                  {viewAd.mounting && <div><strong>Mounting Type:</strong> {viewAd.mounting}</div>}
+                  {viewAd.printing && <div><strong>Printing Cost per ft:</strong> {viewAd.printing}</div>}
+                  {viewAd.mounting && <div><strong>Mounting Cost per ft:</strong> {viewAd.mounting}</div>}
                   <div><strong>Lighting:</strong> {viewAd.lighting}</div>
                   <div><strong>Price per Month:</strong> ₹{viewAd.pricepermonth}</div>
                   <div><strong>Price per Day:</strong> ₹{viewAd.priceperday}</div>

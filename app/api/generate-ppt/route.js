@@ -4,13 +4,13 @@ import pptxgen from 'pptxgenjs';
 export async function POST(request) {
     try {
         const data = await request.json();
-        
+
         const pptBuffer = await generatePowerPoint(data);
-        
+
         if (!pptBuffer || pptBuffer.length < 1000) {
             throw new Error('Generated PPT buffer is too small or empty');
         }
-        
+
         return new NextResponse(pptBuffer, {
             status: 200,
             headers: {
@@ -21,8 +21,8 @@ export async function POST(request) {
         });
     } catch (error) {
         console.error('Error generating PPT:', error);
-        return NextResponse.json({ 
-            error: 'Failed to generate presentation', 
+        return NextResponse.json({
+            error: 'Failed to generate presentation',
             details: error.message,
             stack: error.stack
         }, { status: 500 });
@@ -38,25 +38,25 @@ async function fetchImageAsBase64(imageUrl) {
             // If it's a relative URL, make it absolute
             fullUrl = `https://adjmd.com${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
         }
-        
+
         const response = await fetch(fullUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
         });
-        
+
         if (!response.ok) {
             return null;
         }
-        
+
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const base64 = buffer.toString('base64');
-        
+
         // Determine image type from URL or response
         const contentType = response.headers.get('content-type') || '';
         let extension = 'jpg';
-        
+
         if (contentType.includes('png') || imageUrl.toLowerCase().includes('.png')) {
             extension = 'png';
         } else if (contentType.includes('jpeg') || contentType.includes('jpg') || imageUrl.toLowerCase().includes('.jpg')) {
@@ -64,12 +64,12 @@ async function fetchImageAsBase64(imageUrl) {
         } else if (contentType.includes('webp') || imageUrl.toLowerCase().includes('.webp')) {
             extension = 'jpg'; // Convert webp to jpg for PowerPoint compatibility
         }
-        
+
         return {
             data: base64,
             extension: extension
         };
-        
+
     } catch (error) {
         console.error('Error fetching image:', error.message);
         return null;
@@ -79,9 +79,9 @@ async function fetchImageAsBase64(imageUrl) {
 // Helper function to get lighting abbreviation
 function getLightingAbbreviation(lighting) {
     if (!lighting) return '';
-    
+
     const lightingLower = lighting.toLowerCase();
-    
+
     if (lightingLower.includes('no light')) {
         return 'NL';
     } else if (lightingLower.includes('fully light')) {
@@ -91,7 +91,7 @@ function getLightingAbbreviation(lighting) {
     } else if (lightingLower.includes('back light')) {
         return 'BL';
     }
-    
+
     return ''; // Default if no match
 }
 
@@ -99,17 +99,17 @@ async function generatePowerPoint(data) {
     try {
         // Create new presentation
         const pres = new pptxgen();
-        
+
         // Set slide dimensions to standard 16:9 ratio
         pres.defineLayout({ name: 'JMD_LAYOUT', width: 10, height: 5.625 });
         pres.layout = 'JMD_LAYOUT';
-        
+
         // Set presentation properties
         pres.author = 'JMD Advertisement';
         pres.company = 'JMD Advertisement';
         pres.title = data.title || 'JMD Hoardings Presentation';
         pres.subject = 'Outdoor Advertising Hoardings';
-        
+
         // Define color scheme with proper hex codes
         const colors = {
             white: 'FFFFFF',
@@ -121,10 +121,10 @@ async function generatePowerPoint(data) {
         // ===== SLIDE 1: Title Slide with JMD Logo =====
         const titleSlide = pres.addSlide();
         titleSlide.background = { color: colors.white };
-        
+
         // Fetch and add the PPT logo as full page image
         const logoImageData = await fetchImageAsBase64('/images/ppt_logo.png');
-        
+
         if (logoImageData) {
             // Add full page logo image
             titleSlide.addImage({
@@ -138,7 +138,7 @@ async function generatePowerPoint(data) {
         } else {
             // Fallback: Use the previous design if logo image fails to load
             console.warn('Logo image not found, using fallback design');
-            
+
             // JMD Logo Area - Centered Red Oval Background
             titleSlide.addShape(pres.shapes.OVAL, {
                 x: 3.0,
@@ -148,7 +148,7 @@ async function generatePowerPoint(data) {
                 fill: { color: colors.red },
                 line: { width: 0 }
             });
-            
+
             // JMD Text in Logo - Properly centered
             titleSlide.addText('JMD', {
                 x: 3.0,
@@ -162,7 +162,7 @@ async function generatePowerPoint(data) {
                 align: 'center',
                 valign: 'middle'
             });
-            
+
             // JAI MATA DI Text - Centered below logo
             titleSlide.addText('JAI MATA DI', {
                 x: 1.0,
@@ -176,7 +176,7 @@ async function generatePowerPoint(data) {
                 align: 'center',
                 valign: 'middle'
             });
-            
+
             // OUTDOOR ADVERTISEMENT Text - Centered at bottom
             titleSlide.addText('OUTDOOR ADVERTISEMENT', {
                 x: 1.0,
@@ -198,19 +198,26 @@ async function generatePowerPoint(data) {
                 const ad = data.ads[i];
                 const contentSlide = pres.addSlide();
                 contentSlide.background = { color: colors.white };
-                
+
                 // Try to fetch and add the hoarding image at the top
                 const imageData = await fetchImageAsBase64(ad.imageUrl);
-                
+
                 if (imageData) {
-                    // Add large hoarding image at the top of slide
+                    // Add image with proper centering and aspect ratio preservation
                     contentSlide.addImage({
                         data: `data:image/${imageData.extension};base64,${imageData.data}`,
-                        x: 0.5,
-                        y: 0.3,
-                        w: 9.0,
-                        h: 4.0,
-                        sizing: { type: 'contain', w: 9.0, h: 4.0 }
+                        x: 1.5,    // Left margin
+                        y: 0.3,    // Top position
+                        w: 7.0,    // Maximum width
+                        h: 3.8,    // Maximum height
+                        sizing: { 
+                            type: 'contain'  // This maintains aspect ratio and fits within bounds
+                        },
+                        // Add border around image
+                        line: { 
+                            color: '999999',  // Gray border
+                            width: 2          // Border width in points
+                        }
                     });
                 } else {
                     // Fallback: Add a placeholder rectangle
@@ -218,11 +225,11 @@ async function generatePowerPoint(data) {
                         x: 0.5,
                         y: 0.3,
                         w: 9.0,
-                        h: 4.0,
+                        h: 3.8,
                         fill: { color: 'F0F0F0' },
                         line: { color: colors.gray, width: 1 }
                     });
-                    
+
                     contentSlide.addText('IMAGE NOT AVAILABLE', {
                         x: 0.5,
                         y: 2.0,
@@ -235,23 +242,35 @@ async function generatePowerPoint(data) {
                         valign: 'middle'
                     });
                 }
-                
-                // All information in one line below the image
+
+                // All information in one line below the image (moved down slightly)
                 const city = ad.city || 'N/A';
                 const title = ad.title || 'N/A';
-                const size = ad.size || 'N/A';
+
+                // Fix size calculation with proper null checks
+                let size = 'N/A';
+                if (ad.width && ad.height) {
+                    const width = parseFloat(ad.width);
+                    const height = parseFloat(ad.height);
+                    if (!isNaN(width) && !isNaN(height)) {
+                        size = `${width}*${height} - ${Math.round(width * height)}sqft`;
+                    }
+                } else if (ad.size) {
+                    size = ad.size; // Fallback to existing size field
+                }
+
                 const lightingAbbr = getLightingAbbreviation(ad.lighting);
-                
+
                 // Create single line text with all information
-                let infoText = `${i+1}) ${city} - ${title} - ${size}`;
+                let infoText = `${i + 1}) ${city} - ${title} - ${size}`;
                 if (lightingAbbr) {
                     infoText += ` - ${lightingAbbr}`;
                 }
-                
-                // Single line with all information
+
+                // Single line with all information (adjusted Y position)
                 contentSlide.addText(infoText, {
                     x: 0.5,
-                    y: 4.7,
+                    y: 4.8, // Moved down to accommodate fixed image height
                     w: 9.0,
                     h: 0.4,
                     fontSize: 14,
@@ -267,7 +286,7 @@ async function generatePowerPoint(data) {
         // ===== LAST SLIDE: Terms and Conditions =====
         const termsSlide = pres.addSlide();
         termsSlide.background = { color: colors.white };
-        
+
         // General Terms & Conditions Header
         termsSlide.addText('* GENERAL TERMS & CONDITIONS :-', {
             x: 0.3,
@@ -280,7 +299,7 @@ async function generatePowerPoint(data) {
             bold: true,
             align: 'left'
         });
-        
+
         // General Terms
         const generalTerms = [
             '1) Display Location is Subject to Availability at The Time of Receiving Your Confirm Written Orders .',
@@ -289,7 +308,7 @@ async function generatePowerPoint(data) {
             '4) Billing For All The Sites Will Be From Date of Booking & Won\'t Be Postponed Due to Delay in Supply of Creative From Your Side .',
             '5 ) Site Booking And Dropping Mail is Provide By Client.'
         ];
-        
+
         let yPos = 0.6;
         generalTerms.forEach((term) => {
             termsSlide.addText(term, {
@@ -304,7 +323,7 @@ async function generatePowerPoint(data) {
             });
             yPos += 0.3;
         });
-        
+
         // Business Terms Header
         termsSlide.addText('* BUSINESS TERMS :-', {
             x: 0.3,
@@ -317,9 +336,9 @@ async function generatePowerPoint(data) {
             bold: true,
             align: 'left'
         });
-        
+
         yPos += 0.5;
-        
+
         // Business Terms
         const businessTerms = [
             '1) Payment to Be Made 100 % in advance',
@@ -331,7 +350,7 @@ async function generatePowerPoint(data) {
             '7) Sites Once Confirmed (Verbally or Written ) Can Be Cancelled only After Giving 3 Days Clear Prior Notice ( From Campaign Start Date )in Writing , in Case its Unavoidable Client Agrees To Suitably Compensate M/S Jai Mata Di. If Cancellation is Made 4- 5 Days Prior to Campaign Start Date Client Agrees To Pay For 7 Days Display Charges + Taxes There on .',
             '8 ) If Cancellation is Made After The Start Date of Campaign Client Agrees to Pay For 15 Days Display Charges + Taxes There on.'
         ];
-        
+
         businessTerms.forEach((term) => {
             termsSlide.addText(term, {
                 x: 0.3,
@@ -345,16 +364,16 @@ async function generatePowerPoint(data) {
             });
             yPos += 0.28;
         });
-        
+
         // Generate and return the PPT buffer
         const buffer = pres.write('nodebuffer');
-        
+
         if (!buffer || buffer.length < 1000) {
             throw new Error('Generated buffer is too small');
         }
-        
+
         return buffer;
-        
+
     } catch (error) {
         console.error('Error in generatePowerPoint:', error);
         throw error;

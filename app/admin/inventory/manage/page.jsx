@@ -186,7 +186,7 @@ const page = () => {
 
       // Generate size string from height and width (including unit info)
       const sizeString = form.height && form.width ?
-        `${form.height}*${form.width}ft (${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)}sqft)` : "";
+        `${form.width}*${form.height}ft (${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)}sqft)` : "";
 
       // Prepare formData WITHOUT mediacode
       const formData = {
