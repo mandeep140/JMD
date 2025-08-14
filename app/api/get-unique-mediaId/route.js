@@ -5,27 +5,34 @@ import connectDB from "@/utils/connectdb";
 export async function GET(request) {
     await connectDB();
 
-    // Find the ad with the highest mediaId number
-    const lastAd = await Ads.findOne({ mediaId: { $regex: /^JMD\d{4}$/ } })
-        .sort({ mediaId: -1 })
+    // Get all ads with JMD format and extract their numbers
+    const allAds = await Ads.find({ mediacode: { $regex: /^JMD\d{4}$/ } }, { mediacode: 1 })
         .lean();
 
-    let nextNum = 1;
-    if (lastAd && lastAd.mediaId) {
-        // Extract the numeric part
-        const match = lastAd.mediaId.match(/^JMD(\d{4})$/);
+    let highestNum = 0;
+    
+    // Find the highest number
+    allAds.forEach(ad => {
+        const match = ad.mediacode.match(/^JMD(\d{4})$/);
         if (match) {
-            nextNum = parseInt(match[1], 10) + 1;
+            const num = parseInt(match[1], 10);
+            if (num > highestNum) {
+                highestNum = num;
+            }
         }
-    }
+    });
+
+    let nextNum = highestNum + 1;
+    if (nextNum > 9999) nextNum = 1;
 
     let id;
-    // Find the next available mediaId
+    // Find the next available mediacode
     while (true) {
         id = `JMD${nextNum.toString().padStart(4, "0")}`;
-        const exists = await Ads.findOne({ mediaId: id });
+        const exists = await Ads.findOne({ mediacode: id });
         if (!exists) break;
         nextNum++;
+        if (nextNum > 9999) nextNum = 1; // wrap around if needed
     }
 
     return NextResponse.json({ mediaId: id });
