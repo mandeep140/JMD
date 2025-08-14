@@ -183,6 +183,10 @@ async function generateUserExcel(data) {
 
         // Data rows (starting from row 7)
         let currentRow = 7;
+        let displayChargesTotal = 0;
+        let printingTotal = 0;
+        let mountingTotal = 0;
+        let totalCostSum = 0;
         let gstTotal = 0;
         let totalWithGstTotal = 0;
 
@@ -221,6 +225,10 @@ async function generateUserExcel(data) {
             const totalWithGst = totalCost + gstCost;
 
             // Accumulate totals
+            displayChargesTotal += monthlyRate;
+            printingTotal += printingResult.value;
+            mountingTotal += mountingResult.value;
+            totalCostSum += totalCost;
             gstTotal += gstCost;
             totalWithGstTotal += totalWithGst;
 
@@ -271,14 +279,19 @@ async function generateUserExcel(data) {
             currentRow++;
         });
 
-        // Add "Total" row after all ads (updated column positions)
+        // Add "Total" row after all ads (updated with all totals)
         const totalRow = worksheet.getRow(currentRow);
-        totalRow.getCell(16).value = 'Total'; // Column P (16th column)
-        totalRow.getCell(17).value = gstTotal.toLocaleString(); // Column Q (17th column)
-        totalRow.getCell(18).value = totalWithGstTotal.toLocaleString(); // Column R (18th column)
+        totalRow.getCell(11).value = 'Total'; // SQFT column (11th column)
+        totalRow.getCell(12).value = displayChargesTotal.toLocaleString(); // Display Charges Per Month
+        totalRow.getCell(13).value = printingTotal.toLocaleString(); // Printing
+        totalRow.getCell(14).value = mountingTotal.toLocaleString(); // Mounting
+        totalRow.getCell(15).value = totalCostSum.toLocaleString(); // Total Cost
+        totalRow.getCell(16).value = '18%'; // GST (keep as 18%)
+        totalRow.getCell(17).value = gstTotal.toLocaleString(); // GST cost
+        totalRow.getCell(18).value = totalWithGstTotal.toLocaleString(); // Total Cost with GST
         
-        // Style total row
-        [16, 17, 18].forEach(colIndex => {
+        // Style total row (updated to include SQFT column)
+        [11, 12, 13, 14, 15, 16, 17, 18].forEach(colIndex => {
             const cell = totalRow.getCell(colIndex);
             cell.style = {
                 font: { bold: true },
