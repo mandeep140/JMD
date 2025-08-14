@@ -567,20 +567,6 @@ const Page = () => {
                   {/* Row 2 - Height, Width, Area, Units */}
                   <div className="flex flex-col md:flex-row gap-3 w-full">
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Height*</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        name="height"
-                        value={form.height}
-                        onChange={handleChange}
-                        required
-                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="20"
-                      />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Width*</label>
                       <input
                         type="number"
@@ -595,9 +581,23 @@ const Page = () => {
                     </div>
 
                     <div className="flex-1 min-w-0">
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Height*</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        name="height"
+                        value={form.height}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="20"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Area</label>
                       <div className="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-600">
-                        {form.height && form.width ? `${(parseFloat(form.height) * parseFloat(form.width)).toFixed(0)} sqft` : "Total sqft"}
+                        {form.height && form.width ? `${(parseFloat(form.width) * parseFloat(form.height)).toFixed(0)} sqft` : "Total sqft"}
                       </div>
                     </div>
 
