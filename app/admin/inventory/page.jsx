@@ -26,8 +26,10 @@ const page = () => {
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedFromDate, setSelectedFromDate] = useState('');
   const [selectedToDate, setSelectedToDate] = useState('');
-  const [selectedLocality, setSelectedLocality] = useState(''); // New filter
-  const [selectedHoldBookedBy, setSelectedHoldBookedBy] = useState(''); // New filter
+  const [selectedLocality, setSelectedLocality] = useState('');
+  const [selectedHoldBookedBy, setSelectedHoldBookedBy] = useState('');
+  const [selectedWidth, setSelectedWidth] = useState('');      // NEW
+  const [selectedHeight, setSelectedHeight] = useState('');    // NEW
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -103,12 +105,13 @@ const page = () => {
     if (selectedStatus && d.status !== selectedStatus) return false;
     if (selectedCity && d.city !== selectedCity) return false;
     if (selectedType && d.type !== selectedType) return false;
-    
-    // Locality filter
     if (selectedLocality && d.locality !== selectedLocality) return false;
-    
-    // Hold/Booked by filter
     if (selectedHoldBookedBy && d.holdBookedBy !== selectedHoldBookedBy) return false;
+
+    // Width filter
+    if (selectedWidth && Number(d.width) !== Number(selectedWidth)) return false;
+    // Height filter
+    if (selectedHeight && Number(d.height) !== Number(selectedHeight)) return false;
 
     if (selectedClient) {
       const clientName = d.clientname || d.clientName || '';
@@ -307,6 +310,24 @@ if (status === "authenticated") {
                 onChange={e => { setSelectedToDate(e.target.value); resetPage(); }}
                 title="To date"
               />
+
+              <input
+                type="number"
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={selectedWidth}
+                onChange={e => { setSelectedWidth(e.target.value); resetPage(); }}
+                title="Width"
+                placeholder='Width in ft'
+              />
+
+              <input
+                type="number"
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={selectedHeight}
+                onChange={e => { setSelectedHeight(e.target.value); resetPage(); }}
+                title="Height"
+                placeholder='Height in ft'
+              />
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -321,6 +342,8 @@ if (status === "authenticated") {
                   setSelectedHoldBookedBy('');
                   setSelectedFromDate('');
                   setSelectedToDate('');
+                  setSelectedWidth('');      // NEW
+                  setSelectedHeight('');     // NEW
                   resetPage();
                 }}
               >
@@ -375,7 +398,7 @@ if (status === "authenticated") {
                   ) : (
                     paginated.map((row, i) => (
                       <tr key={i} className="hover:bg-gray-50 transition-colors duration-150">
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 flex items-center space-x-2 flex-col">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                               ${row.status === "Booked"
                               ? "bg-red-100 text-red-800"
@@ -383,6 +406,9 @@ if (status === "authenticated") {
                                 ? "bg-yellow-100 text-yellow-800"
                                 : "bg-green-100 text-green-800"}`}>
                             {row.status}
+                          </span>
+                          <span className='text-gray-500 text-xs mt-1'>
+                            {row.width} x {row.height} ft
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">{row.title}</td>
