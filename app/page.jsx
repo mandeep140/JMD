@@ -109,7 +109,11 @@ const Home = () => {
   // --- Testimonials State ---
   const [testimonials, setTestimonials] = useState([]);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [testimonialStartIndex, setTestimonialStartIndex] = useState(0); // Add this new state
+  const [testimonialStartIndex, setTestimonialStartIndex] = useState(0);
+
+  // --- Media Coverage State ---
+  const [mediaCoverage, setMediaCoverage] = useState([]);
+  const [mediaCoverageLoading, setMediaCoverageLoading] = useState(true);
 
   // --- Fetch Videos from Database ---
   useEffect(() => {
@@ -166,6 +170,36 @@ const Home = () => {
     };
 
     fetchTestimonials();
+  }, []);
+
+  // --- Fetch Media Coverage from Database ---
+  useEffect(() => {
+    const fetchMediaCoverage = async () => {
+      try {
+        setMediaCoverageLoading(true);
+        const response = await fetch('/api/media-coverage');
+        const data = await response.json();
+        if (data.success) {
+          // Filter active items and sort by order
+          const activeItems = data.items
+            .filter(item => item.active)
+            .sort((a, b) => a.order - b.order);
+          setMediaCoverage(activeItems);
+        }
+      } catch (error) {
+        console.error('Error fetching media coverage:', error);
+        // Fallback to default media if API fails
+        setMediaCoverage([
+          { _id: '1', title: 'Business Multiplier Award', imageUrl: '/images/award.jpg', order: 1 },
+          { _id: '2', title: 'Outdoor Asia Magazine', imageUrl: '/images/outdoor.jpg', order: 2 },
+          { _id: '3', title: 'Outdoor Asia Magazine', imageUrl: '/images/magazine.jpg', order: 3 },
+        ]);
+      } finally {
+        setMediaCoverageLoading(false);
+      }
+    };
+
+    fetchMediaCoverage();
   }, []);
 
   // --- Carousel/Auto-shuffle for mobile service cards ---
@@ -236,12 +270,6 @@ const Home = () => {
     "/images/companies/c21.png", "/images/companies/c22.png", "/images/companies/c23.png", "/images/companies/c24.png", "/images/companies/c25.png",
     "/images/companies/c26.png", "/images/companies/c27.png", "/images/companies/c28.png", "/images/companies/c29.png", "/images/companies/c30.png",
     "/images/companies/c31.png", "/images/companies/c32.png"
-  ];
-
-  const media = [
-    { img: '/images/award.jpg', title: 'Business Multiplier Award', date: 'June 2024' },
-    { img: '/images/outdoor.jpg', title: 'Outdoor Asia Magazine', date: 'June 2025' },
-    { img: '/images/magazine.jpg', title: 'Outdoor Asia Magazine', date: '' },
   ];
 
   // --- Video Nav ---
@@ -736,28 +764,44 @@ const Home = () => {
         )}
       </div>
 
-      {/* Media section */}
+      {/* Media Coverage Section - Updated to use database */}
       <div className='w-full min-h-[100vh] bg-gradient-to-b from-white to-[#FFF4F4] flex items-center justify-start flex-col relative md:min-h-[100vh]' id='media'>
         <h1 className='text-4xl mb-10 md:mb-0 md:text-6xl text-red-500 font-extrabold mt-30'>Media Coverage</h1>
-        <div className='w-full h-auto flex flex-col md:flex-row items-center justify-evenly my-auto px-2 sm:px-10 gap-6'>
-          {media.map((item, index) => (
-            <div
-              key={index}
-              className='w-full md:w-[25vw] h-[40vh] flex flex-col items-start justify-start gap-2 mb-6 md:mb-0 cursor-pointer'
-              onClick={() => setActiveMedia(item)}
-            >
-              <Image
-                src={item.img}
-                alt={`Media Image ${index + 1}`}
-                width={400}
-                height={280}
-                className='w-full h-[70%] object-cover rounded-lg'
-              />
-              <h1 className='text-xl font-bold text-black/70'>{item.title}</h1>
-              <p className='text-sm text-black/50'>{item.date}</p>
-            </div>
-          ))}
-        </div>
+        
+        {/* Loading State */}
+        {mediaCoverageLoading ? (
+          <div className="mt-10 text-red-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto"></div>
+            <p className="mt-4 text-sm">Loading media coverage...</p>
+          </div>
+        ) : (
+          <div className='w-full h-auto flex flex-col md:flex-row items-center justify-evenly my-auto px-2 sm:px-10 gap-6'>
+            {mediaCoverage.length === 0 ? (
+              <div className="text-center text-gray-600">
+                <p className="text-lg">No media coverage available at the moment.</p>
+              </div>
+            ) : (
+              mediaCoverage.map((item, index) => (
+                <div
+                  key={item._id}
+                  className='w-full md:w-[25vw] h-[40vh] flex flex-col items-start justify-start gap-2 mb-6 md:mb-0 cursor-pointer'
+                  onClick={() => setActiveMedia(item)}
+                >
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    width={400}
+                    height={280}
+                    className='w-full h-[70%] object-cover rounded-lg'
+                    onError={handleImageError}
+                  />
+                  <h1 className='text-xl font-bold text-black/70'>{item.title}</h1>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
         {/* Media Modal */}
         {activeMedia && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -770,14 +814,14 @@ const Home = () => {
                 &times;
               </button>
               <Image
-                src={activeMedia.img}
+                src={activeMedia.imageUrl}
                 alt={activeMedia.title}
                 width={500}
                 height={300}
                 className="w-full max-w-[500px] max-h-[60vh] object-contain rounded-lg mb-4"
+                onError={handleImageError}
               />
               <h1 className='text-2xl font-bold text-black/80 mb-2'>{activeMedia.title}</h1>
-              <p className='text-base text-black/60'>{activeMedia.date}</p>
             </div>
           </div>
         )}
