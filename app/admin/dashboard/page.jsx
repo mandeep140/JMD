@@ -214,7 +214,7 @@ const Dashboard = () => {
                   <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>{todayBookings}</h2>
                 </span>
                 <span className='w-full flex flex-col items-start justify-start'>
-                  <h2 className='text-black text-sm md:text-base'>Expiring in next 7 days</h2>
+                  <h2 className='text-black text-sm md:text-base'>Expiring in next 15 days</h2>
                   <h2 className='w-full h-full text-lg md:text-2xl bg-orange-200 text-orange-700 py-2 ps-4 rounded-md'>{expiringBookings.length}</h2>
                 </span>
               </div>

@@ -190,7 +190,6 @@ const CartPage = () => {
             });
 
             if (response.ok) {
-                alert('Contact form submitted successfully! Starting downloads...');
                 setShowDownloadForm(false);
                 setDownloadForm({ name: '', email: '', mobile: '', reason: '' });
                 
@@ -284,8 +283,6 @@ const CartPage = () => {
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
-                
-                alert('PPT file downloaded successfully!');
             } else {
                 throw new Error('Failed to generate PPT file');
             }
@@ -349,8 +346,6 @@ const CartPage = () => {
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
-                
-                alert('Excel file downloaded successfully!');
             } else {
                 throw new Error('Failed to generate Excel file');
             }
@@ -380,7 +375,7 @@ const CartPage = () => {
         setSelectedItems([]);
         localStorage.removeItem('jmd_cart_items');
         localStorage.removeItem('jmd_additional_packs');
-        alert('Cart cleared successfully! Thank you for choosing JMD Advertisement.');
+        alert('Cart cleared and download successfully! Thank you for choosing JMD Advertisement.');
     };
 
     // Show loading state while cart is being loaded
@@ -726,9 +721,14 @@ const CartPage = () => {
                                                     name="phone"
                                                     required
                                                     value={contactForm.phone}
-                                                    onChange={handleContactFormChange}
+                                                    onChange={(e) => {
+                                                        // Only allow numbers, max 10 digits
+                                                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                        setContactForm(prev => ({ ...prev, phone: val }));
+                                                    }}
                                                     className="w-full px-3 py-2 border-b border-gray-300 focus:border-red-500 outline-none"
-                                                    placeholder="01 2345 6789"
+                                                    placeholder="987653210"
+                                                    maxLength={10}
                                                 />
                                             </div>
                                         </div>
@@ -833,8 +833,13 @@ const CartPage = () => {
                                         name="mobile"
                                         required
                                         value={downloadForm.mobile}
-                                        onChange={handleDownloadFormChange}
+                                        onChange={(e) => {
+                                            // Only allow numbers, max 10 digits
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setDownloadForm(prev => ({ ...prev, mobile: val }));
+                                        }}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        maxLength={10}
                                     />
                                 </div>
                                 

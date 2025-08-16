@@ -977,7 +977,26 @@ const Home = () => {
                     </span>
                     <span className='flex flex-col items-center gap-2 ms-6 max-md:ms-0'>
                       <label htmlFor="phone" className='me-auto'>Phone</label>
-                      <input type="text" name='phone' id='phone' className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500' required placeholder='01 2345 6789' value={form.phone} onChange={handleFormChange} />
+                      <input
+                        type="text"
+                        name='phone'
+                        id='phone'
+                        className='me-auto w-[90%] outline-none border-b-1 focus:border-b-red-500'
+                        required
+                        placeholder='01 2345 6789'
+                        value={form.phone}
+                        onChange={e => {
+                          // Only allow numbers, max 10 digits
+                          let value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          setForm(prev => ({
+                            ...prev,
+                            phone: value
+                          }));
+                        }}
+                        maxLength={10}
+                        inputMode="numeric"
+                        pattern="\d{10}"
+                      />
                     </span>
                   </span>
                   <span className='flex flex-col items-center gap-2 mb-2'>
