@@ -241,7 +241,7 @@ async function generatePowerPoint(data) {
         const left = 0.5;
         const top = 0.3;
         const maxW = 9.0;
-        const maxH = 3.8;
+        const maxH = 4.2; // increased height to make the image taller on the slide
 
         const imageData = await fetchImageAsBase64(ad.imageUrl);
 
