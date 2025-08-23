@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FaPlus, FaEdit, FaTrash, FaEye, FaEyeSlash, FaArrowUp, FaArrowDown, FaPlay, FaUser, FaImage } from "react-icons/fa";
 import { MdVideoLibrary } from "react-icons/md";
 import Image from 'next/image';
+import { set } from 'mongoose';
 
 const ManageHomePage = () => {
     const { data: session, status } = useSession();
@@ -63,7 +64,7 @@ const ManageHomePage = () => {
         }
         if (status === "authenticated") {
             if (!session?.user?.isAdmin) {
-                router.push("/admin/login");
+                setLoading(false);
             } else {
                 fetchVideos();
                 fetchTestimonials();

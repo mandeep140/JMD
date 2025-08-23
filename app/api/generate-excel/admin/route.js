@@ -21,6 +21,9 @@ export async function POST(request) {
             case 'reports':
                 excelBuffer = generateReportsExcel(excelData);
                 break;
+            case 'expiring_bookings':
+                excelBuffer = generateExpiringBookingsExcel(excelData);
+                break;
             default:
                 throw new Error('Invalid export type');
         }
@@ -289,6 +292,43 @@ function generateDownloadsExcel(data) {
         
     } catch (error) {
         console.error('Error in generateDownloadsExcel:', error);
+        throw error;
+    }
+}
+
+function generateExpiringBookingsExcel(data) {
+    try{
+        const workbook = XLSX.utils.book_new();
+
+        const expiringData = data.map((booking, index) => ({
+            'Sr.No': index + 1,
+            'Media ID': booking.mediacode || 'N/A',
+            'Customer Name': booking.clientname || 'N/A',
+            'Media Owner': booking.mediaOwner || 'N/A',
+            'Cost PM': booking.pricepermonth ? `₹${parseInt(booking.pricepermonth.toString().replace(/[^0-9]/g, '')).toLocaleString()}` : 'N/A',
+            'Booking Date': booking.bookedfrom ? new Date(booking.bookedfrom).toLocaleDateString("en-IN") : 'N/A',
+            'Expiry Date': booking.bookedtill ? new Date(booking.bookedtill).toLocaleDateString("en-IN") : 'N/A'
+        }));
+
+        const expiringWorksheet = XLSX.utils.json_to_sheet(expiringData);
+
+        const colWidths = [
+            { wch: 8 },   // Sr.No
+            { wch: 20 },  // Media ID
+            { wch: 25 },  // Customer Name
+            { wch: 25 },  // Media Owner
+            { wch: 15 },  // Cost PM
+            { wch: 20 },  // Booking Date
+            { wch: 20 }   // Expiry Date
+        ];
+        expiringWorksheet['!cols'] = colWidths;
+
+        XLSX.utils.book_append_sheet(workbook, expiringWorksheet, 'Expiring Bookings');
+
+        return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx', compression: true });
+
+    } catch (error) {
+        console.error('Error in generateExpiringBookingsExcel:', error);
         throw error;
     }
 }

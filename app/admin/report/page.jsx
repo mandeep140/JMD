@@ -13,7 +13,7 @@ import ExportToExcel from '@/app/component/ExportToExcel';
 const PER_PAGE = 7;
 
 const page = () => {
-    const { status } = useSession();
+    const { status, data: session } = useSession();
     const router = useRouter();
     const pathname = usePathname();
     const [page, setPage] = useState(1);
@@ -45,6 +45,10 @@ const page = () => {
             router.push("/admin/login");
         }
         if (status === "authenticated") {
+            if (!session?.user?.isAdmin) {
+                setLoading(false);
+                return;
+            }
             setLoading(true);
             fetch("/api/contact")
                 .then(res => res.json())
@@ -114,7 +118,7 @@ const page = () => {
             alert("No data found in selected date range.");
             return;
         }
-        
+
         // Use the new admin export API for reports
         exportRef.current.exportData(exportData, 'reports');
     };
@@ -123,12 +127,25 @@ const page = () => {
     const totalPages = Math.ceil(data.length / PER_PAGE);
 
     if (status === "loading" || loading) {
-        return(
+        return (
             <AdminNav>
                 <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
             </AdminNav>
-        ) 
+        )
     }
+
+    if (status === "authenticated" && !session?.user?.isAdmin) {
+        return (
+            <AdminNav>
+                <div className="w-full h-full flex items-center justify-center text-black text-center">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        Access Denied: Admin privileges required
+                    </div>
+                </div>
+            </AdminNav>
+        );
+    }
+
     if (status === "authenticated") {
         return (
             <AdminNav>

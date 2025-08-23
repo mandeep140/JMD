@@ -247,7 +247,7 @@ const AdminNav = ({ children }) => {
               {searchResults.map((ad, idx) => (
                 <Link
                   key={ad._id || idx}
-                  href={`/find-hoardings/${ad.mediacode}`}
+                  href={`/admin/inventory/manage/${ad.mediacode}`}
                   className="block px-4 py-2 hover:bg-blue-100 text-black"
                   onClick={() => {
                     setSearch('');

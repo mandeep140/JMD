@@ -196,8 +196,9 @@ async function generateUserExcel(data) {
             const units = ad.unit || 1;
             const height = parseFloat(ad.height) || 0;
             const width = parseFloat(ad.width) || 0;
-            const totalArea = height * width * units; // Total area for all units
-            
+            const visibility = ad.visibility === 'Double' ? 2 : 1;
+            const totalArea = height * width * units * visibility; // Total area for all units
+
             // Helper function to safely get cost value and calculate total cost
             const getCostValue = (value, multiplier = 1) => {
                 if (value === undefined || value === null || value === '' || value === 'N/A') {

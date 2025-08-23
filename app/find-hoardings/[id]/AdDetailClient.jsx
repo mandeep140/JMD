@@ -243,7 +243,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
         adId: ad._id,
         type: 'mounting',
         title: `Mounting for ${ad.title}`,
-        cost: ad.mounting * ad.height * ad.width * ad.unit,
+        cost: ad.mounting * ad.height * ad.width * ad.unit * (ad.visibility === "single" ? 1 : 2),
         unitCost: ad.mounting,
         unit: 'per sqft',
         mediacode: ad.mediacode,
@@ -548,7 +548,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
                     <div className='text-sm text-gray-500 mb-2'>₹ {ad.printing} Per sqft</div>
                     <div className='text-2xl font-semibold text-black w-full px-4 py-2 rounded-md bg-red-300 flex flex-row justify-between items-center'>
                       <span>
-                        ₹ {(ad.printing * ad.height * ad.width * ad.unit)}
+                        ₹ {(ad.printing * ad.height * ad.width * ad.unit * (ad.visibility === "single" ? 1 : 2))}
                       </span>
                       <button
                         onClick={addPrintingToCart}
@@ -585,7 +585,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
                     <div className='text-sm text-gray-500 mb-2'>₹ {ad.mounting} Per sqft</div>
                     <div className='text-2xl font-semibold text-black w-full px-4 py-2 rounded-md bg-red-300 flex flex-row justify-between items-center'>
                       <span>
-                        ₹ {(ad.mounting * ad.height * ad.width * ad.unit)}
+                        ₹ {(ad.mounting * ad.height * ad.width * ad.unit * (ad.visibility === "single" ? 1 : 2))}
                       </span>
                       <button
                         onClick={addMountingToCart}
