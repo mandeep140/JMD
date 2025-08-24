@@ -33,6 +33,8 @@ const page = () => {
   const [selectedHoldBookedBy, setSelectedHoldBookedBy] = useState('');
   const [selectedWidth, setSelectedWidth] = useState('');
   const [selectedHeight, setSelectedHeight] = useState('');
+  const [selectedTotalArea, setSelectedTotalArea] = useState('');
+  const [areaFilterHigher, setAreaFilterHigher] = useState(true); // true for higher, false for lower
 
   // Dropdown visibility states
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
@@ -101,6 +103,7 @@ const page = () => {
     if (selectedHoldBookedBy) filterInfo.push(`Hold/Booked By: ${selectedHoldBookedBy}`);
     if (selectedFromDate) filterInfo.push(`From: ${selectedFromDate}`);
     if (selectedToDate) filterInfo.push(`To: ${selectedToDate}`);
+    if (selectedTotalArea) filterInfo.push(`Total Area: ${areaFilterHigher ? '≥' : '≤'} ${selectedTotalArea} sqft`);
 
     const message = filterInfo.length > 0
       ? `Exported ${filteredData.length} records with filters: ${filterInfo.join(', ')}`
@@ -110,7 +113,7 @@ const page = () => {
     setDownloading(false);
   };
 
-  const handleExportWithCurrentFiltersInPPT = async () => {
+  const handleExportWithCurrentFiltersInPPTandExcel = async () => {
     setDownloading(true);
     if (filteredData.length === 0) {
       alert("No data to export with current filters.");
@@ -146,6 +149,33 @@ const page = () => {
       alert('Error generating PPT');
     }
 
+    const excelData = filteredData.map(ad =>({
+      ...ad,
+      pricePerMonth: ad.pricepermonth,
+    }))
+
+    const excelResponse = await fetch('/api/generate-excel/user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ads: excelData }),
+    });
+
+    if (excelResponse.ok) {
+      const blob = await excelResponse.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `JMD_Hoardings_${new Date().toISOString().split('T')[0]}_Admin.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else {
+      console.error('Error generating Excel:', await excelResponse.text());
+      alert('Error generating Excel');
+    }
+
     const filterInfo = [];
     if (selectedStatus) filterInfo.push(`Status: ${selectedStatus}`);
     if (selectedState) filterInfo.push(`State: ${selectedState}`);
@@ -157,6 +187,7 @@ const page = () => {
     if (selectedHoldBookedBy) filterInfo.push(`Hold/Booked By: ${selectedHoldBookedBy}`);
     if (selectedFromDate) filterInfo.push(`From: ${selectedFromDate}`);
     if (selectedToDate) filterInfo.push(`To: ${selectedToDate}`);
+    if (selectedTotalArea) filterInfo.push(`Total Area: ${areaFilterHigher ? '≥' : '≤'} ${selectedTotalArea} sqft`);
 
     const message = filterInfo.length > 0
       ? `Exported ${filteredData.length} records with filters: ${filterInfo.join(', ')}`
@@ -194,7 +225,7 @@ const page = () => {
     resetPage();
   };
 
-  // Updated filtering logic for multi-select
+  // Updated filtering logic for multi-select and area filter
   const filteredData = data.filter(d => {
     if (selectedStatus && d.status !== selectedStatus) return false;
     if (selectedState && d.state !== selectedState) return false;
@@ -206,6 +237,20 @@ const page = () => {
 
     if (selectedWidth && Number(d.width) !== Number(selectedWidth)) return false;
     if (selectedHeight && Number(d.height) !== Number(selectedHeight)) return false;
+
+    // New area filter logic
+    if (selectedTotalArea) {
+      const adArea = Number(d.width) * Number(d.height);
+      const filterArea = Number(selectedTotalArea);
+      
+      if (areaFilterHigher) {
+        // Show ads with area >= selected area
+        if (adArea < filterArea) return false;
+      } else {
+        // Show ads with area <= selected area
+        if (adArea > filterArea) return false;
+      }
+    }
 
     if (selectedClient) {
       const clientName = d.clientname || d.clientName || '';
@@ -398,11 +443,11 @@ const page = () => {
                 </button>
                 <button
                   className={`mt-4 lg:mt-0 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 ${filteredData.length === 0 || downloading ? "opacity-50 cursor-not-allowed" : ""}`}
-                  onClick={handleExportWithCurrentFiltersInPPT}
+                  onClick={handleExportWithCurrentFiltersInPPTandExcel}
                   disabled={filteredData.length === 0 || downloading}
                 >
                   <MdDownloading />
-                  {downloading ? "Exporting some file..." : `Export to PPT (${filteredData.length} records)`}
+                  {downloading ? "Exporting some file..." : `Export to PPT & Excel (${filteredData.length} records)`}
                 </button>
               </span>
             </div>
@@ -519,6 +564,35 @@ const page = () => {
                   title="Height"
                   placeholder='Height in ft'
                 />
+
+                {/* New Total Area Filter */}
+                <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 flex gap-2">
+                  <input
+                    type="number"
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={selectedTotalArea}
+                    onChange={e => { setSelectedTotalArea(e.target.value); resetPage(); }}
+                    placeholder='Total Area in sqft'
+                    title="Filter by total area (sqft)"
+                  />
+                  <div className="flex items-center bg-white border border-gray-300 rounded-md px-3 py-2">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={areaFilterHigher}
+                        onChange={e => { setAreaFilterHigher(e.target.checked); resetPage(); }}
+                        className="sr-only"
+                      />
+                      <div className="relative">
+                        <div className={`block w-14 h-8 rounded-full ${areaFilterHigher ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition ${areaFilterHigher ? 'transform translate-x-6' : ''}`}></div>
+                      </div>
+                      <div className="ml-3 text-sm font-medium text-gray-700">
+                        {areaFilterHigher ? '≥ Higher' : '≤ Lower'}
+                      </div>
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -537,6 +611,8 @@ const page = () => {
                     setSelectedToDate('');
                     setSelectedWidth('');
                     setSelectedHeight('');
+                    setSelectedTotalArea('');
+                    setAreaFilterHigher(true);
                     resetPage();
                   }}
                 >
@@ -555,7 +631,7 @@ const page = () => {
             <div className="flex justify-between items-center mb-4">
               <div className="text-sm text-gray-600">
                 Showing {filteredData.length} of {data.length} records
-                {(selectedStatus || selectedState || selectedCities.length > 0 || selectedTypes.length > 0 || selectedClient || selectedLocalities.length > 0 || selectedHoldBookedBy || selectedFromDate || selectedToDate) && (
+                {(selectedStatus || selectedState || selectedCities.length > 0 || selectedTypes.length > 0 || selectedClient || selectedLocalities.length > 0 || selectedHoldBookedBy || selectedFromDate || selectedToDate || selectedTotalArea) && (
                   <span className="ml-2 text-blue-600 font-medium">(filtered)</span>
                 )}
               </div>
@@ -602,6 +678,9 @@ const page = () => {
                             </span>
                             <span className='text-gray-500 text-xs mt-1'>
                               {row.width} x {row.height} ft
+                            </span>
+                            <span className='text-blue-600 text-xs font-medium'>
+                              {row.width * row.height} sqft
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-900">{row.title}</td>
