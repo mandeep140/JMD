@@ -12,6 +12,7 @@ const FindHoardingsClient = ({ searchParams }) => {
     // Filter states
     const [selectedMediaTypes, setSelectedMediaTypes] = useState([]);
     const [selectedPriceRanges, setSelectedPriceRanges] = useState([]);
+    const [selectedArea, setSelectedArea] = useState([]);
     const [selectedLightingTypes, setSelectedLightingTypes] = useState([]);
     const [sortBy, setSortBy] = useState('popularity');
     const [showMoreMediaTypes, setShowMoreMediaTypes] = useState(false);
@@ -44,6 +45,15 @@ const FindHoardingsClient = ({ searchParams }) => {
         { label: '20000 - 30000', min: 20000, max: 30000 },
         { label: 'Above 30000', min: 30001, max: Infinity }
     ];
+
+    const areaRange = [
+        {label: 'Below 100 sqft', min: 0, max: 99 },
+        {label: '100 - 200 sqft', min: 100, max: 200 },
+        {label: '200 - 300 sqft', min: 200, max: 300 },
+        {label: '300 - 400 sqft', min: 300, max: 400 },
+        {label: '400 - 500 sqft', min: 400, max: 500 },
+        {label: 'Above 500 sqft', min: 501, max: Infinity }
+    ]
 
     // Get all unique search results (cities and localities)
     const getAllSearchResults = () => {
@@ -198,7 +208,16 @@ const FindHoardingsClient = ({ searchParams }) => {
                 );
                 if (!inPriceRange) return false;
             }
-            
+
+            // Area filter
+            if (selectedArea.length > 0) {
+                const area = (ad.height * ad.width);
+                const inArea = selectedArea.some(range =>
+                    area >= range.min && area <= range.max
+                );
+                if (!inArea) return false;
+            }
+
             return true;
         })
         .sort((a, b) => {
@@ -247,6 +266,15 @@ const FindHoardingsClient = ({ searchParams }) => {
         setCurrentPage(1);
     };
 
+    const handleAreaRangeChange = (range) => {
+        setSelectedArea(prev => 
+            prev.some(r => r.label === range.label)
+                ? prev.filter(r => r.label !== range.label)
+                : [...prev, range]
+        );
+        setCurrentPage(1);
+    };
+
     // Handle search result selection from dropdown
     const handleSearchSelect = (searchResult) => {
         setCitySearch(searchResult.display);
@@ -279,6 +307,7 @@ const FindHoardingsClient = ({ searchParams }) => {
         setSelectedMediaTypes([]);
         setSelectedLightingTypes([]);
         setSelectedPriceRanges([]);
+        setSelectedArea([]);
         setCitySearch('');
         setCurrentPage(1);
     };
@@ -443,6 +472,24 @@ const FindHoardingsClient = ({ searchParams }) => {
                                         ))}
                                     </div>
                                 </div>
+
+                                {/* Area Filter */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">AREA</h3>
+                                    <div className="space-y-2">
+                                        {areaRange.map((range) => (
+                                            <label key={range.label} className="flex items-center cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedArea.some(r => r.label === range.label)}
+                                                    onChange={() => handleAreaRangeChange(range)}
+                                                    className="w-4 h-4 text-red-500 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+                                                />
+                                                <span className="ml-2 text-sm text-gray-600">{range.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -583,6 +630,24 @@ const FindHoardingsClient = ({ searchParams }) => {
                                                     type="checkbox"
                                                     checked={selectedPriceRanges.some(r => r.label === range.label)}
                                                     onChange={() => handlePriceRangeChange(range)}
+                                                    className="w-4 h-4 text-red-500 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+                                                />
+                                                <span className="ml-2 text-sm text-gray-600">{range.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Area Filter */}
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-3">AREA</h3>
+                                    <div className="space-y-2">
+                                        {areaRange.map((range) => (
+                                            <label key={range.label} className="flex items-center cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedArea.some(r => r.label === range.label)}
+                                                    onChange={() => handleAreaRangeChange(range)}
                                                     className="w-4 h-4 text-red-500 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
                                                 />
                                                 <span className="ml-2 text-sm text-gray-600">{range.label}</span>
@@ -754,7 +819,7 @@ const FindHoardingsClient = ({ searchParams }) => {
                                                         disabled={currentPage === totalPages}
                                                         className="px-2 lg:px-3 py-1 bg-red-500 text-white rounded text-xs lg:text-sm hover:bg-red-600 disabled:opacity-50"
                                                     >
-                                                        All
+                                                        Last
                                                     </button>
                                                 )}
                                             </div>

@@ -503,22 +503,6 @@ const page = () => {
                 </select>
 
                 <input
-                  type="date"
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={selectedFromDate}
-                  onChange={e => { setSelectedFromDate(e.target.value); resetPage(); }}
-                  title="From date"
-                />
-
-                <input
-                  type="date"
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={selectedToDate}
-                  onChange={e => { setSelectedToDate(e.target.value); resetPage(); }}
-                  title="To date"
-                />
-
-                <input
                   type="number"
                   className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={selectedWidth}
