@@ -648,7 +648,7 @@ const page = () => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price/Month</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded By</th>
                       <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -687,7 +687,7 @@ const page = () => {
                           <td className="px-4 py-3 text-sm text-gray-900">{row.clientname || row.clientName || "-"}</td>
                           <td className="px-4 py-3 text-sm font-mono text-gray-900">{row.mediacode}</td>
                           <td className="px-4 py-3 text-sm text-gray-900">{row.city}</td>
-                          <td className="px-4 py-3 text-sm text-gray-900">{row.type}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{row.mediaOwner}</td>
                           <td className="px-4 py-3 text-sm font-semibold text-gray-900">₹{row.pricepermonth}</td>
                           <td className="px-4 py-3 text-xs">
                             {row.uploadedBy ? (

@@ -76,7 +76,7 @@ async function generateUserExcel(data) {
             return lightingMap[lighting] || 'NL';
         };
 
-        // Set column widths (added Sr No column)
+        // Set column widths (added Image Link column)
         worksheet.columns = [
             { width: 6 },   // Sr No
             { width: 12 },  // State
@@ -95,11 +95,12 @@ async function generateUserExcel(data) {
             { width: 18 },  // Total Cost
             { width: 8 },   // GST
             { width: 15 },  // GST cost
-            { width: 20 }   // Total Cost with GST
+            { width: 20 },  // Total Cost with GST
+            { width: 30 }   // Image Link (new column)
         ];
 
-        // Row 1: Company header "From JMD - Advertisement"
-        worksheet.mergeCells('A1:R1');
+        // Row 1: Company header "From JMD - Advertisement" (updated column range)
+        worksheet.mergeCells('A1:S1');
         const companyHeaderCell = worksheet.getCell('A1');
         companyHeaderCell.value = {
             richText: [
@@ -118,8 +119,8 @@ async function generateUserExcel(data) {
         };
         worksheet.getRow(1).height = 25;
 
-        // Row 2: JMD Address
-        worksheet.mergeCells('A2:R2');
+        // Row 2: JMD Address (updated column range)
+        worksheet.mergeCells('A2:S2');
         const addressCell = worksheet.getCell('A2');
         addressCell.value = 'B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002) | Phone: +91-9204965321 | Email: info.jmd.jsr@gmail.com';
         addressCell.style = {
@@ -140,8 +141,8 @@ async function generateUserExcel(data) {
         // Row 4: Empty row for spacing
         worksheet.getRow(4).height = 15;
 
-        // Row 5: QUOTATION header (merged across columns)
-        worksheet.mergeCells('A5:R5');
+        // Row 5: QUOTATION header (updated column range)
+        worksheet.mergeCells('A5:S5');
         const quotationCell = worksheet.getCell('A5');
         quotationCell.value = 'QUOTATION';
         quotationCell.style = {
@@ -157,10 +158,10 @@ async function generateUserExcel(data) {
         };
         worksheet.getRow(5).height = 30;
 
-        // Row 6: Column headers (added Sr No)
+        // Row 6: Column headers (added Image Link column)
         const headers = [
             'Sr No', 'State', 'City', 'Medium', 'Type', 'Location', 'hor', 'ver', 'Faci', 'Units', 'SQFT', 
-            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST'
+            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST', 'Image Link'
         ];
         
         const headerRow = worksheet.getRow(6);
@@ -189,6 +190,7 @@ async function generateUserExcel(data) {
         let totalCostSum = 0;
         let gstTotal = 0;
         let totalWithGstTotal = 0;
+        let totalSqftSum = 0; // New variable for SQFT total
 
         data.ads?.forEach((ad, index) => {
             const sizeInfo = parseSizeAndCalculateSqft(ad.size, ad.height, ad.width);
@@ -232,6 +234,7 @@ async function generateUserExcel(data) {
             totalCostSum += totalCost;
             gstTotal += gstCost;
             totalWithGstTotal += totalWithGst;
+            totalSqftSum += sizeInfo.totalSqft || 0; // Add SQFT to total
 
             // Display total cost
             const displayTotalCost = (printingResult.value > 0 || mountingResult.value > 0) 
@@ -240,7 +243,10 @@ async function generateUserExcel(data) {
                     ? monthlyRate.toLocaleString() 
                     : 'N/A';
 
-            // Add data row (added serial number as first column)
+            // Get image URL
+            const imageUrl = ad.imageUrl || ad.image || 'N/A';
+
+            // Add data row (added image link as last column)
             const dataRow = worksheet.getRow(currentRow);
             const rowData = [
                 index + 1, // Sr No
@@ -260,29 +266,46 @@ async function generateUserExcel(data) {
                 displayTotalCost,
                 '18%',
                 gstCost.toLocaleString(),
-                totalWithGst.toLocaleString()
+                totalWithGst.toLocaleString(),
+                imageUrl // Image Link (new column)
             ];
 
             rowData.forEach((value, colIndex) => {
                 const cell = dataRow.getCell(colIndex + 1);
                 cell.value = value;
-                cell.style = {
-                    alignment: { horizontal: 'center', vertical: 'middle' },
-                    border: {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' }
-                    }
-                };
+                
+                // Special styling for image link column
+                if (colIndex === 18 && value !== 'N/A') { // Image Link column
+                    cell.style = {
+                        alignment: { horizontal: 'left', vertical: 'middle' },
+                        border: {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' }
+                        },
+                        font: { color: { argb: 'FF0000FF' }, underline: true }
+                    };
+                } else {
+                    cell.style = {
+                        alignment: { horizontal: 'center', vertical: 'middle' },
+                        border: {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' }
+                        }
+                    };
+                }
             });
             dataRow.height = 20;
             currentRow++;
         });
 
-        // Add "Total" row after all ads (updated with all totals)
+        // Add "Total" row after all ads (moved "Total" to column 10 and added SQFT total)
         const totalRow = worksheet.getRow(currentRow);
-        totalRow.getCell(11).value = 'Total'; // SQFT column (11th column)
+        totalRow.getCell(10).value = 'Total'; // Units column (10th column) - moved one column back
+        totalRow.getCell(11).value = totalSqftSum.toLocaleString(); // SQFT total (11th column)
         totalRow.getCell(12).value = displayChargesTotal.toLocaleString(); // Display Charges Per Month
         totalRow.getCell(13).value = printingTotal.toLocaleString(); // Printing
         totalRow.getCell(14).value = mountingTotal.toLocaleString(); // Mounting
@@ -291,8 +314,8 @@ async function generateUserExcel(data) {
         totalRow.getCell(17).value = gstTotal.toLocaleString(); // GST cost
         totalRow.getCell(18).value = totalWithGstTotal.toLocaleString(); // Total Cost with GST
         
-        // Style total row (updated to include SQFT column)
-        [11, 12, 13, 14, 15, 16, 17, 18].forEach(colIndex => {
+        // Style total row (updated to include Units and SQFT columns, and new Image Link column)
+        [10, 11, 12, 13, 14, 15, 16, 17, 18].forEach(colIndex => {
             const cell = totalRow.getCell(colIndex);
             cell.style = {
                 font: { bold: true },
@@ -312,8 +335,8 @@ async function generateUserExcel(data) {
         // Add empty rows before terms
         currentRow += 2;
 
-        // Terms and Conditions - Create merged header row (updated column range)
-        worksheet.mergeCells(`A${currentRow}:R${currentRow}`);
+        // Terms and Conditions - Create merged header row (updated column range to S)
+        worksheet.mergeCells(`A${currentRow}:S${currentRow}`);
         const termsHeaderCell = worksheet.getCell(`A${currentRow}`);
         termsHeaderCell.value = 'Terms and Condition...';
         termsHeaderCell.style = {
@@ -343,9 +366,9 @@ async function generateUserExcel(data) {
             'Any dispute is subject to Jamshedpur Juridiction only.',
         ];
 
-        // Add each term as a merged row (updated column range)
+        // Add each term as a merged row (updated column range to S)
         terms.forEach((term, index) => {
-            worksheet.mergeCells(`A${currentRow}:R${currentRow}`);
+            worksheet.mergeCells(`A${currentRow}:S${currentRow}`);
             const termCell = worksheet.getCell(`A${currentRow}`);
             termCell.value = `${index + 1}. ${term}`;
             termCell.style = {

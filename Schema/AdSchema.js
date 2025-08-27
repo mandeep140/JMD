@@ -83,6 +83,10 @@ const adSchema = new Schema({
         type: String,
         required: true
     },
+    finalBookingPricePM: {
+        type: String,
+        default: null
+    },
     visibility: {
         type: String,
         required: true,

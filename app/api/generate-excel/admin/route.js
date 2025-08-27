@@ -55,14 +55,28 @@ function generateInventoryExcel(data) {
     try {
         const workbook = XLSX.utils.book_new();
         
-        // Helper function to parse size
-        const parseSizeInfo = (sizeStr) => {
-            if (!sizeStr) return { width: 'N/A', height: 'N/A', totalSqft: 'N/A' };
-            
-            const match = sizeStr.match(/(\d+)\s*[*x×]\s*(\d+)/i);
-            if (match) {
-                const height = parseInt(match[1]);
-                const width = parseInt(match[2]);
+        // Helper function to get field value safely
+        const getFieldValue = (ad, field, defaultValue = 'N/A') => {
+            const value = ad[field];
+            if (value === undefined || value === null || value === '') {
+                return defaultValue;
+            }
+            return value;
+        };
+
+        // Helper function to format price
+        const formatPrice = (price) => {
+            if (!price) return 'N/A';
+            const numericPrice = parseInt(price.toString().replace(/[^0-9]/g, ''));
+            return numericPrice ? `₹${numericPrice.toLocaleString()}` : 'N/A';
+        };
+
+        // Helper function to parse size info with fallback to individual width/height
+        const parseSizeInfo = (ad) => {
+            // First try to use individual width and height fields
+            if (ad.width && ad.height) {
+                const width = parseFloat(ad.width);
+                const height = parseFloat(ad.height);
                 return {
                     width: `${width}ft`,
                     height: `${height}ft`,
@@ -70,94 +84,176 @@ function generateInventoryExcel(data) {
                 };
             }
             
-            return { width: sizeStr, height: 'N/A', totalSqft: 'N/A' };
+            // Fallback to parsing size string
+            if (ad.size) {
+                const match = ad.size.match(/(\d+)\s*[*x×]\s*(\d+)/i);
+                if (match) {
+                    const height = parseInt(match[1]);
+                    const width = parseInt(match[2]);
+                    return {
+                        width: `${width}ft`,
+                        height: `${height}ft`,
+                        totalSqft: `${width * height} sq ft`
+                    };
+                }
+                return { width: ad.size, height: 'N/A', totalSqft: 'N/A' };
+            }
+            
+            return { width: 'N/A', height: 'N/A', totalSqft: 'N/A' };
         };
         
-        // Prepare inventory data
+        // Prepare inventory data with selected fields (removed: Image ID, Views, Show on Site, Size String)
         const inventoryData = data.map((ad, index) => {
-            const sizeInfo = parseSizeInfo(ad.size);
+            const sizeInfo = parseSizeInfo(ad);
             
             return {
+                // Basic Information
                 'Sr.No': index + 1,
-                'Media Code': ad.mediacode || 'N/A',
-                'Title/Location': ad.title || 'N/A',
-                'City': ad.city || 'N/A',
-                'Type': ad.type || 'N/A',
-                'Height': sizeInfo.height,
-                'Width': sizeInfo.width,
+                'Media Code': getFieldValue(ad, 'mediacode'),
+                'Title/Location': getFieldValue(ad, 'title'),
+                'City': getFieldValue(ad, 'city'),
+                'State': getFieldValue(ad, 'state'),
+                'Locality': getFieldValue(ad, 'locality'),
+                'Type': getFieldValue(ad, 'type'),
+                
+                // Size & Dimensions
+                'Height (ft)': sizeInfo.height,
+                'Width (ft)': sizeInfo.width,
                 'Total Area': sizeInfo.totalSqft,
-                'Lighting': ad.lighting || 'N/A',
-                'Status': ad.status || 'Available',
-                'Price/Day (₹)': ad.priceperday ? `₹${parseInt(ad.priceperday.toString().replace(/[^0-9]/g, '')).toLocaleString()}` : 'N/A',
-                'Price/Month (₹)': ad.pricepermonth ? `₹${parseInt(ad.pricepermonth.toString().replace(/[^0-9]/g, '')).toLocaleString()}` : 'N/A',
-                'Client Name': ad.clientname || 'N/A',
-                'Booked From': ad.bookedfrom || 'N/A',
-                'Booked Till': ad.bookedtill || 'N/A',
+                'Units': getFieldValue(ad, 'unit', 1),
+                'Visibility': getFieldValue(ad, 'visibility', 'Single'),
+                
+                // Technical Details
+                'Lighting': getFieldValue(ad, 'lighting'),
+                'Status': getFieldValue(ad, 'status', 'Available'),
+                
+                // Pricing
+                'Price/Day (₹)': formatPrice(ad.priceperday),
+                'Price/Month (₹)': formatPrice(ad.pricepermonth),
+                'Printing Cost/sqft (₹)': getFieldValue(ad, 'printing'),
+                'Mounting Cost/sqft (₹)': getFieldValue(ad, 'mounting'),
+                
+                // Booking Information
+                'Client Name': getFieldValue(ad, 'clientname'),
+                'Booked From': getFieldValue(ad, 'bookedfrom'),
+                'Booked Till': getFieldValue(ad, 'bookedtill'),
+                'Hold/Booked By': getFieldValue(ad, 'holdBookedBy'),
+                'Media Owner': getFieldValue(ad, 'mediaOwner'),
+                
+                // Location & Technical
                 'Coordinates': ad.coordinates ? `${ad.coordinates.lat}, ${ad.coordinates.lng}` : 'N/A',
-                'Views': ad.views || 0,
-                'Visible': ad.show ? 'Yes' : 'No',
-                'Description': ad.message || 'N/A',
-                'Image URL': ad.imageUrl || 'N/A',
-                'Created Date': ad.date ? new Date(ad.date).toLocaleDateString() : 'N/A'
+                
+                // Admin Information
+                'Description/Message': getFieldValue(ad, 'message'),
+                'Image URL': getFieldValue(ad, 'imageUrl'),
+                'Created Date': ad.date ? new Date(ad.date).toLocaleDateString() : 'N/A',
+                'Created Time': ad.date ? new Date(ad.date).toLocaleTimeString() : 'N/A',
+                
+                // Uploader Information
+                'Uploaded By Name': ad.uploadedBy?.name || 'N/A',
+                'Uploaded By Email': ad.uploadedBy?.email || 'N/A'
             };
         });
         
         const inventoryWorksheet = XLSX.utils.json_to_sheet(inventoryData);
         
-        // Set column widths
+        // Set column widths for remaining fields (removed 4 columns)
         const colWidths = [
             { wch: 8 },   // Sr.No
             { wch: 15 },  // Media Code
-            { wch: 30 },  // Title/Location
+            { wch: 35 },  // Title/Location
             { wch: 15 },  // City
+            { wch: 15 },  // State
+            { wch: 20 },  // Locality
             { wch: 20 },  // Type
-            { wch: 10 },  // Width
-            { wch: 10 },  // Height
+            { wch: 12 },  // Height
+            { wch: 12 },  // Width
             { wch: 15 },  // Total Area
-            { wch: 12 },  // Lighting
+            { wch: 8 },   // Units
+            { wch: 12 },  // Visibility
+            { wch: 15 },  // Lighting
             { wch: 12 },  // Status
             { wch: 15 },  // Price/Day
-            { wch: 15 },  // Price/Month
-            { wch: 20 },  // Client Name
+            { wch: 16 },  // Price/Month
+            { wch: 18 },  // Printing Cost
+            { wch: 18 },  // Mounting Cost
+            { wch: 25 },  // Client Name
             { wch: 15 },  // Booked From
             { wch: 15 },  // Booked Till
-            { wch: 20 },  // Coordinates
-            { wch: 10 },  // Views
-            { wch: 10 },  // Visible
-            { wch: 40 },  // Description
-            { wch: 40 },  // Image URL
-            { wch: 15 }   // Created Date
+            { wch: 25 },  // Hold/Booked By
+            { wch: 25 },  // Media Owner
+            { wch: 25 },  // Coordinates
+            { wch: 45 },  // Description/Message
+            { wch: 50 },  // Image URL
+            { wch: 15 },  // Created Date
+            { wch: 15 },  // Created Time
+            { wch: 25 },  // Uploaded By Name
+            { wch: 30 }   // Uploaded By Email
         ];
         inventoryWorksheet['!cols'] = colWidths;
         
         XLSX.utils.book_append_sheet(workbook, inventoryWorksheet, 'Inventory');
         
-        // Generate summary
+        // Generate enhanced summary
         const totalAds = data.length;
-        const availableAds = data.filter(ad => ad.status !== 'Booked').length;
+        const availableAds = data.filter(ad => ad.status !== 'Booked' && ad.status !== 'Hold').length;
         const bookedAds = data.filter(ad => ad.status === 'Booked').length;
+        const holdAds = data.filter(ad => ad.status === 'Hold').length;
         const totalViews = data.reduce((sum, ad) => sum + (ad.views || 0), 0);
+        const totalArea = data.reduce((sum, ad) => {
+            const width = parseFloat(ad.width) || 0;
+            const height = parseFloat(ad.height) || 0;
+            return sum + (width * height);
+        }, 0);
+        
         const uniqueCities = [...new Set(data.map(ad => ad.city).filter(Boolean))];
+        const uniqueStates = [...new Set(data.map(ad => ad.state).filter(Boolean))];
         const uniqueTypes = [...new Set(data.map(ad => ad.type).filter(Boolean))];
+        const uniqueMediaOwners = [...new Set(data.map(ad => ad.mediaOwner).filter(Boolean))];
+        
+        // Price analysis
+        const pricesPerMonth = data.map(ad => parseInt(ad.pricepermonth?.toString().replace(/[^0-9]/g, '') || 0)).filter(p => p > 0);
+        const avgPricePerMonth = pricesPerMonth.length > 0 ? Math.round(pricesPerMonth.reduce((a, b) => a + b, 0) / pricesPerMonth.length) : 0;
+        const minPrice = pricesPerMonth.length > 0 ? Math.min(...pricesPerMonth) : 0;
+        const maxPrice = pricesPerMonth.length > 0 ? Math.max(...pricesPerMonth) : 0;
         
         const summaryData = [
-            { 'Metric': 'Inventory Summary', 'Value': '' },
-            { 'Metric': '', 'Value': '' },
-            { 'Metric': 'Total Hoardings', 'Value': totalAds },
-            { 'Metric': 'Available', 'Value': availableAds },
-            { 'Metric': 'Booked', 'Value': bookedAds },
-            { 'Metric': 'Total Views', 'Value': totalViews },
-            { 'Metric': 'Cities Covered', 'Value': uniqueCities.length },
-            { 'Metric': 'Media Types', 'Value': uniqueTypes.length },
-            { 'Metric': '', 'Value': '' },
-            { 'Metric': 'Generated On', 'Value': new Date().toLocaleString() },
-            { 'Metric': '', 'Value': '' },
-            { 'Metric': 'Cities List', 'Value': uniqueCities.join(', ') },
-            { 'Metric': 'Media Types List', 'Value': uniqueTypes.join(', ') }
+            { 'Metric': 'INVENTORY SUMMARY REPORT', 'Value': '', 'Details': '' },
+            { 'Metric': '', 'Value': '', 'Details': '' },
+            
+            // Basic Stats
+            { 'Metric': 'BASIC STATISTICS', 'Value': '', 'Details': '' },
+            { 'Metric': 'Total Hoardings', 'Value': totalAds, 'Details': 'All media inventory' },
+            { 'Metric': 'Available', 'Value': availableAds, 'Details': 'Ready for booking' },
+            { 'Metric': 'Booked', 'Value': bookedAds, 'Details': 'Currently occupied' },
+            { 'Metric': 'On Hold', 'Value': holdAds, 'Details': 'Reserved but not confirmed' },
+            { 'Metric': 'Total Views', 'Value': totalViews, 'Details': 'Website page views' },
+            { 'Metric': 'Total Area (sqft)', 'Value': totalArea.toLocaleString(), 'Details': 'Combined advertising space' },
+            { 'Metric': '', 'Value': '', 'Details': '' },
+            
+            // Pricing Analysis
+            { 'Metric': 'PRICING ANALYSIS', 'Value': '', 'Details': '' },
+            { 'Metric': 'Average Price/Month', 'Value': `₹${avgPricePerMonth.toLocaleString()}`, 'Details': 'Mean monthly rate' },
+            { 'Metric': 'Minimum Price', 'Value': `₹${minPrice.toLocaleString()}`, 'Details': 'Lowest monthly rate' },
+            { 'Metric': 'Maximum Price', 'Value': `₹${maxPrice.toLocaleString()}`, 'Details': 'Highest monthly rate' },
+            { 'Metric': '', 'Value': '', 'Details': '' },
+            
+            // Geographic Coverage
+            { 'Metric': 'GEOGRAPHIC COVERAGE', 'Value': '', 'Details': '' },
+            { 'Metric': 'States Covered', 'Value': uniqueStates.length, 'Details': uniqueStates.join(', ') || 'N/A' },
+            { 'Metric': 'Cities Covered', 'Value': uniqueCities.length, 'Details': uniqueCities.slice(0, 10).join(', ') + (uniqueCities.length > 10 ? '...' : '') },
+            { 'Metric': 'Media Types', 'Value': uniqueTypes.length, 'Details': uniqueTypes.join(', ') || 'N/A' },
+            { 'Metric': 'Media Owners', 'Value': uniqueMediaOwners.length, 'Details': uniqueMediaOwners.slice(0, 5).join(', ') + (uniqueMediaOwners.length > 5 ? '...' : '') },
+            { 'Metric': '', 'Value': '', 'Details': '' },
+            
+            // Report Info
+            { 'Metric': 'REPORT INFORMATION', 'Value': '', 'Details': '' },
+            { 'Metric': 'Generated On', 'Value': new Date().toLocaleDateString(), 'Details': new Date().toLocaleTimeString() },
+            { 'Metric': 'Generated By', 'Value': 'JMD Admin Panel', 'Details': 'Automated inventory export' }
         ];
         
         const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-        summaryWorksheet['!cols'] = [{ wch: 25 }, { wch: 50 }];
+        summaryWorksheet['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 50 }];
         XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
         
         return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx', compression: true });

@@ -117,7 +117,7 @@ const Dashboard = () => {
           const data = await res.json();
           setTotalAds(data);
 
-          // Filter ads that will become free in next 7 days (only booked ads)
+          // Filter ads that will become free in next 15 days (only booked ads)
           const today = new Date();
           today.setHours(0, 0, 0, 0); // Reset time to start of day
           const next15Days = new Date();
@@ -146,12 +146,26 @@ const Dashboard = () => {
 
               bookedTillDate.setHours(23, 59, 59, 999); // End of the day
 
-              // Check if booking ends within next 7 days (inclusive)
-              return bookedTillDate >= today && bookedTillDate <= next15Days;
+              // Check if booking ends within next 15 days (inclusive)
+              return bookedTillDate <= next15Days;
             } catch (error) {
               console.error('Error parsing date:', ad.bookedtill, error);
               return false;
             }
+          });
+
+          // sort in low to high days and expired first
+          expiring.sort((a, b) => {
+            const aDate = new Date(a.bookedtill);
+            const bDate = new Date(b.bookedtill);
+            if (aDate < today && bDate < today) {
+              return -1; // Both are expired, keep original order
+            } else if (aDate < today) {
+              return -1; // a is expired, b is not
+            } else if (bDate < today) {
+              return 1; // b is expired, a is not
+            }
+            return aDate - bDate; // Both are not expired, sort by date
           });
 
           setExpiringBookings(expiring);
@@ -250,7 +264,7 @@ const Dashboard = () => {
                 <h2 className='w-full h-full text-lg md:text-2xl bg-gray-200 text-black py-2 ps-4 rounded-md'>{todayBookings}</h2>
               </Link>
               <span className='w-full flex flex-col items-start justify-start'>
-                <h2 className='text-black text-sm md:text-base'>Expiring in next 15 days</h2>
+                <h2 className='text-black text-sm md:text-base'>Expiring in next 15 days or expired</h2>
                 <h2 className='w-full h-full text-lg md:text-2xl bg-orange-200 text-orange-700 py-2 ps-4 rounded-md'>{expiringBookings.length}</h2>
               </span>
             </div>
@@ -303,7 +317,7 @@ const Dashboard = () => {
           <div className='w-full bg-white rounded-2xl flex flex-col items-start p-2 md:p-3 justify-start'>
             <span className='flex flex-col md:flex-row justify-between w-full'>
               <h2 className='text-base md:text-lg font-bold text-orange-600'>
-                Booked Hoardings becoming free in next 15 days ({expiringBookings.length})
+                Booked Hoardings becoming free in next 15 days or expired ({expiringBookings.length})
               </h2>
               <button
                 className="mt-4 lg:mt-0 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
@@ -379,7 +393,8 @@ const Dashboard = () => {
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${daysLeft <= 0 ? 'bg-red-100 text-red-700' :
                                   daysLeft <= 1 ? 'bg-red-100 text-red-700' :
                                     daysLeft <= 3 ? 'bg-orange-100 text-orange-700' :
-                                      'bg-yellow-100 text-yellow-700'
+                                      daysLeft <= 10 ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-green-100 text-green-700'
                                   }`}>
                                   {daysLeft <= 0 ? 'Expired' :
                                     daysLeft === 1 ? '1 day' :

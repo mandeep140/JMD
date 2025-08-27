@@ -86,6 +86,7 @@ const initialForm = {
   bookedtill: "",
   priceperday: "",
   pricepermonth: "",
+  finalBookingPricePM: "",
   printing: "",
   mounting: "",
   message: "",
@@ -103,11 +104,60 @@ const page = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Autocomplete states
+  const [suggestions, setSuggestions] = useState({
+    localities: [],
+    mediaOwners: [],
+    clientNames: [],
+    holdBookedBys: []
+  });
+  const [showSuggestions, setShowSuggestions] = useState({
+    locality: false,
+    mediaOwner: false,
+    clientname: false,
+    holdBookedBy: false
+  });
+  const [filteredSuggestions, setFilteredSuggestions] = useState({
+    locality: [],
+    mediaOwner: [],
+    clientname: [],
+    holdBookedBy: []
+  });
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/admin/login");
     }
   }, [status, router]);
+
+  // Fetch suggestions from existing data
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        const response = await fetch('/api/ads');
+        if (response.ok) {
+          const ads = await response.json();
+          
+          // Extract unique values for each field
+          const localities = [...new Set(ads.map(ad => ad.locality).filter(Boolean))];
+          const mediaOwners = [...new Set(ads.map(ad => ad.mediaOwner).filter(Boolean))];
+          const clientNames = [...new Set(ads.map(ad => ad.clientname).filter(Boolean))];
+          const holdBookedBys = [...new Set(ads.map(ad => ad.holdBookedBy).filter(Boolean))];
+          
+          setSuggestions({
+            localities: localities.sort(),
+            mediaOwners: mediaOwners.sort(),
+            clientNames: clientNames.sort(),
+            holdBookedBys: holdBookedBys.sort()
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+      }
+    };
+
+    fetchSuggestions();
+  }, []);
 
   // Update handleChange to handle city and customCity
   const handleChange = (e) => {
@@ -129,6 +179,57 @@ const page = () => {
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
+
+    // Handle autocomplete filtering
+    if (['locality', 'mediaOwner', 'clientname', 'holdBookedBy'].includes(name)) {
+      const suggestionKey = name === 'clientname' ? 'clientNames' : 
+                           name === 'holdBookedBy' ? 'holdBookedBys' : 
+                           name === 'mediaOwner' ? 'mediaOwners' :
+                           name === 'locality' ? 'localities' : name + 's';
+      
+      if (value.length > 0) {
+        // Add safety check to ensure suggestions[suggestionKey] exists and is an array
+        const suggestionArray = suggestions[suggestionKey] || [];
+        const filtered = suggestionArray.filter(item =>
+          item && item.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredSuggestions(prev => ({
+          ...prev,
+          [name]: filtered
+        }));
+        setShowSuggestions(prev => ({
+          ...prev,
+          [name]: filtered.length > 0
+        }));
+      } else {
+        setShowSuggestions(prev => ({
+          ...prev,
+          [name]: false
+        }));
+      }
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = (field, value) => {
+    setForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setShowSuggestions(prev => ({
+      ...prev,
+      [field]: false
+    }));
+  };
+
+  // Hide suggestions when clicking outside
+  const handleInputBlur = (field) => {
+    setTimeout(() => {
+      setShowSuggestions(prev => ({
+        ...prev,
+        [field]: false
+      }));
+    }, 200); // Delay to allow suggestion selection
   };
 
   // Handle image file selection
@@ -199,6 +300,7 @@ const page = () => {
         printing: form.printing,
         mounting: form.mounting,
         locality: form.locality,
+        finalBookingPricePM: form.finalBookingPricePM,
         state: form.state,
         holdBookedBy: form.holdBookedBy,
         mediaOwner: form.mediaOwner,
@@ -242,6 +344,21 @@ const page = () => {
     }
     setLoading(false);
   };
+
+  // Suggestion dropdown component
+  const SuggestionDropdown = ({ field, suggestions, onSelect, onBlur }) => (
+    <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
+      {suggestions.map((suggestion, index) => (
+        <div
+          key={index}
+          className="px-3 py-2 hover:bg-blue-100 cursor-pointer text-sm border-b border-gray-100 last:border-b-0"
+          onClick={() => onSelect(field, suggestion)}
+        >
+          {suggestion}
+        </div>
+      ))}
+    </div>
+  );
 
   if (status === "loading") {
     return <div className="w-full h-screen flex items-center justify-center text-black text-center">Hold on While we fetching data - JMD <br />Showa.online</div>;
@@ -372,16 +489,26 @@ const page = () => {
 
                   {/* Row 1 - Locality, City, Latitude, Longitude */}
                   <div className="flex flex-col md:flex-row gap-3 w-full mb-4">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 relative">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Locality*</label>
                       <input
                         type="text"
                         name="locality"
                         value={form.locality}
                         onChange={handleChange}
+                        onBlur={() => handleInputBlur('locality')}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
+                        autoComplete="off"
                       />
+                      {showSuggestions.locality && filteredSuggestions.locality.length > 0 && (
+                        <SuggestionDropdown
+                          field="locality"
+                          suggestions={filteredSuggestions.locality}
+                          onSelect={handleSuggestionSelect}
+                          onBlur={() => handleInputBlur('locality')}
+                        />
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -585,43 +712,53 @@ const page = () => {
                       </select>
                     </div>
 
-                    <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Client Name{form.status === "Booked" && "*"}</label>
+                    <div className={`flex-1 relative ${form.status !== "Booked" && form.status !== "Hold" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Client Name{(form.status === "Booked" || form.status === "Hold") && "*"}</label>
                       <input
                         type="text"
                         name="clientname"
                         value={form.clientname}
                         onChange={handleChange}
-                        required={form.status === "Booked"}
-                        disabled={form.status !== "Booked"}
+                        required={form.status === "Booked" || form.status === "Hold"}
+                        disabled={form.status !== "Booked" && form.status !== "Hold"}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
+                        onBlur={() => handleInputBlur('clientname')}
+                        autoComplete='off'
                       />
+                      {showSuggestions.clientname && filteredSuggestions.clientname.length > 0 && (
+                        <SuggestionDropdown
+                          field="clientname"
+                          suggestions={filteredSuggestions.clientname}
+                          onSelect={handleSuggestionSelect}
+                          onBlur={() => handleInputBlur('clientname')}
+                        />
+                      )}
                     </div>
 
-                    <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Booked From{form.status === "Booked" && "*"}</label>
+                    <div className={`flex-1 ${form.status !== "Booked" && form.status !== "Hold" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Booked From{(form.status === "Booked" || form.status === "Hold") && "*"}</label>
                       <input
                         type="date"
                         name="bookedfrom"
                         value={form.bookedfrom}
                         onChange={handleChange}
-                        required={form.status === "Booked"}
-                        disabled={form.status !== "Booked"}
+                        required={form.status === "Booked" || form.status === "Hold"}
+                        disabled={form.status !== "Booked" && form.status !== "Hold"}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
                       />
                     </div>
 
-                    <div className={`flex-1 ${form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Booked Till{form.status === "Booked" && "*"}</label>
+                    <div className={`flex-1 ${form.status !== "Booked" && form.status !== "Hold" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Booked Till{(form.status === "Booked" || form.status === "Hold") && "*"}</label>
                       <input
                         type="date"
                         name="bookedtill"
                         value={form.bookedtill}
                         onChange={handleChange}
-                        required={form.status === "Booked"}
-                        disabled={form.status !== "Booked"}
+                        required={form.status === "Booked" || form.status === "Hold"}
+                        disabled={form.status !== "Booked" && form.status !== "Hold"}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
                       />
@@ -630,7 +767,7 @@ const page = () => {
 
                   {/* Row 3 - hold/booked by, media owner */}
                   <div className="flex flex-col md:flex-row gap-3 w-full">
-                    <div className={`flex-1 min-w-0 ${form.status !== "Hold" && form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                    <div className={`flex-1 min-w-0 relative ${form.status !== "Hold" && form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
                       <label className="block text-xs md:text-sm font-semibold mb-1">
                         Hold/Booked By{(form.status === "Hold" || form.status === "Booked") && "*"}
                       </label>
@@ -641,17 +778,49 @@ const page = () => {
                         onChange={handleChange}
                         required={form.status === "Hold" || form.status === "Booked"}
                         disabled={form.status !== "Hold" && form.status !== "Booked"}
+                        autoComplete='off'
+                        onBlur={() => handleInputBlur('holdBookedBy')}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
                       />
+                      {showSuggestions.holdBookedBy && filteredSuggestions.holdBookedBy.length > 0 && (
+                        <SuggestionDropdown
+                          field="holdBookedBy"
+                          suggestions={filteredSuggestions.holdBookedBy}
+                          onSelect={handleSuggestionSelect}
+                          onBlur={() => handleInputBlur('holdBookedBy')}
+                        />
+                      )}
                     </div>
 
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 relative">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Media Owner</label>
                       <input
                         type="text"
                         name="mediaOwner"
                         value={form.mediaOwner}
+                        onChange={handleChange}
+                        autoComplete='off'
+                        onBlur={() => handleInputBlur('mediaOwner')}
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="Type Here"
+                      />
+                      {showSuggestions.mediaOwner && filteredSuggestions.mediaOwner.length > 0 && (
+                        <SuggestionDropdown
+                          field="mediaOwner"
+                          suggestions={filteredSuggestions.mediaOwner}
+                          onSelect={handleSuggestionSelect}
+                          onBlur={() => handleInputBlur('mediaOwner')}
+                        />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Final Booking Price (PM)</label>
+                      <input
+                        type="text"
+                        name="finalBookingPricePM"
+                        value={form.finalBookingPricePM}
                         onChange={handleChange}
                         className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
                         placeholder="Type Here"
