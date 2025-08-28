@@ -296,6 +296,7 @@ const page = () => {
         size: sizeString,
         height: form.height,
         width: form.width,
+        show: form.show,
         unit: form.unit,
         printing: form.printing,
         mounting: form.mounting,
