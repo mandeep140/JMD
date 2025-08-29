@@ -138,6 +138,15 @@ function getLightingAbbreviation(lighting) {
 
 async function generatePowerPoint(data) {
   try {
+    // Sort ads by locality first (at the very beginning)
+    if (data.ads && Array.isArray(data.ads)) {
+        data.ads = data.ads.sort((a, b) => {
+            const localityA = (a.locality || a.title || '').toLowerCase();
+            const localityB = (b.locality || b.title || '').toLowerCase();
+            return localityA.localeCompare(localityB);
+        });
+    }
+
     const pres = new pptxgen();
     pres.defineLayout({ name: 'JMD_LAYOUT', width: 10, height: 5.625 });
     pres.layout = 'JMD_LAYOUT';

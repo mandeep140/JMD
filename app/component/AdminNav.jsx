@@ -20,6 +20,7 @@ const links = [
   { href: '/admin/download-contact', label: 'Download Contact' },
   { href: '/admin/users', label: 'All Users' },
   { href: '/admin/manage-home', label: 'Manage Home' },
+  { href: '/admin/rent-agreement', label: 'Rent Agreement' },
   { href: '/', label: 'Home' }
 ];
 
@@ -142,6 +143,7 @@ const AdminNav = ({ children }) => {
                   {link.label === 'All Users' && <FaUsers className='text-xl' />}
                   {link.label === 'Manage Home' && <MdHome className='text-xl' />}
                   {link.label === 'Change History' && <FaHistory className='text-xl' />}
+                  {link.label === 'Rent Agreement' && <FaClipboardList className='text-xl' />}
                   <h2 className='text-black/80'>{link.label}</h2>
                 </div>
               </Link>
@@ -185,12 +187,14 @@ const AdminNav = ({ children }) => {
                   {link.label === 'All Users' && <FaUsers className='text-lg' />}
                   {link.label === 'Manage Home' && <MdHome className='text-lg' />}
                   {link.label === 'Change History' && <FaHistory className='text-lg' />}
+                  {link.label === 'Rent Agreement' && <FaClipboardList className='text-lg' />}
                   <span className="text-[10px] font-medium text-center leading-tight">
                     {link.label === 'Manage Inventory' ? 'Inventory' : 
                      link.label === 'Booking Request' ? 'Booking' :
                      link.label === 'Download Contact' ? 'Downloads' : 
                      link.label === 'All Users' ? 'Users' :
                      link.label === 'Manage Home' ? 'Home' :
+                     link.label === 'Rent Agreement' ? 'Rent' :
                      link.label}
                   </span>
                 </div>

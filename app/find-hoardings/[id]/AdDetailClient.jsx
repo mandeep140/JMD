@@ -446,12 +446,12 @@ const AdDetailClient = ({ initialAd, adId }) => {
             <div className='flex flex-col gap-3'>
               <div>
                 <h2 className='text-3xl md:text-5xl font-bold'>{ad.type}</h2>
-                <h1 className='text-xl md:text-2xl font-semibold mt-2 md:mt-3'>{ad.locality && ad.locality + ","} {ad.city}</h1>
+                <h1 className='text-xl md:text-2xl font-semibold mt-2 md:mt-3'>{ad.message}</h1>
               </div>
 
               {/* Description */}
               <p className='mt-4 text-sm md:text-base leading-relaxed'>
-                {ad.message}
+                {ad.locality && ad.locality + ","} {ad.city}
               </p>
             </div>
 

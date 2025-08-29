@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import { unique } from "next/dist/build/utils";
 
 const HoardingRentSchema = new Schema({
     adCode: { type: String, required: true, unique: true },
@@ -14,7 +13,7 @@ const HoardingRentSchema = new Schema({
     duesDate: { type: Date },
     duesAmount: { type: Number },
     expectedSales: { type: Number },
-    moreDetails:{
+    moreDetails: [{
         agreementYear: { type: String },
         installationEnd: { type: String },
         paymentPaidYear: { type: String },
@@ -25,8 +24,14 @@ const HoardingRentSchema = new Schema({
         bank: { type: String },
         accountPayeeName: { type: String },
         dues: { type: Number },
-        duesYear: { type: Date }
-    }
+        duesYear: { type: Date },
+        createdAt: { type: Date, default: Date.now },
+        remarks: { type: String }
+    }]
+}, {
+    timestamps: true // This will add createdAt and updatedAt to the main document
 });
 
-export default mongoose.model("HoardingRent", HoardingRentSchema);
+const HoardingRent = mongoose.models.HoardingRent || mongoose.model('HoardingRent', HoardingRentSchema);
+
+export default HoardingRent;

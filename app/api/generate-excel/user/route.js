@@ -30,6 +30,15 @@ export async function POST(request) {
 
 async function generateUserExcel(data) {
     try {
+        // Sort ads by locality first (at the very beginning)
+        if (data.ads && Array.isArray(data.ads)) {
+            data.ads = data.ads.sort((a, b) => {
+                const localityA = (a.locality || a.title || '').toLowerCase();
+                const localityB = (b.locality || b.title || '').toLowerCase();
+                return localityA.localeCompare(localityB);
+            });
+        }
+
         // Create a new workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('JMD Quotation');
@@ -83,7 +92,7 @@ async function generateUserExcel(data) {
             { width: 20 },  // City
             { width: 25 },  // Medium
             { width: 8 },   // Type (Lighting)
-            { width: 50 },  // Location
+            { width: 70 },  // Location
             { width: 8 },   // Hor
             { width: 8 },   // Ver
             { width: 8 },   // Faci
@@ -254,7 +263,7 @@ async function generateUserExcel(data) {
                 ad.city || '',
                 ad.type || '',
                 getLightingCode(ad.lighting),
-                ad.title || '',
+                `${ad.locality} - ${ad.title}` || '',
                 sizeInfo.horizontal || '',
                 sizeInfo.vertical || '',
                 ad.visibility === 'Double' ? 2 : 1,
