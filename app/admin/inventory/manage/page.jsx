@@ -137,13 +137,13 @@ const page = () => {
         const response = await fetch('/api/ads');
         if (response.ok) {
           const ads = await response.json();
-          
+
           // Extract unique values for each field
           const localities = [...new Set(ads.map(ad => ad.locality).filter(Boolean))];
           const mediaOwners = [...new Set(ads.map(ad => ad.mediaOwner).filter(Boolean))];
           const clientNames = [...new Set(ads.map(ad => ad.clientname).filter(Boolean))];
           const holdBookedBys = [...new Set(ads.map(ad => ad.holdBookedBy).filter(Boolean))];
-          
+
           setSuggestions({
             localities: localities.sort(),
             mediaOwners: mediaOwners.sort(),
@@ -175,6 +175,9 @@ const page = () => {
         status: value,
         bookedfrom: value === "Available" ? "" : prev.bookedfrom,
         bookedtill: value === "Available" ? "" : prev.bookedtill,
+        clientname: value === "Available" ? "" : prev.clientname,
+        holdBookedBy: value === "Available" ? "" : prev.holdBookedBy,
+        finalBookingPricePM: value === "Available" ? "" : prev.finalBookingPricePM
       }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
@@ -182,11 +185,11 @@ const page = () => {
 
     // Handle autocomplete filtering
     if (['locality', 'mediaOwner', 'clientname', 'holdBookedBy'].includes(name)) {
-      const suggestionKey = name === 'clientname' ? 'clientNames' : 
-                           name === 'holdBookedBy' ? 'holdBookedBys' : 
-                           name === 'mediaOwner' ? 'mediaOwners' :
-                           name === 'locality' ? 'localities' : name + 's';
-      
+      const suggestionKey = name === 'clientname' ? 'clientNames' :
+        name === 'holdBookedBy' ? 'holdBookedBys' :
+          name === 'mediaOwner' ? 'mediaOwners' :
+            name === 'locality' ? 'localities' : name + 's';
+
       if (value.length > 0) {
         // Add safety check to ensure suggestions[suggestionKey] exists and is an array
         const suggestionArray = suggestions[suggestionKey] || [];
@@ -296,7 +299,6 @@ const page = () => {
         size: sizeString,
         height: form.height,
         width: form.width,
-        show: form.show,
         unit: form.unit,
         printing: form.printing,
         mounting: form.mounting,
@@ -308,6 +310,7 @@ const page = () => {
         imageUrl,
         imageId,
         visibility: form.visibility,
+        show: form.show, // Explicitly set the show field (boolean value)
         uploadedBy: {
           name: session?.user?.name || "Unknown",
           email: session?.user?.email || "Unknown"
@@ -794,6 +797,20 @@ const page = () => {
                       )}
                     </div>
 
+                    <div className={`flex-1 min-w-0 ${form.status !== "Hold" && form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Final Booking Price (PM){(form.status === "Hold" || form.status === "Booked") && "*"}</label>
+                      <input
+                        type="text"
+                        name="finalBookingPricePM"
+                        value={form.finalBookingPricePM}
+                        required={form.status === "Hold" || form.status === "Booked"}
+                        disabled={form.status !== "Hold" && form.status !== "Booked"}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="Type Here"
+                      />
+                    </div>
+
                     <div className="flex-1 min-w-0 relative">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Media Owner</label>
                       <input
@@ -814,18 +831,6 @@ const page = () => {
                           onBlur={() => handleInputBlur('mediaOwner')}
                         />
                       )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Final Booking Price (PM)</label>
-                      <input
-                        type="text"
-                        name="finalBookingPricePM"
-                        value={form.finalBookingPricePM}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="Type Here"
-                      />
                     </div>
                   </div>
                 </div>

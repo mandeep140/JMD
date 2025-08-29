@@ -14,7 +14,11 @@ function validateAdData(adData) {
         "message", "imageUrl", "show"
     ];
     for (const field of requiredFields) {
-        if (!adData[field] || adData[field].toString().trim() === "") {
+        if (
+            adData[field] === undefined ||
+            adData[field] === null ||
+            adData[field].toString().trim() === ""
+        ) {
             return `Missing or empty required field: ${field}`;
         }
     }

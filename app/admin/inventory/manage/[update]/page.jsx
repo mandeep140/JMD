@@ -289,6 +289,9 @@ const Page = () => {
         bookedfrom: value === "Available" ? "" : prev.bookedfrom,
         bookedtill: value === "Available" ? "" : prev.bookedtill,
         holdBookedBy: value === "Available" ? "" : prev.holdBookedBy,
+        clientname: value === "Available" ? "" : prev.clientname,
+        holdBookedBy: value === "Available" ? "" : prev.holdBookedBy,
+        finalBookingPricePM: value === "Available" ? "" : prev.finalBookingPricePM,
       }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));

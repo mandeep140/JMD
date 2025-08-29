@@ -96,7 +96,7 @@ async function generateUserExcel(data) {
             { width: 8 },   // GST
             { width: 15 },  // GST cost
             { width: 20 },  // Total Cost with GST
-            { width: 30 }   // Image Link (new column)
+            { width: 40 }   // Image Link (increased width for better visibility)
         ];
 
         // Row 1: Company header "From JMD - Advertisement" (updated column range)
@@ -244,7 +244,7 @@ async function generateUserExcel(data) {
                     : 'N/A';
 
             // Get image URL
-            const imageUrl = ad.imageUrl || ad.image || 'N/A';
+            const imageUrl = ad.imageUrl || ad.image || '';
 
             // Add data row (added image link as last column)
             const dataRow = worksheet.getRow(currentRow);
@@ -266,38 +266,65 @@ async function generateUserExcel(data) {
                 displayTotalCost,
                 '18%',
                 gstCost.toLocaleString(),
-                totalWithGst.toLocaleString(),
-                imageUrl // Image Link (new column)
+                totalWithGst.toLocaleString()
             ];
 
+            // Add regular data cells (first 18 columns)
             rowData.forEach((value, colIndex) => {
                 const cell = dataRow.getCell(colIndex + 1);
                 cell.value = value;
-                
-                // Special styling for image link column
-                if (colIndex === 18 && value !== 'N/A') { // Image Link column
-                    cell.style = {
-                        alignment: { horizontal: 'left', vertical: 'middle' },
-                        border: {
-                            top: { style: 'thin' },
-                            left: { style: 'thin' },
-                            bottom: { style: 'thin' },
-                            right: { style: 'thin' }
-                        },
-                        font: { color: { argb: 'FF0000FF' }, underline: true }
-                    };
-                } else {
-                    cell.style = {
-                        alignment: { horizontal: 'center', vertical: 'middle' },
-                        border: {
-                            top: { style: 'thin' },
-                            left: { style: 'thin' },
-                            bottom: { style: 'thin' },
-                            right: { style: 'thin' }
-                        }
-                    };
-                }
+                cell.style = {
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                };
             });
+
+            // Handle Image Link column (19th column) specially
+            const imageLinkCell = dataRow.getCell(19);
+            if (imageUrl && imageUrl !== 'N/A' && imageUrl.trim() !== '') {
+                // Create clickable hyperlink
+                imageLinkCell.value = {
+                    text: 'View Image',
+                    hyperlink: imageUrl,
+                    tooltip: 'Click to open image'
+                };
+                imageLinkCell.style = {
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    },
+                    font: { 
+                        color: { argb: 'FF0066CC' }, 
+                        underline: true, 
+                        bold: true 
+                    }
+                };
+            } else {
+                // No image available
+                imageLinkCell.value = 'No Image';
+                imageLinkCell.style = {
+                    alignment: { horizontal: 'center', vertical: 'middle' },
+                    border: {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    },
+                    font: { 
+                        color: { argb: 'FF999999' }, 
+                        italic: true 
+                    }
+                };
+            }
+
             dataRow.height = 20;
             currentRow++;
         });
@@ -313,9 +340,10 @@ async function generateUserExcel(data) {
         totalRow.getCell(16).value = '18%'; // GST (keep as 18%)
         totalRow.getCell(17).value = gstTotal.toLocaleString(); // GST cost
         totalRow.getCell(18).value = totalWithGstTotal.toLocaleString(); // Total Cost with GST
+        totalRow.getCell(19).value = ''; // Empty for Image Link column
         
         // Style total row (updated to include Units and SQFT columns, and new Image Link column)
-        [10, 11, 12, 13, 14, 15, 16, 17, 18].forEach(colIndex => {
+        [10, 11, 12, 13, 14, 15, 16, 17, 18, 19].forEach(colIndex => {
             const cell = totalRow.getCell(colIndex);
             cell.style = {
                 font: { bold: true },

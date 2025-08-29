@@ -20,6 +20,10 @@ const page = () => {
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
+  // Selection states
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+
   // Filter states - converted to arrays for multi-select
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedState, setSelectedState] = useState('');
@@ -71,6 +75,12 @@ const page = () => {
       });
       if (res.ok) {
         setData((prev) => prev.filter((ad) => ad.mediacode !== adToDelete.mediacode));
+        // Remove from selected rows if it was selected
+        setSelectedRows(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(adToDelete.mediacode);
+          return newSet;
+        });
       } else {
         const errorData = await res.json();
         alert(errorData.error || "Failed to delete ad.");
@@ -82,17 +92,52 @@ const page = () => {
     setAdToDelete(null);
   };
 
+  // Selection handlers
+  const handleRowSelect = (mediacode) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(mediacode)) {
+        newSet.delete(mediacode);
+      } else {
+        newSet.add(mediacode);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      setSelectedRows(new Set(filteredData.map(item => item.mediacode)));
+    } else {
+      setSelectedRows(new Set());
+    }
+  };
+
+  // Get data to export (selected rows or all filtered data)
+  const getDataToExport = () => {
+    if (selectedRows.size > 0) {
+      return filteredData.filter(item => selectedRows.has(item.mediacode));
+    }
+    return filteredData;
+  };
+
   const handleExportWithCurrentFilters = () => {
     setDownloading(true);
-    if (filteredData.length === 0) {
-      alert("No data to export with current filters.");
+    const dataToExport = getDataToExport();
+    
+    if (dataToExport.length === 0) {
+      alert("No data to export.");
       setDownloading(false);
       return;
     }
 
-    exportRef.current.exportData(filteredData, 'inventory');
+    exportRef.current.exportData(dataToExport, 'inventory');
 
     const filterInfo = [];
+    if (selectedRows.size > 0) {
+      filterInfo.push(`Selected: ${selectedRows.size} rows`);
+    }
     if (selectedStatus) filterInfo.push(`Status: ${selectedStatus}`);
     if (selectedState) filterInfo.push(`State: ${selectedState}`);
     if (selectedCities.length > 0) filterInfo.push(`Cities: ${selectedCities.join(', ')}`);
@@ -106,8 +151,8 @@ const page = () => {
     if (selectedTotalArea) filterInfo.push(`Total Area: ${areaFilterHigher ? '≥' : '≤'} ${selectedTotalArea} sqft`);
 
     const message = filterInfo.length > 0
-      ? `Exported ${filteredData.length} records with filters: ${filterInfo.join(', ')}`
-      : `Exported all ${filteredData.length} records`;
+      ? `Exported ${dataToExport.length} records with filters: ${filterInfo.join(', ')}`
+      : `Exported all ${dataToExport.length} records`;
 
     alert(message);
     setDownloading(false);
@@ -115,16 +160,18 @@ const page = () => {
 
   const handleExportWithCurrentFiltersInPPTandExcel = async () => {
     setDownloading(true);
-    if (filteredData.length === 0) {
-      alert("No data to export with current filters.");
+    const dataToExport = getDataToExport();
+    
+    if (dataToExport.length === 0) {
+      alert("No data to export.");
       setDownloading(false);
       return;
     }
     
     const pptData = {
-      title: `JMD Advertisement - Selected Hoardings (${filteredData.length} items) - Admin`,
+      title: `JMD Advertisement - Selected Hoardings (${dataToExport.length} items) - Admin`,
       subtitle: `Generated on ${new Date().toLocaleDateString()}`,
-      ads: filteredData
+      ads: dataToExport
     };
 
     const response = await fetch('/api/generate-ppt', {
@@ -149,7 +196,7 @@ const page = () => {
       alert('Error generating PPT');
     }
 
-    const excelData = filteredData.map(ad =>({
+    const excelData = dataToExport.map(ad =>({
       ...ad,
       pricePerMonth: ad.pricepermonth,
     }))
@@ -177,6 +224,9 @@ const page = () => {
     }
 
     const filterInfo = [];
+    if (selectedRows.size > 0) {
+      filterInfo.push(`Selected: ${selectedRows.size} rows`);
+    }
     if (selectedStatus) filterInfo.push(`Status: ${selectedStatus}`);
     if (selectedState) filterInfo.push(`State: ${selectedState}`);
     if (selectedCities.length > 0) filterInfo.push(`Cities: ${selectedCities.join(', ')}`);
@@ -190,8 +240,8 @@ const page = () => {
     if (selectedTotalArea) filterInfo.push(`Total Area: ${areaFilterHigher ? '≥' : '≤'} ${selectedTotalArea} sqft`);
 
     const message = filterInfo.length > 0
-      ? `Exported ${filteredData.length} records with filters: ${filterInfo.join(', ')}`
-      : `Exported all ${filteredData.length} records`;
+      ? `Exported ${dataToExport.length} records with filters: ${filterInfo.join(', ')}`
+      : `Exported all ${dataToExport.length} records`;
 
     alert(message);
     setDownloading(false);
@@ -223,6 +273,12 @@ const page = () => {
         : [...prev, type]
     );
     resetPage();
+  };
+
+  // Clear selections when filters change
+  const clearSelections = () => {
+    setSelectedRows(new Set());
+    setSelectAll(false);
   };
 
   // Updated filtering logic for multi-select and area filter
@@ -299,7 +355,18 @@ const page = () => {
   const localityOptions = Array.from(new Set(data.map(d => d.locality).filter(Boolean)));
   const holdBookedByOptions = Array.from(new Set(data.map(d => d.holdBookedBy).filter(Boolean)));
 
-  const resetPage = () => setPage(1);
+  const resetPage = () => {
+    setPage(1);
+    clearSelections();
+  };
+
+  // Check if current page selections affect select all
+  useEffect(() => {
+    const currentPageMediacodes = paginated.map(item => item.mediacode);
+    const allCurrentPageSelected = currentPageMediacodes.length > 0 && 
+      currentPageMediacodes.every(mediacode => selectedRows.has(mediacode));
+    setSelectAll(allCurrentPageSelected);
+  }, [paginated, selectedRows]);
 
   // MultiSelect Dropdown Component
   const MultiSelectDropdown = ({ 
@@ -431,23 +498,44 @@ const page = () => {
               <div>
                 <h1 className="text-2xl font-bold text-gray-800 mb-2">Media Inventory</h1>
                 <p className="text-gray-600">Manage all your media listings</p>
+                {selectedRows.size > 0 && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm font-medium">
+                      {selectedRows.size} row(s) selected
+                    </span>
+                    <button
+                      onClick={clearSelections}
+                      className="text-xs text-red-600 hover:text-red-800 underline"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                )}
               </div>
               <span className='flex items-center gap-2'>
                 <button
-                  className={`mt-4 lg:mt-0 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 ${filteredData.length === 0 || downloading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`mt-4 lg:mt-0 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 ${(selectedRows.size === 0 && filteredData.length === 0) || downloading ? "opacity-50 cursor-not-allowed" : ""}`}
                   onClick={handleExportWithCurrentFilters}
-                  disabled={filteredData.length === 0 || downloading}
+                  disabled={(selectedRows.size === 0 && filteredData.length === 0) || downloading}
                 >
                   <MdDownloading />
-                  {downloading ? "Exporting some file..." : `Export to Excel (${filteredData.length} records)`}
+                  {downloading ? "Exporting..." : 
+                    selectedRows.size > 0 
+                      ? `Export Selected to Excel (${selectedRows.size})` 
+                      : `Export Filtered to Excel (${filteredData.length})`
+                  }
                 </button>
                 <button
-                  className={`mt-4 lg:mt-0 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 ${filteredData.length === 0 || downloading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`mt-4 lg:mt-0 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200 ${(selectedRows.size === 0 && filteredData.length === 0) || downloading ? "opacity-50 cursor-not-allowed" : ""}`}
                   onClick={handleExportWithCurrentFiltersInPPTandExcel}
-                  disabled={filteredData.length === 0 || downloading}
+                  disabled={(selectedRows.size === 0 && filteredData.length === 0) || downloading}
                 >
                   <MdDownloading />
-                  {downloading ? "Exporting some file..." : `Export to PPT & Excel (${filteredData.length} records)`}
+                  {downloading ? "Exporting..." : 
+                    selectedRows.size > 0 
+                      ? `Export Selected PPT & Excel (${selectedRows.size})` 
+                      : `Export Filtered PPT & Excel (${filteredData.length})`
+                  }
                 </button>
               </span>
             </div>
@@ -634,6 +722,9 @@ const page = () => {
                 {(selectedStatus || selectedState || selectedCities.length > 0 || selectedTypes.length > 0 || selectedClient || selectedLocalities.length > 0 || selectedHoldBookedBy || selectedFromDate || selectedToDate || selectedTotalArea) && (
                   <span className="ml-2 text-blue-600 font-medium">(filtered)</span>
                 )}
+                {selectedRows.size > 0 && (
+                  <span className="ml-2 text-green-600 font-medium">• {selectedRows.size} selected</span>
+                )}
               </div>
             </div>
 
@@ -643,6 +734,14 @@ const page = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
+                      <th className="px-4 py-3 text-left">
+                        <input
+                          type="checkbox"
+                          checked={selectAll}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                      </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
@@ -657,7 +756,7 @@ const page = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {paginated.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                        <td colSpan={10} className="px-4 py-8 text-center text-gray-500">
                           {filteredData.length === 0 && data.length > 0 ?
                             "No records match the selected filters." :
                             "No records found."
@@ -667,6 +766,14 @@ const page = () => {
                     ) : (
                       paginated.map((row, i) => (
                         <tr key={i} className="hover:bg-gray-50 transition-colors duration-150">
+                          <td className="px-4 py-3">
+                            <input
+                              type="checkbox"
+                              checked={selectedRows.has(row.mediacode)}
+                              onChange={() => handleRowSelect(row.mediacode)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                          </td>
                           <td className="px-4 py-3 flex items-center space-x-2 flex-col">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                               ${row.status === "Booked"
