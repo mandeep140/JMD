@@ -183,11 +183,11 @@ const AdDetailClient = ({ initialAd, adId }) => {
       if (isAlreadyInCart) {
         return prev;
       }
-      
+
       // Calculate additional costs
       const printingCost = addPrinting ? (ad.printing * ad.height * ad.width * ad.unit) : 0;
       const mountingCost = addMounting ? (ad.mounting * ad.height * ad.width * ad.unit) : 0;
-      
+
       // Add item with additional cost flags
       const newCartItem = {
         ...ad,
@@ -196,7 +196,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
         printingCost,
         mountingCost,
       };
-      
+
       const newCart = [...prev, newCartItem];
       console.log('Adding to cart:', ad.title, 'New cart size:', newCart.length);
       return newCart;
@@ -211,11 +211,11 @@ const AdDetailClient = ({ initialAd, adId }) => {
   // Add functions to handle individual additional cost additions
   const addPrintingToCart = () => {
     if (!ad) return;
-    
+
     setAdditionalPacks(prev => {
       const isAlreadyAdded = prev.some(pack => pack.adId === ad._id && pack.type === 'printing');
       if (isAlreadyAdded) return prev;
-      
+
       const printingPack = {
         id: `printing_${ad._id}`,
         adId: ad._id,
@@ -226,18 +226,18 @@ const AdDetailClient = ({ initialAd, adId }) => {
         unit: 'per sqft',
         mediacode: ad.mediacode,
       };
-      
+
       return [...prev, printingPack];
     });
   };
 
   const addMountingToCart = () => {
     if (!ad) return;
-    
+
     setAdditionalPacks(prev => {
       const isAlreadyAdded = prev.some(pack => pack.adId === ad._id && pack.type === 'mounting');
       if (isAlreadyAdded) return prev;
-      
+
       const mountingPack = {
         id: `mounting_${ad._id}`,
         adId: ad._id,
@@ -248,7 +248,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
         unit: 'per sqft',
         mediacode: ad.mediacode,
       };
-      
+
       return [...prev, mountingPack];
     });
   };
@@ -390,6 +390,27 @@ const AdDetailClient = ({ initialAd, adId }) => {
               />
             </svg>
           </button>
+          <button
+            className='absolute top-4 right-15 md:top-6 md:right-20 z-10 w-10 h-10 md:w-12 md:h-12 bg-red-500/80 backdrop-blur-sm border border-white/30 hover:bg-red-600 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center group shadow-lg'
+            onClick={router.back}
+            title="Go back"
+          >
+            <svg
+              className="w-4 h-4 md:w-5 md:h-5 text-white group-hover:scale-110 transition-transform duration-200"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+
+            </svg>
+          </button>
 
           {/* Share Success Message */}
           {shareMessage && (
@@ -445,8 +466,8 @@ const AdDetailClient = ({ initialAd, adId }) => {
             {/* Title Section */}
             <div className='flex flex-col gap-3'>
               <div>
-                <h2 className='text-3xl md:text-5xl font-bold'>{ad.type}</h2>
-                <h1 className='text-xl md:text-2xl font-semibold mt-2 md:mt-3'>{ad.message}</h1>
+                <h1 className='text-xl md:text-2xl font-semibold mt-2 md:mt-3'>{ad.message.slice(0, 40)}...</h1>
+                <h2 className='text-2xl md:text-4xl  font-bold'>{ad.type}</h2>
               </div>
 
               {/* Description */}
@@ -553,11 +574,10 @@ const AdDetailClient = ({ initialAd, adId }) => {
                       <button
                         onClick={addPrintingToCart}
                         disabled={isPrintingAdded()}
-                        className={`px-3 py-1 ml-2 rounded-md transition-colors duration-200 text-sm flex items-center ${
-                          isPrintingAdded() 
-                            ? 'bg-green-500 text-white cursor-not-allowed' 
+                        className={`px-3 py-1 ml-2 rounded-md transition-colors duration-200 text-sm flex items-center ${isPrintingAdded()
+                            ? 'bg-green-500 text-white cursor-not-allowed'
                             : 'bg-red-500 text-white hover:bg-red-600'
-                        }`}
+                          }`}
                       >
                         <FaShoppingBag className='w-3 h-3' /> &nbsp;
                         {isPrintingAdded() ? 'Added' : 'Add to cart'}
@@ -567,7 +587,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
                 </div>
               </div>
             </div>
-            
+
             {/* Mounting Card */}
             <div className='bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200'>
               <div className='relative h-40 md:h-48 w-80'>
@@ -590,11 +610,10 @@ const AdDetailClient = ({ initialAd, adId }) => {
                       <button
                         onClick={addMountingToCart}
                         disabled={isMountingAdded()}
-                        className={`px-3 py-1 ml-2 rounded-md transition-colors duration-200 text-sm flex items-center ${
-                          isMountingAdded() 
-                            ? 'bg-green-500 text-white cursor-not-allowed' 
+                        className={`px-3 py-1 ml-2 rounded-md transition-colors duration-200 text-sm flex items-center ${isMountingAdded()
+                            ? 'bg-green-500 text-white cursor-not-allowed'
                             : 'bg-red-500 text-white hover:bg-red-600'
-                        }`}
+                          }`}
                       >
                         <FaShoppingBag className='w-3 h-3' /> &nbsp;
                         {isMountingAdded() ? 'Added' : 'Add to cart'}

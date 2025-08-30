@@ -743,7 +743,7 @@ const FindHoardingsClient = ({ searchParams }) => {
                                                             <div className="p-3 lg:p-4">
                                                                 <Link href={`/find-hoardings/${ad.mediacode}`}>
                                                                     <h3 className="font-semibold text-gray-800 mb-1 text-sm lg:text-base line-clamp-1 hover:text-red-600">
-                                                                        {ad.type} - {ad.locality || ad.city}
+                                                                        {ad.message}
                                                                     </h3>
                                                                     <p className="text-xs lg:text-sm text-gray-600 mb-2">{ad.city}</p>
                                                                 </Link>

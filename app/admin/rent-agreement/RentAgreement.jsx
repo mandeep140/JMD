@@ -1,8 +1,10 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaCalendar, FaRupeeSign, FaBuilding, FaList, FaFileExcel } from 'react-icons/fa';
+import { useSession } from 'next-auth/react';
 
 const RentAgreement = () => {
+  const { data: session, status } = useSession();
   const [agreements, setAgreements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -11,7 +13,7 @@ const RentAgreement = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [showDetailForm, setShowDetailForm] = useState(false);
   const [editingDetail, setEditingDetail] = useState(null);
-  
+
   // Selection states for export
   const [selectedAgreements, setSelectedAgreements] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -70,12 +72,12 @@ const RentAgreement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = editingAgreement 
+      const url = editingAgreement
         ? `/api/rent-agreement/${editingAgreement._id}`
         : '/api/rent-agreement';
-      
+
       const method = editingAgreement ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -100,7 +102,7 @@ const RentAgreement = () => {
       const url = editingDetail
         ? `/api/rent-agreement/${selectedAgreement._id}/details?detailId=${editingDetail._id}`
         : `/api/rent-agreement/${selectedAgreement._id}/details`;
-      
+
       const method = editingDetail ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -184,7 +186,7 @@ const RentAgreement = () => {
   const handleExportExcel = async () => {
     setIsExporting(true);
     try {
-      const exportData = selectedAgreements.length > 0 
+      const exportData = selectedAgreements.length > 0
         ? agreements.filter(agreement => selectedAgreements.includes(agreement._id))
         : agreements;
 
@@ -205,7 +207,7 @@ const RentAgreement = () => {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
+
         console.log('Excel file downloaded successfully!');
       } else {
         throw new Error('Failed to generate Excel file');
@@ -282,6 +284,16 @@ const RentAgreement = () => {
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
+    );
+  }
+
+  if (status !== "authenticated" || !session?.user?.isAdmin) {
+    return (
+        <div className="w-full h-full flex items-center justify-center text-black text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-md">
+            Access Denied. Admin privileges required.
+          </div>
+        </div>
     );
   }
 
@@ -428,15 +440,14 @@ const RentAgreement = () => {
                       ₹{agreement.annualRent?.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {agreement.agreementFrom && new Date(agreement.agreementFrom).toLocaleDateString()} - 
+                      {agreement.agreementFrom && new Date(agreement.agreementFrom).toLocaleDateString()} -
                       {agreement.agreementTo && new Date(agreement.agreementTo).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        isActive 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${isActive
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
-                      }`}>
+                        }`}>
                         {isActive ? 'Active' : 'Expired'}
                       </span>
                     </td>
@@ -498,7 +509,7 @@ const RentAgreement = () => {
                     type="text"
                     required
                     value={formData.adCode}
-                    onChange={(e) => setFormData({...formData, adCode: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, adCode: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter unique ad code"
                   />
@@ -509,7 +520,7 @@ const RentAgreement = () => {
                     type="text"
                     required
                     value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter agreement title"
                   />
@@ -519,7 +530,7 @@ const RentAgreement = () => {
                   <select
                     required
                     value={formData.rentType}
-                    onChange={(e) => setFormData({...formData, rentType: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, rentType: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Landlord">Landlord</option>
@@ -532,7 +543,7 @@ const RentAgreement = () => {
                     type="text"
                     required
                     value={formData.owners}
-                    onChange={(e) => setFormData({...formData, owners: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, owners: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter owner name"
                   />
@@ -543,7 +554,7 @@ const RentAgreement = () => {
                     type="number"
                     required
                     value={formData.height}
-                    onChange={(e) => setFormData({...formData, height: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, height: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter height"
                   />
@@ -554,7 +565,7 @@ const RentAgreement = () => {
                     type="number"
                     required
                     value={formData.width}
-                    onChange={(e) => setFormData({...formData, width: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, width: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter width"
                   />
@@ -564,7 +575,7 @@ const RentAgreement = () => {
                   <input
                     type="date"
                     value={formData.agreementFrom}
-                    onChange={(e) => setFormData({...formData, agreementFrom: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, agreementFrom: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -573,7 +584,7 @@ const RentAgreement = () => {
                   <input
                     type="date"
                     value={formData.agreementTo}
-                    onChange={(e) => setFormData({...formData, agreementTo: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, agreementTo: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -583,7 +594,7 @@ const RentAgreement = () => {
                     type="number"
                     required
                     value={formData.annualRent}
-                    onChange={(e) => setFormData({...formData, annualRent: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, annualRent: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter annual rent amount"
                   />
@@ -593,7 +604,7 @@ const RentAgreement = () => {
                   <input
                     type="date"
                     value={formData.duesDate}
-                    onChange={(e) => setFormData({...formData, duesDate: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, duesDate: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -602,7 +613,7 @@ const RentAgreement = () => {
                   <input
                     type="number"
                     value={formData.duesAmount}
-                    onChange={(e) => setFormData({...formData, duesAmount: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, duesAmount: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter dues amount"
                   />
@@ -612,7 +623,7 @@ const RentAgreement = () => {
                   <input
                     type="number"
                     value={formData.expectedSales}
-                    onChange={(e) => setFormData({...formData, expectedSales: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, expectedSales: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter expected sales"
                   />
@@ -653,7 +664,7 @@ const RentAgreement = () => {
                 <FaPlus /> Renew Agreement
               </button>
             </div>
-            
+
             {/* Agreement Info */}
             <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-4">
@@ -671,7 +682,7 @@ const RentAgreement = () => {
                   <p className="font-medium">{selectedAgreement.width} x {selectedAgreement.height} ft</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <h4 className="font-semibold text-gray-800">Financial Details</h4>
                 <div>
@@ -687,7 +698,7 @@ const RentAgreement = () => {
                   <p className="font-medium">₹{selectedAgreement.expectedSales?.toLocaleString() || 0}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <h4 className="font-semibold text-gray-800">Agreement Period</h4>
                 <div>
@@ -795,7 +806,7 @@ const RentAgreement = () => {
                     type="text"
                     required
                     value={detailFormData.agreementYear}
-                    onChange={(e) => setDetailFormData({...detailFormData, agreementYear: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, agreementYear: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter agreement year"
                   />
@@ -805,7 +816,7 @@ const RentAgreement = () => {
                   <input
                     type="text"
                     value={detailFormData.paymentPaidYear}
-                    onChange={(e) => setDetailFormData({...detailFormData, paymentPaidYear: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, paymentPaidYear: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter payment year"
                   />
@@ -816,7 +827,7 @@ const RentAgreement = () => {
                     type="number"
                     required
                     value={detailFormData.paymentPaidAmount}
-                    onChange={(e) => setDetailFormData({...detailFormData, paymentPaidAmount: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, paymentPaidAmount: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter payment amount"
                   />
@@ -826,7 +837,7 @@ const RentAgreement = () => {
                   <input
                     type="date"
                     value={detailFormData.paymentPaidDate}
-                    onChange={(e) => setDetailFormData({...detailFormData, paymentPaidDate: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, paymentPaidDate: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -835,7 +846,7 @@ const RentAgreement = () => {
                   <select
                     required
                     value={detailFormData.paymentMethod}
-                    onChange={(e) => setDetailFormData({...detailFormData, paymentMethod: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, paymentMethod: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="Cash">Cash</option>
@@ -848,7 +859,7 @@ const RentAgreement = () => {
                   <input
                     type="text"
                     value={detailFormData.checkNo}
-                    onChange={(e) => setDetailFormData({...detailFormData, checkNo: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, checkNo: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter check number"
                   />
@@ -858,7 +869,7 @@ const RentAgreement = () => {
                   <input
                     type="text"
                     value={detailFormData.bank}
-                    onChange={(e) => setDetailFormData({...detailFormData, bank: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, bank: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter bank name"
                   />
@@ -868,7 +879,7 @@ const RentAgreement = () => {
                   <input
                     type="text"
                     value={detailFormData.accountPayeeName}
-                    onChange={(e) => setDetailFormData({...detailFormData, accountPayeeName: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, accountPayeeName: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter payee name"
                   />
@@ -878,7 +889,7 @@ const RentAgreement = () => {
                   <input
                     type="number"
                     value={detailFormData.dues}
-                    onChange={(e) => setDetailFormData({...detailFormData, dues: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, dues: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter dues amount"
                   />
@@ -888,7 +899,7 @@ const RentAgreement = () => {
                   <input
                     type="date"
                     value={detailFormData.duesYear}
-                    onChange={(e) => setDetailFormData({...detailFormData, duesYear: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, duesYear: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -897,7 +908,7 @@ const RentAgreement = () => {
                   <input
                     type="text"
                     value={detailFormData.installationEnd}
-                    onChange={(e) => setDetailFormData({...detailFormData, installationEnd: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, installationEnd: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Installation end details"
                   />
@@ -906,7 +917,7 @@ const RentAgreement = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
                   <textarea
                     value={detailFormData.remarks}
-                    onChange={(e) => setDetailFormData({...detailFormData, remarks: e.target.value})}
+                    onChange={(e) => setDetailFormData({ ...detailFormData, remarks: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows="3"
                     placeholder="Enter any additional remarks"

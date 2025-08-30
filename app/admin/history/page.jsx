@@ -163,7 +163,7 @@ const HistoryPage = () => {
   if (status !== "authenticated" || !session?.user?.isAdmin) {
     return (
       <AdminNav>
-        <div className="w-full min-h-screen flex items-center justify-center text-black text-center">
+        <div className="w-full h-full flex items-center justify-center text-black text-center">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-md">
             Access Denied. Admin privileges required.
           </div>

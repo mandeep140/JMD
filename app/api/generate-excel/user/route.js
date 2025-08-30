@@ -105,11 +105,12 @@ async function generateUserExcel(data) {
             { width: 8 },   // GST
             { width: 15 },  // GST cost
             { width: 20 },  // Total Cost with GST
-            { width: 40 }   // Image Link (increased width for better visibility)
+            { width: 40 },  // Image Link (increased width for better visibility)
+            { width: 40 }   // Remark
         ];
 
         // Row 1: Company header "From JMD - Advertisement" (updated column range)
-        worksheet.mergeCells('A1:S1');
+        worksheet.mergeCells('A1:T1');
         const companyHeaderCell = worksheet.getCell('A1');
         companyHeaderCell.value = {
             richText: [
@@ -129,7 +130,7 @@ async function generateUserExcel(data) {
         worksheet.getRow(1).height = 25;
 
         // Row 2: JMD Address (updated column range)
-        worksheet.mergeCells('A2:S2');
+        worksheet.mergeCells('A2:T2');
         const addressCell = worksheet.getCell('A2');
         addressCell.value = 'B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002) | Phone: +91-9204965321 | Email: info.jmd.jsr@gmail.com';
         addressCell.style = {
@@ -151,7 +152,7 @@ async function generateUserExcel(data) {
         worksheet.getRow(4).height = 15;
 
         // Row 5: QUOTATION header (updated column range)
-        worksheet.mergeCells('A5:S5');
+        worksheet.mergeCells('A5:T5');
         const quotationCell = worksheet.getCell('A5');
         quotationCell.value = 'QUOTATION';
         quotationCell.style = {
@@ -170,7 +171,7 @@ async function generateUserExcel(data) {
         // Row 6: Column headers (added Image Link column)
         const headers = [
             'Sr No', 'State', 'City', 'Medium', 'Type', 'Location', 'hor', 'ver', 'Faci', 'Units', 'SQFT', 
-            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST', 'Image Link'
+            'Display Charges Per Month', 'Printing', 'Mounting', 'Total Cost', 'GST', 'GST cost', 'Total Cost with GST', 'Image Link', 'Remark'
         ];
         
         const headerRow = worksheet.getRow(6);
@@ -209,6 +210,7 @@ async function generateUserExcel(data) {
             const width = parseFloat(ad.width) || 0;
             const visibility = ad.visibility === 'Double' ? 2 : 1;
             const totalArea = height * width * units * visibility; // Total area for all units
+            const remark = ad.status === 'Booked' ? `This ad will be available from ${ad.bookedtill}.` : 'This ad is available.';
 
             // Helper function to safely get cost value and calculate total cost
             const getCostValue = (value, multiplier = 1) => {
@@ -334,6 +336,19 @@ async function generateUserExcel(data) {
                 };
             }
 
+            // Handle Remark column (20th column) with proper styling
+            const remarkCell = dataRow.getCell(20);
+            remarkCell.value = remark;
+            remarkCell.style = {
+                alignment: { horizontal: 'center', vertical: 'middle' },
+                border: {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                }
+            };
+
             dataRow.height = 20;
             currentRow++;
         });
@@ -352,7 +367,7 @@ async function generateUserExcel(data) {
         totalRow.getCell(19).value = ''; // Empty for Image Link column
         
         // Style total row (updated to include Units and SQFT columns, and new Image Link column)
-        [10, 11, 12, 13, 14, 15, 16, 17, 18, 19].forEach(colIndex => {
+        [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].forEach(colIndex => {
             const cell = totalRow.getCell(colIndex);
             cell.style = {
                 font: { bold: true },

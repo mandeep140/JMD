@@ -904,6 +904,20 @@ const Page = () => {
                       )}
                     </div>
 
+                     <div className={`flex-1 min-w-0 ${form.status !== "Hold" && form.status !== "Booked" ? "opacity-50 cursor-not-allowed" : ""}`}>
+                      <label className="block text-xs md:text-sm font-semibold mb-1">Final Booking Price (PM){(form.status === "Hold" || form.status === "Booked") && "*"}</label>
+                      <input
+                        type="text"
+                        name="finalBookingPricePM"
+                        value={form.finalBookingPricePM}
+                        required={form.status === "Hold" || form.status === "Booked"}
+                        disabled={form.status !== "Hold" && form.status !== "Booked"}
+                        onChange={handleChange}
+                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
+                        placeholder="Type Here"
+                      />
+                    </div>
+
                     <div className="flex-1 min-w-0 relative">
                       <label className="block text-xs md:text-sm font-semibold mb-1">Media Owner</label>
                       <input
@@ -924,18 +938,6 @@ const Page = () => {
                           onBlur={() => handleInputBlur('mediaOwner')}
                         />
                       )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <label className="block text-xs md:text-sm font-semibold mb-1">Final Booking Price (PM)</label>
-                      <input
-                        type="text"
-                        name="finalBookingPricePM"
-                        value={form.finalBookingPricePM}
-                        onChange={handleChange}
-                        className="w-full bg-white border border-gray-300 focus:border-blue-400 focus:outline-none rounded px-3 py-2"
-                        placeholder="Type Here"
-                      />
                     </div>
                   </div>
                 </div>
