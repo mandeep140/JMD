@@ -7,6 +7,7 @@ import AdminNav from '@/app/component/AdminNav';
 import ExportToExcel from '@/app/component/ExportToExcel';
 import { FaPen, FaEye, FaTrash, FaChevronDown, FaTimes } from 'react-icons/fa';
 import { MdDownloading } from 'react-icons/md';
+import { get } from 'mongoose';
 
 const page = () => {
   const { data: session, status } = useSession();
@@ -180,7 +181,14 @@ const page = () => {
 
   const handleExportWithCurrentFiltersInPPTandExcel = async () => {
     setDownloading(true);
-    const dataToExport = getDataToExport();
+
+    let dataToExport;
+    
+    if (selectedRows.size > 0){
+      dataToExport = getSelectedItemsData();
+    } else {
+      dataToExport = getDataToExport();
+    }
     
     if (dataToExport.length === 0) {
       alert("No data to export.");
