@@ -391,7 +391,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
             </svg>
           </button>
           <button
-            className='absolute top-4 right-15 md:top-6 md:right-20 z-10 w-10 h-10 md:w-12 md:h-12 bg-red-500/80 backdrop-blur-sm border border-white/30 hover:bg-red-600 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center group shadow-lg'
+            className='absolute top-4 left-4 md:top-6 md:left-6 z-10 w-10 h-10 md:w-12 md:h-12 bg-red-500/80 backdrop-blur-sm border border-white/30 hover:bg-red-600 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center group shadow-lg'
             onClick={router.back}
             title="Go back"
           >
@@ -528,7 +528,7 @@ const AdDetailClient = ({ initialAd, adId }) => {
                   <div className='text-xs md:text-sm font-extrabold'>Visibility</div>
                 </div>
                 <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>
-                  <div className='text-lg md:text-xl'>{ad.width}*{ad.height} - {ad.width * ad.height}sqft</div>
+                  <div className='text-lg md:text-xl'>{ad.visibility === "Double" ? `${ad.width} * ${ad.height} * 2` : `${ad.width} * ${ad.height}`} - {ad.visibility === "Double" ? ad.width * ad.height * 2 : ad.width * ad.height} sqft</div>
                   <div className='text-xs md:text-sm font-extrabold'>Size</div>
                 </div>
                 <div className='bg-[#FFB8B8] backdrop-blur-sm border border-white/30 rounded-sm p-3 text-center'>
@@ -798,11 +798,11 @@ const AdDetailClient = ({ initialAd, adId }) => {
 
       {/* Full screen image */}
       {!showMap && isFullscreen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75" onClick={() => setIsFullscreen(false)}>
           <button onClick={() => setIsFullscreen(false)} className="absolute top-10 right-14 text-white bg-red-400 border-2 border-red-600 rounded-xl px-4 py-1 cursor-pointer hover:bg-red-500">
             X
           </button>
-          <img src={ad.imageUrl || "/images/find/jmd_logo.png"} alt={ad.title} className="max-w-full max-h-full" />
+          <img src={ad.imageUrl || "/images/find/jmd_logo.png"} alt={ad.title} className="max-w-full max-h-full" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
     </>

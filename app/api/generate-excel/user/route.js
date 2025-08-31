@@ -44,15 +44,17 @@ async function generateUserExcel(data) {
         const worksheet = workbook.addWorksheet('JMD Quotation');
         
         // Helper function to parse size and get dimensions
-        const parseSizeAndCalculateSqft = (sizeStr, height, width) => {
+        const parseSizeAndCalculateSqft = (sizeStr, height, width, visibility) => {
             // Use separate height/width if available, otherwise parse from size string
             if (height && width) {
                 const h = parseFloat(height);
                 const w = parseFloat(width);
+                const baseSqft = h * w;
+                const multiplier = visibility === 'Double' ? 2 : 1;
                 return {
                     horizontal: w, // Width = Horizontal
                     vertical: h,   // Height = Vertical
-                    totalSqft: h * w
+                    totalSqft: baseSqft * multiplier
                 };
             }
             
@@ -63,10 +65,12 @@ async function generateUserExcel(data) {
             if (match) {
                 const h = parseFloat(match[1]);
                 const w = parseFloat(match[2]);
+                const baseSqft = h * w;
+                const multiplier = visibility === 'Double' ? 2 : 1;
                 return {
                     horizontal: w, // Width = Horizontal
                     vertical: h,   // Height = Vertical
-                    totalSqft: h * w
+                    totalSqft: baseSqft * multiplier
                 };
             }
             
@@ -203,7 +207,7 @@ async function generateUserExcel(data) {
         let totalSqftSum = 0; // New variable for SQFT total
 
         data.ads?.forEach((ad, index) => {
-            const sizeInfo = parseSizeAndCalculateSqft(ad.size, ad.height, ad.width);
+            const sizeInfo = parseSizeAndCalculateSqft(ad.size, ad.height, ad.width, ad.visibility);
             const monthlyRate = ad.pricePerMonth ? parseInt(ad.pricePerMonth.toString().replace(/[^0-9]/g, '')) || 0 : 0;
             const units = ad.unit || 1;
             const height = parseFloat(ad.height) || 0;

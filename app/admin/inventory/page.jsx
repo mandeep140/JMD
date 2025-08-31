@@ -871,7 +871,7 @@ const page = () => {
                               {row.width} x {row.height} ft
                             </span>
                             <span className='text-blue-600 text-xs font-medium'>
-                              {row.width * row.height} sqft
+                              {row.visibility === 'Double' ? row.width * row.height * 2 : row.width * row.height} sqft
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-900">

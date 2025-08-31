@@ -320,7 +320,12 @@ async function generatePowerPoint(data) {
         if (ad.width && ad.height) {
           const w = parseFloat(ad.width);
           const h = parseFloat(ad.height);
-          if (!isNaN(w) && !isNaN(h)) size = `${w}*${h} - ${Math.round(w * h)}sqft`;
+          if (!isNaN(w) && !isNaN(h)) {
+            const baseSqft = w * h;
+            const multiplier = ad.visibility === 'Double' ? 2 : 1;
+            const totalSqft = baseSqft * multiplier;
+            size = `${w}*${h} - ${Math.round(totalSqft)}sqft`;
+          }
         } else if (ad.size) {
           size = ad.size;
         }

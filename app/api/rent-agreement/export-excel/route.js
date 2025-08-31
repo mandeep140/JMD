@@ -9,6 +9,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No agreements provided' }, { status: 400 });
     }
 
+    // Sort agreements by locality (if available) then by adCode
+    const sortedAgreements = agreements.sort((a, b) => {
+      const localityA = a.locality || a.city || '';
+      const localityB = b.locality || b.city || '';
+      
+      if (localityA !== localityB) {
+        return localityA.localeCompare(localityB);
+      }
+      
+      return (a.adCode || '').localeCompare(b.adCode || '');
+    });
+
     // Create a new workbook
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'JMD Rent Agreement System';
@@ -21,8 +33,8 @@ export async function POST(request) {
 
     // Master Sheet Headers
     const masterHeaders = [
-      'SL.NO', 'RFQ.NO', 'SIZE', 'Total sq ft', 'JMD/JOINT', 
-      'AGREEMENT YEAR', 'ANNUAL RENT', 'DUES DATE', 'DUES AMOUNT', 'EXPECTED SALES'
+      'SL.NO', 'MEDIA CODE', 'TITLE', 'SIZE', 'Total sq ft', 'RENT TYPE', 
+      'OWNERS', 'AGREEMENT PERIOD', 'ANNUAL RENT', 'DUES DATE', 'DUES AMOUNT', 'EXPECTED SALES'
     ];
 
     // Style master headers
@@ -39,11 +51,13 @@ export async function POST(request) {
     // Set column widths for master sheet
     masterSheet.columns = [
       { width: 8 },   // SL.NO
-      { width: 15 },  // RFQ.NO
+      { width: 15 },  // MEDIA CODE
+      { width: 25 },  // TITLE
       { width: 15 },  // SIZE
       { width: 12 },  // Total sq ft
-      { width: 12 },  // JMD/JOINT
-      { width: 15 },  // AGREEMENT YEAR
+      { width: 12 },  // RENT TYPE
+      { width: 20 },  // OWNERS
+      { width: 20 },  // AGREEMENT PERIOD
       { width: 15 },  // ANNUAL RENT
       { width: 15 },  // DUES DATE
       { width: 15 },  // DUES AMOUNT
@@ -51,18 +65,25 @@ export async function POST(request) {
     ];
 
     // Add data to master sheet and create individual sheets
-    agreements.forEach((agreement, index) => {
+    sortedAgreements.forEach((agreement, index) => {
       const serialNo = index + 1;
       const totalSqFt = (parseFloat(agreement.width) || 0) * (parseFloat(agreement.height) || 0);
+      
+      // Format agreement period
+      const agreementPeriod = agreement.agreementFrom && agreement.agreementTo 
+        ? `${new Date(agreement.agreementFrom).toLocaleDateString()} - ${new Date(agreement.agreementTo).toLocaleDateString()}`
+        : 'Not set';
       
       // Add row to master sheet with hyperlink
       const masterRow = masterSheet.addRow([
         serialNo,
         agreement.adCode || '',
+        agreement.title || '',
         `${agreement.width || 0} x ${agreement.height || 0} ft`,
         totalSqFt,
         agreement.rentType || '',
-        agreement.agreementFrom ? new Date(agreement.agreementFrom).getFullYear() : '',
+        agreement.owners || '',
+        agreementPeriod,
         agreement.annualRent || 0,
         agreement.duesDate ? new Date(agreement.duesDate).toLocaleDateString() : '',
         agreement.duesAmount || 0,
@@ -73,7 +94,7 @@ export async function POST(request) {
       const serialCell = masterRow.getCell(1);
       serialCell.value = {
         text: serialNo.toString(),
-        hyperlink: `#'${agreement.adCode || `Ad_${serialNo}`}'!A1`,
+        hyperlink: `#'${agreement.adCode || `Agreement_${serialNo}`}'!A1`,
         tooltip: `Click to view details for ${agreement.adCode}`
       };
       serialCell.font = { color: { argb: 'FF0066CC' }, underline: true };
@@ -89,12 +110,12 @@ export async function POST(request) {
       }
 
       // Format currency cells
-      masterRow.getCell(7).numFmt = '₹#,##0'; // Annual Rent
-      masterRow.getCell(9).numFmt = '₹#,##0'; // Dues Amount
-      masterRow.getCell(10).numFmt = '₹#,##0'; // Expected Sales
+      masterRow.getCell(9).numFmt = '₹#,##0'; // Annual Rent
+      masterRow.getCell(11).numFmt = '₹#,##0'; // Dues Amount
+      masterRow.getCell(12).numFmt = '₹#,##0'; // Expected Sales
 
       // Create individual sheet for this agreement
-      const sheetName = agreement.adCode || `Ad_${serialNo}`;
+      const sheetName = agreement.adCode || `Agreement_${serialNo}`;
       const individualSheet = workbook.addWorksheet(sheetName, {
         properties: { tabColor: { argb: 'FF28A745' } }
       });
@@ -104,16 +125,16 @@ export async function POST(request) {
       const titleRow = individualSheet.getRow(1);
       titleRow.font = { bold: true, size: 16, color: { argb: 'FF0066CC' } };
       titleRow.alignment = { horizontal: 'center', vertical: 'middle' };
-      individualSheet.mergeCells('A1:L1');
+      individualSheet.mergeCells('A1:M1');
 
       // Add empty row
       individualSheet.addRow([]);
 
-      // Individual sheet headers (as per your requirement)
+      // Individual sheet headers (updated with new fields)
       const individualHeaders = [
-        'SL.NO', 'AGREEMENT YEAR', 'INSTALLATION EXP', 'PAYMENT PAID AMOUNT', 
-        'PAYMENT PAID YEAR', 'CHQ/CASH', 'PAYMENT PAID DATE', 'CHQ NO/DD NO.', 
-        'BANK', 'ACCOUNT PAYEE NAME', 'DUES', 'DUES YEAR'
+        'SL.NO', 'AGREEMENT PERIOD', 'INSTALLATION END', 'PAYMENT PERIOD', 
+        'PAYMENT PAID AMOUNT', 'PAYMENT PAID DATE', 'PAYMENT METHOD', 'CHQ/DD NO.', 
+        'BANK', 'ACCOUNT PAYEE NAME', 'DUES', 'DUES DATE', 'REMARKS'
       ];
 
       individualSheet.addRow(individualHeaders);
@@ -129,35 +150,47 @@ export async function POST(request) {
       // Set column widths for individual sheet
       individualSheet.columns = [
         { width: 8 },   // SL.NO
-        { width: 15 },  // AGREEMENT YEAR
-        { width: 15 },  // INSTALLATION EXP
+        { width: 18 },  // AGREEMENT PERIOD
+        { width: 15 },  // INSTALLATION END
+        { width: 18 },  // PAYMENT PERIOD
         { width: 18 },  // PAYMENT PAID AMOUNT
-        { width: 18 },  // PAYMENT PAID YEAR
-        { width: 12 },  // CHQ/CASH
         { width: 18 },  // PAYMENT PAID DATE
-        { width: 15 },  // CHQ NO/DD NO.
+        { width: 15 },  // PAYMENT METHOD
+        { width: 15 },  // CHQ/DD NO.
         { width: 20 },  // BANK
         { width: 20 },  // ACCOUNT PAYEE NAME
         { width: 12 },  // DUES
-        { width: 15 }   // DUES YEAR
+        { width: 15 },  // DUES DATE
+        { width: 25 }   // REMARKS
       ];
 
       // Add payment details data
       if (agreement.moreDetails && agreement.moreDetails.length > 0) {
         agreement.moreDetails.forEach((detail, detailIndex) => {
+          // Format agreement period
+          const agreementPeriod = detail.agreementYearFrom && detail.agreementYearTo
+            ? `${new Date(detail.agreementYearFrom).toLocaleDateString()} - ${new Date(detail.agreementYearTo).toLocaleDateString()}`
+            : (detail.agreementYear || '');
+
+          // Format payment period
+          const paymentPeriod = detail.paymentPaidYearFrom && detail.paymentPaidYearTo
+            ? `${new Date(detail.paymentPaidYearFrom).toLocaleDateString()} - ${new Date(detail.paymentPaidYearTo).toLocaleDateString()}`
+            : (detail.paymentPaidYear || '');
+
           const detailRow = individualSheet.addRow([
             detailIndex + 1,
-            detail.agreementYear || '',
+            agreementPeriod,
             detail.installationEnd || '',
+            paymentPeriod,
             detail.paymentPaidAmount || 0,
-            detail.paymentPaidYear || '',
-            detail.paymentMethod || '',
             detail.paymentPaidDate ? new Date(detail.paymentPaidDate).toLocaleDateString() : '',
+            detail.paymentMethod || '',
             detail.checkNo || '',
             detail.bank || '',
             detail.accountPayeeName || '',
             detail.dues || 0,
-            detail.duesYear ? new Date(detail.duesYear).toLocaleDateString() : ''
+            detail.duesYear ? new Date(detail.duesYear).toLocaleDateString() : '',
+            detail.remarks || ''
           ]);
 
           // Style detail row
@@ -171,13 +204,20 @@ export async function POST(request) {
           }
 
           // Format currency cells
-          detailRow.getCell(4).numFmt = '₹#,##0'; // Payment Paid Amount
+          detailRow.getCell(5).numFmt = '₹#,##0'; // Payment Paid Amount
           detailRow.getCell(11).numFmt = '₹#,##0'; // Dues
+
+          // Wrap text for remarks
+          detailRow.getCell(13).alignment = { 
+            horizontal: 'left', 
+            vertical: 'top', 
+            wrapText: true 
+          };
         });
       } else {
         // Add empty row if no details
         const emptyRow = individualSheet.addRow([
-          1, '', '', 0, '', '', '', '', '', '', 0, ''
+          1, '', '', '', 0, '', '', '', '', '', 0, '', 'No payment details added'
         ]);
         emptyRow.alignment = { horizontal: 'center', vertical: 'middle' };
         emptyRow.fill = {
@@ -189,25 +229,37 @@ export async function POST(request) {
 
       // Add summary information at the bottom
       individualSheet.addRow([]); // Empty row
-      individualSheet.addRow(['Summary Information']);
+      individualSheet.addRow(['AGREEMENT SUMMARY']);
       const summaryTitleRow = individualSheet.getRow(individualSheet.rowCount);
       summaryTitleRow.font = { bold: true, size: 14, color: { argb: 'FF0066CC' } };
+      individualSheet.mergeCells(`A${individualSheet.rowCount}:M${individualSheet.rowCount}`);
       
+      individualSheet.addRow(['Media Code:', agreement.adCode || '']);
       individualSheet.addRow(['Owner:', agreement.owners || '']);
       individualSheet.addRow(['Size:', `${agreement.width || 0} x ${agreement.height || 0} ft`]);
       individualSheet.addRow(['Total Area:', `${totalSqFt} sq ft`]);
+      individualSheet.addRow(['Rent Type:', agreement.rentType || '']);
       individualSheet.addRow(['Annual Rent:', agreement.annualRent || 0]);
-      individualSheet.addRow(['Agreement Period:', 
-        `${agreement.agreementFrom ? new Date(agreement.agreementFrom).toLocaleDateString() : ''} - ${agreement.agreementTo ? new Date(agreement.agreementTo).toLocaleDateString() : ''}`
-      ]);
+      individualSheet.addRow(['Agreement Period:', agreementPeriod]);
+      individualSheet.addRow(['Expected Sales:', agreement.expectedSales || 0]);
 
-      // Format summary currency
+      // Format summary currency cells
       const annualRentRow = individualSheet.getRow(individualSheet.rowCount - 1);
       annualRentRow.getCell(2).numFmt = '₹#,##0';
+      const expectedSalesRow = individualSheet.getRow(individualSheet.rowCount);
+      expectedSalesRow.getCell(2).numFmt = '₹#,##0';
+
+      // Style summary section
+      for (let i = individualSheet.rowCount - 7; i <= individualSheet.rowCount; i++) {
+        const row = individualSheet.getRow(i);
+        row.getCell(1).font = { bold: true };
+        row.getCell(1).alignment = { horizontal: 'left' };
+        row.getCell(2).alignment = { horizontal: 'left' };
+      }
     });
 
     // Add borders to all sheets
-    [masterSheet, ...workbook.worksheets.slice(1)].forEach(sheet => {
+    workbook.worksheets.forEach(sheet => {
       sheet.eachRow((row, rowNumber) => {
         row.eachCell((cell, colNumber) => {
           cell.border = {
@@ -225,7 +277,7 @@ export async function POST(request) {
 
     // Create filename with current date
     const currentDate = new Date().toISOString().split('T')[0];
-    const filename = `Rent_Agreements_${currentDate}.xlsx`;
+    const filename = `Rent_Agreements_Export_${currentDate}.xlsx`;
 
     // Return the Excel file
     return new NextResponse(buffer, {

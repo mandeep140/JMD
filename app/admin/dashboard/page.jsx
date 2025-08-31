@@ -121,7 +121,7 @@ const Dashboard = () => {
           const today = new Date();
           today.setHours(0, 0, 0, 0); // Reset time to start of day
           const next15Days = new Date();
-          next15Days.setDate(today.getDate() + 15);
+          next15Days.setDate(today.getDate() + 14);
           next15Days.setHours(23, 59, 59, 999); // End of the 15th day
 
           const expiring = data.filter(ad => {

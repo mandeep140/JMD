@@ -12,22 +12,7 @@ const HoardingRentSchema = new Schema({
     annualRent: { type: Number, required: true },
     duesDate: { type: Date },
     duesAmount: { type: Number },
-    expectedSales: { type: Number },
-    moreDetails: [{
-        agreementYear: { type: String },
-        installationEnd: { type: String },
-        paymentPaidYear: { type: String },
-        paymentPaidAmount: { type: Number },
-        paymentPaidDate: { type: Date },
-        paymentMethod: { type: String },
-        checkNo: { type: String },
-        bank: { type: String },
-        accountPayeeName: { type: String },
-        dues: { type: Number },
-        duesYear: { type: Date },
-        createdAt: { type: Date, default: Date.now },
-        remarks: { type: String }
-    }]
+    expectedSales: { type: Number }
 }, {
     timestamps: true // This will add createdAt and updatedAt to the main document
 });
