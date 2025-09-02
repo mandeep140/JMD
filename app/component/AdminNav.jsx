@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { signOut, useSession } from 'next-auth/react';
 import { IoMdArrowDropdown } from "react-icons/io";
 import { MdDashboard, MdHome } from "react-icons/md";
-import { FaClipboardList, FaUsers, FaHistory } from "react-icons/fa";
+import { FaClipboardList, FaUsers, FaHistory, FaFilePowerpoint  } from "react-icons/fa";
 import { IoCalendarOutline, IoSearch } from "react-icons/io5";
 import { TbReportAnalytics } from "react-icons/tb";
 import { IoHomeSharp } from "react-icons/io5";
@@ -21,6 +21,7 @@ const links = [
   { href: '/admin/users', label: 'All Users' },
   { href: '/admin/manage-home', label: 'Manage Home' },
   { href: '/admin/rent-agreement', label: 'Rent Agreement' },
+  { href: '/admin/ppt-converter', label: 'PPT to Excel Converter' },
   { href: '/', label: 'Home' }
 ];
 
@@ -144,6 +145,7 @@ const AdminNav = ({ children }) => {
                   {link.label === 'Manage Home' && <MdHome className='text-xl' />}
                   {link.label === 'Change History' && <FaHistory className='text-xl' />}
                   {link.label === 'Rent Agreement' && <FaClipboardList className='text-xl' />}
+                  {link.label === 'PPT to Excel Converter' && <FaFilePowerpoint className='text-xl' />}
                   <h2 className='text-black/80'>{link.label}</h2>
                 </div>
               </Link>
@@ -187,6 +189,7 @@ const AdminNav = ({ children }) => {
                   {link.label === 'All Users' && <FaUsers className='text-lg' />}
                   {link.label === 'Manage Home' && <MdHome className='text-lg' />}
                   {link.label === 'Change History' && <FaHistory className='text-lg' />}
+                  {link.label === 'PPT to Excel Converter' && <FaFilePowerpoint className='text-lg' />}
                   {link.label === 'Rent Agreement' && <FaClipboardList className='text-lg' />}
                   <span className="text-[10px] font-medium text-center leading-tight">
                     {link.label === 'Manage Inventory' ? 'Inventory' : 
@@ -195,6 +198,7 @@ const AdminNav = ({ children }) => {
                      link.label === 'All Users' ? 'Users' :
                      link.label === 'Manage Home' ? 'Home' :
                      link.label === 'Rent Agreement' ? 'Rent' :
+                     link.label === 'PPT to Excel Converter' ? 'Converter' :
                      link.label}
                   </span>
                 </div>

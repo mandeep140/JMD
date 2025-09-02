@@ -923,26 +923,6 @@ const RentAgreement = () => {
               </div>
             </div>
 
-            {/* Active Agreements */}
-            <div className="bg-white rounded-lg shadow-md py-6 px-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Active Agreements</p>
-                  <p className="text-3xl font-bold text-blue-600">
-                    {agreements.filter(agreement => {
-                      if (!agreement.agreementTo) return true;
-                      const endDate = new Date(agreement.agreementTo);
-                      const today = new Date();
-                      return endDate >= today;
-                    }).length}
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <FaCalendar className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
-
             {/* Total Dues */}
             <div className="bg-white rounded-lg shadow-md py-6 px-4">
               <div className="flex items-center justify-between">
