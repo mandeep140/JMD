@@ -107,7 +107,7 @@ const PPTConverter = () => {
 
         if (response.ok) {
           const blob = await response.blob();
-          const excelFileName = fileItem.name.replace(/\.(ppt|pptx)$/i, '_converted.xlsx');
+          const excelFileName = fileItem.name.replace(/\.(ppt|pptx)$/i, '_JMD_Quotation.xlsx');
           
           // Create download URL
           const url = window.URL.createObjectURL(blob);
@@ -176,10 +176,10 @@ const PPTConverter = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
                 <FaFilePowerpoint className="text-orange-500" />
-                PPT to Excel Converter
+                Enhanced PPT to Excel Converter
               </h1>
               <p className="text-gray-600 mt-2">
-                Convert PowerPoint presentations to Excel spreadsheets for advertising data analysis
+                Convert PowerPoint presentations to professional Excel quotations with automatic state detection and enhanced parsing
               </p>
             </div>
             <div className="flex gap-2">
@@ -210,21 +210,23 @@ const PPTConverter = () => {
                 📋 PPT Format Requirements
               </h3>
               <div className="text-blue-700 space-y-2">
-                <p className="font-medium">Your PPT text format should be like this:</p>
+                <p className="font-medium">Your PPT text supports multiple formats:</p>
                 <div className="bg-white rounded-lg p-4 border border-blue-200">
                   <code className="text-sm font-mono text-gray-800">
-                    1) Delhi - Billboard Advertisement - 20*20 - 400sqft - FL<br/>
-                    2) Mumbai - Hoarding Display - 15*10 - 150sqft - BL<br/>
-                    3) Bangalore - Unipole Sign - 12*8 - 96sqft - NL
+                    1) Delhi - Railway Station - 20*10 - FL<br/>
+                    2) Mumbai, Andheri East 15x10 NL Unipole<br/>
+                    3) Bangalore - MG Road - 12x8 - Billboard - BL<br/>
+                    4) Jamshedpur, Station Road 25*15 FFL Hoarding
                   </code>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
-                    <h4 className="font-medium text-blue-800">Format Pattern:</h4>
+                    <h4 className="font-medium text-blue-800">Supported Patterns:</h4>
                     <ul className="text-sm space-y-1 mt-1">
-                      <li>• <strong>Sr Number)</strong> City - Title - Size - Lighting</li>
-                      <li>• Each field should be separated by <strong>dash (-)</strong></li>
-                      <li>• Size format: <strong>Width*Height</strong></li>
+                      <li>• <strong>n)</strong> City - Title - Size - Lighting</li>
+                      <li>• City, Location SizexSize Lighting Type</li>
+                      <li>• City - Location - Size - Type - Lighting</li>
+                      <li>• <strong>Mixed formats</strong> with auto-detection</li>
                     </ul>
                   </div>
                   <div>
@@ -232,8 +234,10 @@ const PPTConverter = () => {
                     <ul className="text-sm space-y-1 mt-1">
                       <li>• <strong>FL</strong> = Front Light</li>
                       <li>• <strong>BL</strong> = Back Light</li>
-                      <li>• <strong>FLL</strong> = Fully Light</li>
+                      <li>• <strong>FFL/FLL</strong> = Fully Light</li>
                       <li>• <strong>NL</strong> = No Light</li>
+                      <li>• <strong>SL</strong> = Side Light</li>
+                      <li>• <strong>LL</strong> = LED Light</li>
                     </ul>
                   </div>
                 </div>
@@ -260,7 +264,7 @@ const PPTConverter = () => {
               Drop PowerPoint files here or click to browse
             </h3>
             <p className="text-gray-500 mb-4">
-              Supports .ppt and .pptx files (.pptx recommended)
+              Supports .ppt and .pptx files (.pptx recommended for better extraction)
             </p>
             <input
               type="file"
@@ -357,37 +361,47 @@ const PPTConverter = () => {
         )}
 
         {/* Enhanced Usage Instructions */}
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-6 mt-6">
+        {/* <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-6 mt-6">
           <div className="flex items-start gap-3">
             <FaCheckCircle className="text-yellow-500 text-xl mt-1 flex-shrink-0" />
             <div>
               <h3 className="text-lg font-semibold text-yellow-800 mb-3">
-                🚀 How to Use This Converter
+                🚀 Enhanced Features & Usage
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-yellow-800 mb-2">Step-by-Step Process:</h4>
-                  <ol className="text-sm text-yellow-700 space-y-1 list-decimal list-inside">
-                    <li>Ensure your PowerPoint file has the correct format</li>
-                    <li>Upload your PPT file (.pptx format preferred)</li>
-                    <li>Click "Convert All" button</li>
-                    <li>Wait for conversion to complete</li>
-                    <li>Download the Excel file</li>
-                  </ol>
+                  <h4 className="font-medium text-yellow-800 mb-2">Key Features:</h4>
+                  <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
+                    <li>Multiple format pattern detection</li>
+                    <li>Automatic state detection for 150+ Indian cities</li>
+                    <li>Enhanced visibility code recognition</li>
+                    <li>Billboard = Hoarding classification</li>
+                    <li>Professional Excel output with JMD branding</li>
+                    <li>Duplicate prevention system</li>
+                  </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium text-yellow-800 mb-2">Important Notes:</h4>
+                  <h4 className="font-medium text-yellow-800 mb-2">Excel Output Columns:</h4>
                   <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
-                    <li>First and last slides will be automatically skipped</li>
-                    <li>Excel will have columns: Sr No, City, Title, Size, Visibility, Raw Text</li>
-                    <li>Lighting codes will be automatically converted</li>
-                    <li>This converter will work only with specific Syntax</li>
+                    <li><strong>Sr No</strong> - Serial number</li>
+                    <li><strong>State</strong> - Auto-detected from city</li>
+                    <li><strong>City</strong> - Location city</li>
+                    <li><strong>Media Type</strong> - Hoarding, Unipole, etc.</li>
+                    <li><strong>Visibility</strong> - Front Light, Back Light, etc.</li>
+                    <li><strong>Title, Width, Height, SQFT</strong> - Details</li>
                   </ul>
                 </div>
               </div>
+              <div className="mt-4 p-4 bg-yellow-100 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>💡 Pro Tip:</strong> The converter automatically skips first and last slides, 
+                  detects various text formats, and generates professional quotations with company branding.
+                  If some slides aren't detected properly, check the format requirements above.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
     </AdminNav>

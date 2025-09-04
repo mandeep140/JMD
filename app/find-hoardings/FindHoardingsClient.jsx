@@ -18,6 +18,7 @@ const FindHoardingsClient = ({ searchParams }) => {
     const [showMoreMediaTypes, setShowMoreMediaTypes] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
     const [cartLoaded, setCartLoaded] = useState(false);
+    const [filtersLoaded, setFiltersLoaded] = useState(false);
     
     // Search states
     const [citySearch, setCitySearch] = useState('');
@@ -54,6 +55,70 @@ const FindHoardingsClient = ({ searchParams }) => {
         {label: '400 - 500 sqft', min: 400, max: 500 },
         {label: 'Above 500 sqft', min: 501, max: Infinity }
     ]
+
+    // Load filters from localStorage on component mount
+    useEffect(() => {
+        const loadFiltersFromStorage = () => {
+            try {
+                const savedFilters = localStorage.getItem('jmd_search_filters');
+                if (savedFilters) {
+                    const filters = JSON.parse(savedFilters);
+                    
+                    // Only load filters if they exist and are valid
+                    if (filters.selectedMediaTypes) setSelectedMediaTypes(filters.selectedMediaTypes);
+                    if (filters.selectedPriceRanges) setSelectedPriceRanges(filters.selectedPriceRanges);
+                    if (filters.selectedArea) setSelectedArea(filters.selectedArea);
+                    if (filters.selectedLightingTypes) setSelectedLightingTypes(filters.selectedLightingTypes);
+                    if (filters.citySearch) setCitySearch(filters.citySearch);
+                    if (filters.sortBy) setSortBy(filters.sortBy);
+                    if (filters.currentPage) setCurrentPage(filters.currentPage);
+                    if (filters.showMoreMediaTypes) setShowMoreMediaTypes(filters.showMoreMediaTypes);
+                    
+                    console.log('Filters loaded from localStorage:', filters);
+                }
+            } catch (error) {
+                console.error('Error loading filters from localStorage:', error);
+                localStorage.removeItem('jmd_search_filters');
+            }
+            setFiltersLoaded(true);
+        };
+
+        loadFiltersFromStorage();
+    }, []);
+
+    // Save filters to localStorage whenever filter states change - but only after filters are loaded
+    useEffect(() => {
+        if (filtersLoaded) {
+            const filters = {
+                selectedMediaTypes,
+                selectedPriceRanges,
+                selectedArea,
+                selectedLightingTypes,
+                citySearch,
+                sortBy,
+                currentPage,
+                showMoreMediaTypes,
+                timestamp: Date.now() // Add timestamp for potential cleanup
+            };
+            
+            try {
+                localStorage.setItem('jmd_search_filters', JSON.stringify(filters));
+                console.log('Filters saved to localStorage');
+            } catch (error) {
+                console.error('Error saving filters to localStorage:', error);
+            }
+        }
+    }, [
+        selectedMediaTypes, 
+        selectedPriceRanges, 
+        selectedArea, 
+        selectedLightingTypes, 
+        citySearch, 
+        sortBy, 
+        currentPage, 
+        showMoreMediaTypes,
+        filtersLoaded
+    ]);
 
     // Get all unique search results (cities and localities)
     const getAllSearchResults = () => {
@@ -127,13 +192,19 @@ const FindHoardingsClient = ({ searchParams }) => {
         }
     }, [cartItems, cartLoaded]);
 
-    // Handle URL params on component mount ONLY
+    // Handle URL params on component mount ONLY - but respect saved filters
     useEffect(() => {
-        if (!isInitialized && ads.length > 0) {
-            if (searchParams?.city) {
+        if (!isInitialized && ads.length > 0 && filtersLoaded) {
+            // Only apply URL params if no saved filters exist for city/type
+            const hasSavedCitySearch = localStorage.getItem('jmd_search_filters') && 
+                JSON.parse(localStorage.getItem('jmd_search_filters')).citySearch;
+            const hasSavedMediaTypes = localStorage.getItem('jmd_search_filters') && 
+                JSON.parse(localStorage.getItem('jmd_search_filters')).selectedMediaTypes?.length > 0;
+
+            if (searchParams?.city && !hasSavedCitySearch) {
                 setCitySearch(searchParams.city);
             }
-            if (searchParams?.type) {
+            if (searchParams?.type && !hasSavedMediaTypes) {
                 const formattedType = searchParams.type
                     .split('_')
                     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -142,7 +213,7 @@ const FindHoardingsClient = ({ searchParams }) => {
             }
             setIsInitialized(true);
         }
-    }, [searchParams, ads, isInitialized]);
+    }, [searchParams, ads, isInitialized, filtersLoaded]);
 
     useEffect(() => {
         const fetchAds = async () => {
@@ -302,14 +373,24 @@ const FindHoardingsClient = ({ searchParams }) => {
         return cartItems.some(item => item._id === adId);
     };
 
-    // Clear filters function
+    // Clear filters function - also clear localStorage
     const clearFilters = () => {
         setSelectedMediaTypes([]);
         setSelectedLightingTypes([]);
         setSelectedPriceRanges([]);
         setSelectedArea([]);
         setCitySearch('');
+        setSortBy('popularity');
         setCurrentPage(1);
+        setShowMoreMediaTypes(false);
+        
+        // Clear filters from localStorage
+        try {
+            localStorage.removeItem('jmd_search_filters');
+            console.log('Filters cleared from localStorage');
+        } catch (error) {
+            console.error('Error clearing filters from localStorage:', error);
+        }
     };
 
     // Format price function
@@ -317,6 +398,30 @@ const FindHoardingsClient = ({ searchParams }) => {
         const numPrice = parseFloat(price) || 0;
         return `₹ ${numPrice}`;
     };
+
+    // Function to clear old filters (optional - can be called periodically)
+    const clearOldFilters = () => {
+        try {
+            const savedFilters = localStorage.getItem('jmd_search_filters');
+            if (savedFilters) {
+                const filters = JSON.parse(savedFilters);
+                const daysSinceLastUse = (Date.now() - (filters.timestamp || 0)) / (1000 * 60 * 60 * 24);
+                
+                // Clear filters older than 7 days
+                if (daysSinceLastUse > 7) {
+                    localStorage.removeItem('jmd_search_filters');
+                    console.log('Old filters cleared');
+                }
+            }
+        } catch (error) {
+            console.error('Error checking old filters:', error);
+        }
+    };
+
+    // Call clearOldFilters on component mount
+    useEffect(() => {
+        clearOldFilters();
+    }, []);
 
     if (loading) {
         return (
