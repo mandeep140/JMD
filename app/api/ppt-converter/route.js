@@ -696,153 +696,219 @@ function extractComponentsFromText(text) {
   return result;
 }
 
-// Enhanced Excel generation without location column
+// Enhanced Excel generation with updated design up to column S
 function buildExcel(parseResult) {
   const { records, parseErrors } = parseResult;
   const wb = new ExcelJS.Workbook();
   
-  wb.creator = 'JMD Advertisement - Enhanced PPT to Excel Converter';
+  wb.creator = 'JMD Advertisement - PPT to Excel Converter';
   wb.created = new Date();
   wb.company = 'JMD Advertisement';
 
   // Main data sheet
-  const ws = wb.addWorksheet('JMD Quotation', {
+  const ws = wb.addWorksheet('JMD Media Quotation', {
     pageSetup: { paperSize: 9, orientation: 'landscape' }
   });
 
-  // Company header
-  ws.addRow(['JMD ADVERTISEMENT - QUOTATION']);
-  ws.mergeCells('A1:L1');
+  // Company header (From JMD - Advertisement)
+  ws.addRow(['From JMD - Advertisement']);
+  ws.mergeCells('A1:S1');
   const headerRow = ws.getRow(1);
-  headerRow.font = { bold: true, size: 18, color: { argb: 'FFFFFFFF' } };
-  headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-  headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC143C' } };
-  headerRow.height = 30;
+  headerRow.font = { bold: true, size: 16, color: { argb: 'FF000000' } };
+  headerRow.alignment = { horizontal: 'left', vertical: 'middle' };
+  headerRow.height = 25;
 
-  // Company details
-  ws.addRow(['B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002)']);
-  ws.mergeCells('A2:L2');
+  // Company address and contact
+  ws.addRow(['B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002) | Phone: +91-9204965321 | Email: info.jmd.jsr@gmail.com']);
+  ws.mergeCells('A2:S2');
   const detailsRow = ws.getRow(2);
-  detailsRow.font = { italic: true, size: 11, color: { argb: 'FF666666' } };
-  detailsRow.alignment = { horizontal: 'center' };
+  detailsRow.font = { size: 10, color: { argb: 'FF000000' } };
+  detailsRow.alignment = { horizontal: 'left' };
+  detailsRow.height = 18;
 
-  ws.addRow(['Phone: +91-9204965321 | Email: info.jmd.jsr@gmail.com']);
-  ws.mergeCells('A3:L3');
-  const contactRow = ws.getRow(3);
-  contactRow.font = { italic: true, size: 11, color: { argb: 'FF666666' } };
-  contactRow.alignment = { horizontal: 'center' };
-
-  // Generation info
-  ws.addRow([`Generated: ${new Date().toLocaleString('en-IN')} | Total Records: ${records.length} | Total SQFT: ${records.reduce((sum, r) => sum + r.sqft, 0)}`]);
-  ws.mergeCells('A4:L4');
-  const infoRow = ws.getRow(4);
-  infoRow.font = { bold: true, size: 10, color: { argb: 'FF2E86AB' } };
-  infoRow.alignment = { horizontal: 'center' };
-  
+  // Empty row
   ws.addRow([]);
 
-  // Updated column headers (removed Location, renamed columns)
-  const headers = ['Sr No', 'State', 'City', 'Media Type', 'Visibility', 'Title', 'Width', 'Height', 'Facility', 'Units', 'SQFT', 'Raw Text'];
+  // QUOTATION header
+  ws.addRow(['QUOTATION']);
+  ws.mergeCells('A4:S4');
+  const quotationRow = ws.getRow(4);
+  quotationRow.font = { bold: true, size: 18, color: { argb: 'FF000000' } };
+  quotationRow.alignment = { horizontal: 'center', vertical: 'middle' };
+  quotationRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } }; // Yellow background
+  quotationRow.height = 30;
+
+  // Column headers (up to column S, with Media Availability added back)
+  const headers = [
+    'Sr No',           // A
+    'State',           // B
+    'City',            // C
+    'Medium',          // D
+    'Type',            // E
+    'Location',        // F
+    'hor',             // G
+    'ver',             // H
+    'Faci',            // I
+    'Units',           // J
+    'SQFT',            // K
+    'Display Charges Per Month', // L
+    'Printing',        // M
+    'Mounting',        // N
+    'Total Cost',      // O
+    'GST',             // P
+    'GST cost',        // Q
+    'Total Cost with GST', // R
+    'Media Availability'   // S
+  ];
   
   ws.addRow(headers);
-  const headerDataRow = ws.getRow(6);
-  headerDataRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  headerDataRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34495E' } };
-  headerDataRow.alignment = { horizontal: 'center', vertical: 'middle' };
-  headerDataRow.height = 25;
+  const headerDataRow = ws.getRow(5);
+  headerDataRow.font = { bold: true, size: 9, color: { argb: 'FF000000' } };
+  headerDataRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } }; // Light gray
+  headerDataRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+  headerDataRow.height = 30;
 
   // Data rows
   if (records.length > 0) {
     records.forEach((record, index) => {
       const row = ws.addRow([
-        record.srNumber,
-        record.state,
-        record.city,
-        record.mediaType,
-        record.visibility,
-        record.title,
-        record.width,
-        record.height,
-        record.facility,
-        record.units,
-        record.sqft,
-        record.rawText
+        record.srNumber,     // A
+        record.state,        // B
+        record.city,         // C
+        record.mediaType,    // D
+        record.visibility,   // E
+        record.title,        // F
+        record.width,        // G
+        record.height,       // H
+        record.facility,     // I
+        record.units,        // J
+        record.sqft,         // K
+        '',                  // L - Display Charges Per Month (empty)
+        '',                  // M - Printing (empty)
+        '',                  // N - Mounting (empty)
+        '',                  // O - Total Cost (empty)
+        '18%',               // P - GST (18%) - no yellow color
+        '',                  // Q - GST Cost (empty)
+        '',                  // R - Total Cost with GST (empty)
+        ''                   // S - Media Availability (empty)
       ]);
       
       // Alternate row colors
-      if (index % 2 === 0) {
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } };
+      if (index % 2 === 1) {
+        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F8F8' } };
       }
       
-      // Wrap text for title and raw text columns
-      row.getCell(6).alignment = { wrapText: true };
-      row.getCell(12).alignment = { wrapText: true };
+      // Cell alignment
+      row.getCell(7).alignment = { horizontal: 'center' }; // hor
+      row.getCell(8).alignment = { horizontal: 'center' }; // ver  
+      row.getCell(9).alignment = { horizontal: 'center' }; // Faci
+      row.getCell(10).alignment = { horizontal: 'center' }; // Units
+      row.getCell(11).alignment = { horizontal: 'center' }; // SQFT
+      
+      // GST cell styling (no yellow color)
+      row.getCell(16).font = { bold: true };
+      row.getCell(16).alignment = { horizontal: 'center' };
+      
       row.height = 20;
     });
 
-    // Total row
+    // Total row (design starts from column F)
     const totalRow = ws.addRow([
-      '', '', '', '', 'TOTAL', '', '', '', '', 
-      records.length, 
-      records.reduce((sum, r) => sum + r.sqft, 0),
-      ''
+      '', '', '', '', '', 'Total', '', '', '', '', 
+      records.reduce((sum, r) => sum + r.sqft, 0), // K - Total SQFT
+      '', '', '', '', '', '', '', '' // L to S empty
     ]);
     totalRow.font = { bold: true };
-    totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE599' } };
-  } else {
-    const noDataRow = ws.addRow([
-      '', '', 'No valid data found in expected format', '', '', 
-      'Please check PPT format and try again', '', '', '', '', '', ''
-    ]);
-    noDataRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEAA7' } };
+    totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } }; // Yellow
+    totalRow.alignment = { horizontal: 'center' };
+    totalRow.height = 25;
   }
 
-  // Updated column widths (removed Location column)
+  // Column widths (up to column S)
   ws.columns = [
-    { width: 8 },   // Sr No
-    { width: 15 },  // State
-    { width: 15 },  // City
-    { width: 25 },  // Media Type
-    { width: 15 },  // Visibility
-    { width: 35 },  // Title
-    { width: 10 },  // Width
-    { width: 10 },  // Height
-    { width: 10 },  // Facility
-    { width: 8 },   // Units
-    { width: 10 },  // SQFT
-    { width: 60 }   // Raw Text
+    { width: 6 },   // A - Sr No
+    { width: 10 },  // B - State
+    { width: 12 },  // C - City
+    { width: 12 },  // D - Medium
+    { width: 10 },  // E - Type
+    { width: 25 },  // F - Location
+    { width: 6 },   // G - hor
+    { width: 6 },   // H - ver
+    { width: 6 },   // I - Faci
+    { width: 6 },   // J - Units
+    { width: 8 },   // K - SQFT
+    { width: 15 },  // L - Display Charges
+    { width: 10 },  // M - Printing
+    { width: 10 },  // N - Mounting
+    { width: 12 },  // O - Total Cost
+    { width: 6 },   // P - GST
+    { width: 10 },  // Q - GST cost
+    { width: 15 },  // R - Total Cost with GST
+    { width: 15 }   // S - Media Availability
   ];
 
-  // Add borders to all data cells
+  // Add borders
   ws.eachRow((row, rowNumber) => {
-    if (rowNumber >= 6) {
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
-        };
+    if (rowNumber >= 5) { // Start from header row
+      row.eachCell((cell, colNumber) => {
+        if (colNumber <= 19) { // Only up to column S
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+        }
       });
     }
   });
 
-  // Parse Errors Sheet (if any)
-  if (parseErrors.length > 0) {
-    const errorWs = wb.addWorksheet('Parse Errors');
-    errorWs.addRow(['Parse Errors and Debugging Information']);
-    errorWs.addRow(['Slide Number', 'Text Content', 'Error Description']);
-    
-    parseErrors.forEach(error => {
-      errorWs.addRow([error.slideNumber, error.text, error.error]);
-    });
-    
-    errorWs.columns = [
-      { width: 15 },
-      { width: 80 },
-      { width: 40 }
-    ];
-  }
+  // Add Terms and Conditions (exactly as in your screenshot)
+  const termsStartRow = ws.lastRow.number + 3;
+  ws.addRow([]);
+  ws.addRow([]);
+  ws.addRow(['Terms and Condition...']);
+  ws.mergeCells(`A${termsStartRow + 2}:S${termsStartRow + 2}`);
+  const termsHeaderRow = ws.getRow(termsStartRow + 2);
+  termsHeaderRow.font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+  termsHeaderRow.alignment = { horizontal: 'left' };
+  
+  const terms = [
+    '1) All Cheques & D.D will be in favour of Jai Mata di',
+    '2) Our Firm will not be responsible for any damage or theft of the flex due to Natural Causes.',
+    '3) For Any Queries ,Call Vishal Tiwari : 9204965321',
+    '4) Also Issue Work Order for this as your acceptance.',
+    '5) Payment to Be Made 100 % in advance',
+    '6) GST Extra as per Govt.Norms',
+    '7) Payment Mode Monthly in Advance',
+    '8) All disputes subject to Jamshedpur Jurisdiction.',
+    '9)All Media Subject to Jamshedpur Jurissdicticn.',
+    '10) 1st Mounting will be free & 2nd Mounting @2.50/-Sqft.',
+    '11) Site Booking And Dropping Mail is Provide By Client.'
+  ];
+  
+  terms.forEach(term => {
+    ws.addRow([term]);
+    ws.mergeCells(`A${ws.lastRow.number}:S${ws.lastRow.number}`);
+    const termRow = ws.getRow(ws.lastRow.number);
+    termRow.font = { size: 10, color: { argb: 'FF000000' } };
+    termRow.alignment = { horizontal: 'left' };
+  });
+
+  // Add waiting section
+  ws.addRow([]);
+  ws.addRow([]);
+  ws.addRow(['Waiting For your Positive Response']);
+  ws.mergeCells(`A${ws.lastRow.number}:S${ws.lastRow.number}`);
+  const waitingRow = ws.getRow(ws.lastRow.number);
+  waitingRow.font = { size: 11, color: { argb: 'FF000000' } };
+  waitingRow.alignment = { horizontal: 'left' };
+
+  ws.addRow(['THANK YOU']);
+  ws.mergeCells(`A${ws.lastRow.number}:S${ws.lastRow.number}`);
+  const thankRow = ws.getRow(ws.lastRow.number);
+  thankRow.font = { bold: true, size: 12, color: { argb: 'FF000000' } };
+  thankRow.alignment = { horizontal: 'left' };
 
   return wb;
 }
