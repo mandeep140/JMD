@@ -880,7 +880,7 @@ const page = () => {
                               <br />
                               {row.status === "Booked" && (
                                 <span className='text-gray-500 text-xs'>
-                                  Available on: {row.bookedtill}
+                                  Available on: {row.bookedtill ? new Date(row.bookedtill).toLocaleDateString('en-IN') : "N/A"}
                                   {(() => {
                                     const expiryInfo = getAdExpiryInfo(row);
                                     if (expiryInfo) {
