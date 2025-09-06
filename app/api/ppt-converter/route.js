@@ -6,913 +6,129 @@ import path from 'path';
 import crypto from 'crypto';
 import AdmZip from 'adm-zip';
 
-// Enhanced lighting abbreviation mapping with better detection
-function getFullLighting(abbr) {
-  if (!abbr) return '';
-  
-  const upperAbbr = abbr.toUpperCase().trim();
-  
-  const lightingMap = {
-    'NL': 'No Light',
-    'FLL': 'Fully Light',
-    'FFL': 'Fully Light',
-    'FL': 'Front Light', 
-    'BL': 'Back Light',
-    'SL': 'Side Light',
-    'LL': 'LED Light',
-    'UL': 'Under Light'
-  };
-  
-  return lightingMap[upperAbbr] || abbr;
-}
-
-// Enhanced visibility detection from text
-function detectVisibility(text) {
-  if (!text) return '';
-  
-  const upperText = text.toUpperCase();
-  
-  // Look for visibility codes in order of specificity
-  const visibilityPatterns = [
-    { pattern: /\bFFL\b|\bFLL\b/, value: 'FFL' },
-    { pattern: /\bFL\b/, value: 'FL' },
-    { pattern: /\bBL\b/, value: 'BL' },
-    { pattern: /\bNL\b/, value: 'NL' },
-    { pattern: /\bSL\b/, value: 'SL' },
-    { pattern: /\bLL\b/, value: 'LL' },
-    { pattern: /\bUL\b/, value: 'UL' }
-  ];
-  
-  for (const pattern of visibilityPatterns) {
-    if (pattern.pattern.test(upperText)) {
-      return getFullLighting(pattern.value);
-    }
-  }
-  
-  return '';
-}
-
-// Enhanced state detection with more cities
-function detectState(city) {
-  const stateMap = {
-    // Andhra Pradesh
-    'visakhapatnam': 'Andhra Pradesh',
-    'vijayawada': 'Andhra Pradesh',
-    'guntur': 'Andhra Pradesh',
-    'nellore': 'Andhra Pradesh',
-    'kurnool': 'Andhra Pradesh',
-    'rajahmundry': 'Andhra Pradesh',
-    'tirupati': 'Andhra Pradesh',
-    'kadapa': 'Andhra Pradesh',
-    
-    // Assam
-    'guwahati': 'Assam',
-    'dibrugarh': 'Assam',
-    'jorhat': 'Assam',
-    'silchar': 'Assam',
-    'nagaon': 'Assam',
-    'tinsukia': 'Assam',
-    
-    // Bihar
-    'patna': 'Bihar',
-    'gaya': 'Bihar',
-    'bhagalpur': 'Bihar',
-    'muzaffarpur': 'Bihar',
-    'purnia': 'Bihar',
-    'darbhanga': 'Bihar',
-    'bihar sharif': 'Bihar',
-    'arrah': 'Bihar',
-    
-    // Chhattisgarh
-    'raipur': 'Chhattisgarh',
-    'bhilai': 'Chhattisgarh',
-    'korba': 'Chhattisgarh',
-    'bilaspur': 'Chhattisgarh',
-    'durg': 'Chhattisgarh',
-    'rajnandgaon': 'Chhattisgarh',
-    
-    // Delhi
-    'delhi': 'Delhi',
-    'new delhi': 'Delhi',
-    'noida': 'Uttar Pradesh',
-    'gurgaon': 'Haryana',
-    'gurugram': 'Haryana',
-    'faridabad': 'Haryana',
-    'ghaziabad': 'Uttar Pradesh',
-    
-    // Gujarat
-    'ahmedabad': 'Gujarat',
-    'surat': 'Gujarat',
-    'vadodara': 'Gujarat',
-    'rajkot': 'Gujarat',
-    'bhavnagar': 'Gujarat',
-    'jamnagar': 'Gujarat',
-    'junagadh': 'Gujarat',
-    'gandhinagar': 'Gujarat',
-    'anand': 'Gujarat',
-    'bharuch': 'Gujarat',
-    
-    // Haryana
-    'chandigarh': 'Chandigarh',
-    'panipat': 'Haryana',
-    'ambala': 'Haryana',
-    'yamunanagar': 'Haryana',
-    'rohtak': 'Haryana',
-    'hisar': 'Haryana',
-    'karnal': 'Haryana',
-    'sonipat': 'Haryana',
-    
-    // Himachal Pradesh
-    'shimla': 'Himachal Pradesh',
-    'dharamshala': 'Himachal Pradesh',
-    'manali': 'Himachal Pradesh',
-    'solan': 'Himachal Pradesh',
-    'mandi': 'Himachal Pradesh',
-    
-    // Jharkhand
-    'jamshedpur': 'Jharkhand',
-    'ranchi': 'Jharkhand',
-    'dhanbad': 'Jharkhand',
-    'bokaro': 'Jharkhand',
-    'deoghar': 'Jharkhand',
-    'hazaribagh': 'Jharkhand',
-    'giridih': 'Jharkhand',
-    'ramgarh': 'Jharkhand',
-    
-    // Karnataka
-    'bangalore': 'Karnataka',
-    'bengaluru': 'Karnataka',
-    'mysore': 'Karnataka',
-    'hubli': 'Karnataka',
-    'mangalore': 'Karnataka',
-    'belgaum': 'Karnataka',
-    'gulbarga': 'Karnataka',
-    'davanagere': 'Karnataka',
-    'bellary': 'Karnataka',
-    'bijapur': 'Karnataka',
-    
-    // Kerala
-    'kochi': 'Kerala',
-    'thiruvananthapuram': 'Kerala',
-    'kozhikode': 'Kerala',
-    'thrissur': 'Kerala',
-    'kollam': 'Kerala',
-    'palakkad': 'Kerala',
-    'alappuzha': 'Kerala',
-    'kannur': 'Kerala',
-    'kottayam': 'Kerala',
-    
-    // Madhya Pradesh
-    'bhopal': 'Madhya Pradesh',
-    'indore': 'Madhya Pradesh',
-    'gwalior': 'Madhya Pradesh',
-    'jabalpur': 'Madhya Pradesh',
-    'ujjain': 'Madhya Pradesh',
-    'sagar': 'Madhya Pradesh',
-    'dewas': 'Madhya Pradesh',
-    'satna': 'Madhya Pradesh',
-    'ratlam': 'Madhya Pradesh',
-    
-    // Maharashtra
-    'mumbai': 'Maharashtra',
-    'pune': 'Maharashtra',
-    'nagpur': 'Maharashtra',
-    'nashik': 'Maharashtra',
-    'aurangabad': 'Maharashtra',
-    'solapur': 'Maharashtra',
-    'kolhapur': 'Maharashtra',
-    'amravati': 'Maharashtra',
-    'nanded': 'Maharashtra',
-    'sangli': 'Maharashtra',
-    'malegaon': 'Maharashtra',
-    'akola': 'Maharashtra',
-    
-    // Odisha
-    'bhubaneswar': 'Odisha',
-    'cuttack': 'Odisha',
-    'rourkela': 'Odisha',
-    'berhampur': 'Odisha',
-    'sambalpur': 'Odisha',
-    'puri': 'Odisha',
-    'balasore': 'Odisha',
-    
-    // Punjab
-    'ludhiana': 'Punjab',
-    'amritsar': 'Punjab',
-    'jalandhar': 'Punjab',
-    'patiala': 'Punjab',
-    'bathinda': 'Punjab',
-    'mohali': 'Punjab',
-    'hoshiarpur': 'Punjab',
-    'batala': 'Punjab',
-    
-    // Rajasthan
-    'jaipur': 'Rajasthan',
-    'jodhpur': 'Rajasthan',
-    'kota': 'Rajasthan',
-    'bikaner': 'Rajasthan',
-    'udaipur': 'Rajasthan',
-    'ajmer': 'Rajasthan',
-    'bhilwara': 'Rajasthan',
-    'alwar': 'Rajasthan',
-    'bharatpur': 'Rajasthan',
-    'sikar': 'Rajasthan',
-    
-    // Tamil Nadu
-    'chennai': 'Tamil Nadu',
-    'coimbatore': 'Tamil Nadu',
-    'madurai': 'Tamil Nadu',
-    'tiruchirappalli': 'Tamil Nadu',
-    'salem': 'Tamil Nadu',
-    'tirunelveli': 'Tamil Nadu',
-    'erode': 'Tamil Nadu',
-    'vellore': 'Tamil Nadu',
-    'thoothukudi': 'Tamil Nadu',
-    'dindigul': 'Tamil Nadu',
-    
-    // Telangana
-    'hyderabad': 'Telangana',
-    'warangal': 'Telangana',
-    'nizamabad': 'Telangana',
-    'karimnagar': 'Telangana',
-    'ramagundam': 'Telangana',
-    'mahbubnagar': 'Telangana',
-    
-    // Uttar Pradesh
-    'lucknow': 'Uttar Pradesh',
-    'kanpur': 'Uttar Pradesh',
-    'agra': 'Uttar Pradesh',
-    'varanasi': 'Uttar Pradesh',
-    'meerut': 'Uttar Pradesh',
-    'allahabad': 'Uttar Pradesh',
-    'prayagraj': 'Uttar Pradesh',
-    'bareilly': 'Uttar Pradesh',
-    'aligarh': 'Uttar Pradesh',
-    'moradabad': 'Uttar Pradesh',
-    'saharanpur': 'Uttar Pradesh',
-    'gorakhpur': 'Uttar Pradesh',
-    'firozabad': 'Uttar Pradesh',
-    'jhansi': 'Uttar Pradesh',
-    'muzaffarnagar': 'Uttar Pradesh',
-    
-    // West Bengal
-    'kolkata': 'West Bengal',
-    'howrah': 'West Bengal',
-    'durgapur': 'West Bengal',
-    'asansol': 'West Bengal',
-    'siliguri': 'West Bengal',
-    'malda': 'West Bengal',
-    'kharagpur': 'West Bengal',
-    'haldia': 'West Bengal'
-  };
-  
-  return stateMap[city.toLowerCase()] || 'Unknown';
-}
-
-// Enhanced media type detection (billboard = hoarding)
-function detectMediaType(description) {
-  const desc = description.toLowerCase();
-  
-  if (desc.includes('unipole')) {
-    return { mediaType: 'Unipole', facility: 1 };
-  } else if (desc.includes('railway') || desc.includes('rail') || desc.includes('station') || desc.includes('platform')) {
-    return { mediaType: 'Railway Station Branding', facility: 1 };
-  } else if (desc.includes('chowk') || desc.includes('circle') || desc.includes('crossing')) {
-    return { mediaType: 'Pole Kiosk', facility: 2 };
-  } else if (desc.includes('mall') || desc.includes('shopping')) {
-    return { mediaType: 'Mall Media', facility: 1 };
-  } else if (desc.includes('bus') || desc.includes('shelter')) {
-    return { mediaType: 'Bus Shelter Branding', facility: 1 };
-  } else if (desc.includes('airport')) {
-    return { mediaType: 'Airport Branding', facility: 1 };
-  } else if (desc.includes('digital') || desc.includes('led')) {
-    return { mediaType: 'Digital Billboard', facility: 1 };
-  } else if (desc.includes('gantry')) {
-    return { mediaType: 'Gantry', facility: 1 };
-  } else if (desc.includes('pole') && !desc.includes('unipole')) {
-    return { mediaType: 'Pole Kiosk', facility: 1 };
-  } else if (desc.includes('billboard')) {
-    return { mediaType: 'Hoarding', facility: 1 };
-  } else {
-    return { mediaType: 'Hoarding', facility: 1 };
-  }
-}
-
-// Enhanced XML extraction method
-function extractWithXML(buffer) {
-  try {
-    const zip = new AdmZip(buffer);
-    const slideTexts = [];
-    
-    const entries = zip.getEntries()
-      .filter(entry => entry.entryName.startsWith('ppt/slides/slide') && entry.entryName.endsWith('.xml'))
-      .sort((a, b) => {
-        const numA = parseInt(a.entryName.match(/slide(\d+)/)[1]);
-        const numB = parseInt(b.entryName.match(/slide(\d+)/)[1]);
-        return numA - numB;
-      });
-
-    entries.forEach((entry, idx) => {
-      const slideNumber = idx + 1;
-      
-      // Skip first and last slide
-      if (slideNumber === 1 || slideNumber === entries.length) {
-        return;
-      }
-
-      try {
-        const slideXml = entry.getData().toString('utf8');
-        const texts = [];
-        
-        // More comprehensive text extraction patterns
-        const textPatterns = [
-          /<a:t[^>]*>(.*?)<\/a:t>/g,
-          /<w:t[^>]*>(.*?)<\/w:t>/g,
-          /<text[^>]*>(.*?)<\/text>/g,
-          /<p:txBody[^>]*>[\s\S]*?<a:t[^>]*>(.*?)<\/a:t>[\s\S]*?<\/p:txBody>/g,
-          /<a:p[^>]*>[\s\S]*?<a:t[^>]*>(.*?)<\/a:t>[\s\S]*?<\/a:p>/g,
-          /<p:sp[^>]*>[\s\S]*?<a:t[^>]*>(.*?)<\/a:t>[\s\S]*?<\/p:sp>/g
-        ];
-        
-        textPatterns.forEach(pattern => {
-          let match;
-          while ((match = pattern.exec(slideXml)) !== null) {
-            const text = match[1]
-              .replace(/&lt;/g, '<')
-              .replace(/&gt;/g, '>')
-              .replace(/&amp;/g, '&')
-              .replace(/&quot;/g, '"')
-              .replace(/&#39;/g, "'")
-              .replace(/&apos;/g, "'")
-              .trim();
-            
-            if (text && 
-                !text.includes('schemas.openxmlformats') && 
-                !text.startsWith('http') &&
-                !text.includes('xmlns') &&
-                text.length > 1) {
-              texts.push(text);
-            }
-          }
-        });
-
-        // Additional extraction for text nodes without specific tags
-        const generalTextPattern = />([^<>]+)</g;
-        let generalMatch;
-        while ((generalMatch = generalTextPattern.exec(slideXml)) !== null) {
-          const text = generalMatch[1].trim();
-          if (text && 
-              text.length > 2 && 
-              /[a-zA-Z0-9]/.test(text) &&
-              !text.includes('schemas') &&
-              !text.includes('xmlns') &&
-              !text.includes('http') &&
-              !text.includes('rId') &&
-              !text.includes('slide')) {
-            texts.push(text);
-          }
-        }
-
-        if (texts.length > 0) {
-          const uniqueTexts = [...new Set(texts)];
-          slideTexts.push({
-            slideNumber,
-            texts: uniqueTexts,
-            combinedText: uniqueTexts.join(' ')
-          });
-        }
-      } catch (slideError) {
-        console.error('Error processing slide', slideNumber, ':', slideError.message);
-      }
-    });
-
-    return slideTexts;
-  } catch (error) {
-    console.error('XML extraction failed:', error.message);
-    return [];
-  }
-}
-
-// Enhanced slide text extraction with improved raw text handling
+// PPTX text extraction using both methods (matches C# OpenXML extraction)
 async function extractSlideTexts(buffer) {
   const tmpDir = path.join(process.cwd(), '.pptx_tmp');
   await fs.mkdir(tmpDir, { recursive: true });
   const tempPath = path.join(tmpDir, crypto.randomUUID() + '.pptx');
-  
-  try {
-    await fs.writeFile(tempPath, buffer);
+  await fs.writeFile(tempPath, buffer);
 
+  try {
     const parser = new PPTX2Json();
     const data = await parser.toJson(tempPath);
-    
     const slides = Array.isArray(data.slides) ? data.slides : [];
-    const slideTexts = [];
+    const allTexts = [];
 
     if (slides.length === 0) {
-      return extractWithXML(buffer);
+      // Fallback to XML extraction (equivalent to C# OpenXML)
+      const zip = new AdmZip(buffer);
+      const entries = zip.getEntries()
+        .filter(entry => entry.entryName.startsWith('ppt/slides/slide') && entry.entryName.endsWith('.xml'))
+        .sort((a, b) => {
+          const numA = parseInt(a.entryName.match(/slide(\d+)/)[1]);
+          const numB = parseInt(b.entryName.match(/slide(\d+)/)[1]);
+          return numA - numB;
+        });
+      
+      entries.forEach((entry) => {
+        const xml = entry.getData().toString('utf8');
+        const matches = [...xml.matchAll(/<a:t[^>]*>(.*?)<\/a:t>/g)];
+        matches.forEach(match => {
+          const text = match[1].trim();
+          if (text) allTexts.push(text);
+        });
+      });
+      return allTexts;
     }
 
-    slides.forEach((slide, idx) => {
-      // Skip first and last slide
-      if (idx === 0 || idx === slides.length - 1) {
-        return;
-      }
-
-      try {
-        const texts = [];
-        
-        // Enhanced text collection with improved raw text extraction
-        const collectTexts = (node, depth = 0) => {
-          if (!node || typeof node !== 'object' || depth > 25) return;
-          
-          // Direct text properties
-          const textProps = ['text', 'value', 'content', 'data', '_text', 'textContent'];
-          textProps.forEach(prop => {
-            if (typeof node[prop] === 'string') {
-              const t = node[prop].trim();
-              if (t && t.length > 1) texts.push(t);
-            }
-          });
-          
-          // Special handling for PowerPoint text structures
-          if (node.type === 'text' && node.text) {
-            texts.push(node.text.trim());
-          }
-          
-          // Check for text in nested structures
-          if (node.children && Array.isArray(node.children)) {
-            node.children.forEach(child => collectTexts(child, depth + 1));
-          }
-          
-          // Traverse all object properties
-          for (const [key, value] of Object.entries(node)) {
-            if (key.includes('text') || key.includes('Text')) {
-              if (typeof value === 'string' && value.trim().length > 1) {
-                texts.push(value.trim());
-              }
-            }
-            
-            if (Array.isArray(value)) {
-              value.forEach(item => collectTexts(item, depth + 1));
-            } else if (typeof value === 'object' && value !== null) {
-              collectTexts(value, depth + 1);
-            }
-          }
-        };
-        
-        collectTexts(slide);
-
-        // Enhanced text cleaning and filtering
-        const cleanTexts = texts
-          .filter(t => t && 
-            !/^http/i.test(t) && 
-            !/schemas\.openxmlformats/i.test(t) &&
-            !/^(click|slide|title)$/i.test(t) &&
-            !/xmlns/i.test(t) &&
-            !/rId\d+/i.test(t) &&
-            !/^[0-9]+$/.test(t.trim()) && // Skip pure numbers
-            t.length > 1
-          )
-          .map(t => t.replace(/\s+/g, ' ').trim())
-          .filter(t => t.length > 1);
-
-        if (cleanTexts.length > 0) {
-          const uniqueTexts = [...new Set(cleanTexts)];
-          
-          // Improved raw text generation - keep original formatting better
-          const rawText = uniqueTexts.join(' | ');
-          
-          slideTexts.push({
-            slideNumber: idx + 1,
-            texts: uniqueTexts,
-            combinedText: rawText
-          });
+    // Extract all text from all slides (like C# processes all slides)
+    slides.forEach((slide) => {
+      const texts = [];
+      const collectTexts = node => {
+        if (!node || typeof node !== 'object') return;
+        if (typeof node.text === 'string' && node.text.trim()) {
+          texts.push(node.text.trim());
         }
-      } catch (slideError) {
-        console.error('Error processing slide', idx + 1, ':', slideError.message);
-      }
+        for (const v of Object.values(node)) {
+          if (Array.isArray(v)) v.forEach(collectTexts);
+          else if (typeof v === 'object') collectTexts(v);
+        }
+      };
+      collectTexts(slide);
+      allTexts.push(...texts);
     });
     
-    // If primary extraction seems incomplete, try XML extraction
-    if (slideTexts.length < slides.length * 0.3) {
-      const xmlTexts = extractWithXML(buffer);
-      
-      // Merge results, preferring more comprehensive text
-      xmlTexts.forEach(xmlSlide => {
-        const existingSlide = slideTexts.find(s => s.slideNumber === xmlSlide.slideNumber);
-        if (!existingSlide) {
-          slideTexts.push(xmlSlide);
-        } else if (xmlSlide.texts.length > existingSlide.texts.length) {
-          const index = slideTexts.findIndex(s => s.slideNumber === xmlSlide.slideNumber);
-          slideTexts[index] = xmlSlide;
-        }
-      });
-      
-      slideTexts.sort((a, b) => a.slideNumber - b.slideNumber);
-    }
-    
-    return slideTexts;
-  } catch (error) {
-    console.error('Primary extraction failed:', error.message);
-    return extractWithXML(buffer);
+    return allTexts;
   } finally {
-    try { 
-      await fs.unlink(tempPath);
-    } catch (cleanupError) {
-      console.error('Cleanup error:', cleanupError.message);
+    try { await fs.unlink(tempPath); } catch {}
+  }
+}
+
+// Check if line is availability (matches C# IsAvailability method)
+function isAvailability(text) {
+  return /^(IMMEDIATE )?AVAILABLE( FROM \d{2}\.\d{2}\.\d{2})?$/i.test(text);
+}
+
+// Parse line (matches C# ParseLine method exactly)
+function parseLine(line, autoSerialNumber) {
+  // Exact same regex as C# version
+  const pattern = /^(?:(\d+)\)\s*)?([\w]+)\s*[-–]\s*(.*?)\s*-\s*(\d+)\s*[*x]\s*(\d+)\s*(?:-\s*(\d+)sqft)?\s*-\s*(\w+)$/i;
+  const match = line.trim().match(pattern);
+
+  if (match) {
+    // Use provided serial number or auto-increment (same logic as C#)
+    const num = match[1] ? parseInt(match[1]) : ++autoSerialNumber.value;
+    const city = match[2];
+    const desc = match[3].trim();
+    const hor = parseInt(match[4]);
+    const ver = parseInt(match[5]);
+    // Calculate sqft if not provided, else use provided value (same as C#)
+    const sqft = match[6] ? parseInt(match[6]) : hor * ver;
+    const typ = match[7];
+
+    // Same location logic as C#
+    const location = city === "Jamshedpur" ? `${desc}` : `${city} - ${desc}`;
+
+    // Same medium/faci logic as C#
+    let medium, faci;
+    const descLower = desc.toLowerCase();
+    if (descLower.includes("unipole")) {
+      medium = "Unipole";
+      faci = 2;
+    } else if (descLower.includes("ticket counter")) {
+      medium = "Railway Station Branding";
+      faci = 1;
+    } else {
+      medium = "Hoarding";
+      faci = 1;
     }
+
+    return {
+      "Sr No": num,
+      "State": "Jharkhand",
+      "City": city,
+      "Medium": medium,
+      "Type": typ,
+      "Location": location,
+      "hor": hor,
+      "ver": ver,
+      "Faci": faci,
+      "Units": 1,
+      "SQFT": sqft,
+      "Display Charges Per Month": "",
+      "Printing": "",
+      "Mounting": "",
+      "Total Cost": "",
+      "GST": "18%",
+      "GST cost": "",
+      "Total Cost with GST": "",
+      "Media availability": ""
+    };
   }
+  return null;
 }
 
-// Enhanced parsing function with better raw text preservation
-function parseSlideContent(slideTexts) {
-  const records = [];
-  const seenRecords = new Set();
-  const parseErrors = [];
-  
-  slideTexts.forEach(slide => {
-    const allTexts = [...slide.texts, slide.combinedText];
-    
-    allTexts.forEach(text => {
-      if (!text || text.length < 5) return;
-      
-      const patterns = [
-        // Pattern 1: "2) Ranchi - Railway Station - 8*3 - 24sqft - NL"
-        /(\d+)\)\s*([^-]+?)\s*-\s*([^-]+?)\s*-\s*(\d+)\s*\*\s*(\d+)\s*(?:-\s*(\d+)sqft)?\s*-\s*([A-Z]{1,4})/i,
-        
-        // Pattern 2: "Jamshedpur, Station Main Road 20x10 NL Unipole"
-        /^([^,]+),\s*([^0-9]+?)\s*(\d+)\s*[x*]\s*(\d+)\s*([A-Z]{1,4})\s*(.+?)$/i,
-        
-        // Pattern 3: "City - Location - Size - Type - Lighting"
-        /([^-]+?)\s*-\s*([^-]+?)\s*-\s*(\d+)\s*[x*]\s*(\d+)\s*-\s*([^-]+?)\s*-\s*([A-Z]{1,4})/i,
-        
-        // Pattern 4: Just extract components separately
-        /(\d+)\)\s*(.+)/i
-      ];
-      
-      let matched = false;
-      
-      for (let i = 0; i < patterns.length; i++) {
-        const pattern = patterns[i];
-        const match = text.match(pattern);
-        
-        if (match) {
-          matched = true;
-          let srNumber, city, title, width, height, lighting, type, sqft;
-          
-          if (i === 0) { // Pattern 1
-            [, srNumber, city, title, width, height, sqft, lighting] = match;
-            type = title;
-          } else if (i === 1) { // Pattern 2
-            [, city, title, width, height, lighting, type] = match;
-            srNumber = extractNumberFromText(text);
-          } else if (i === 2) { // Pattern 3
-            [, city, title, width, height, type, lighting] = match;
-            srNumber = extractNumberFromText(text);
-          } else if (i === 3) { // Pattern 4
-            const [, matchedSrNumber, restOfText] = match;
-            srNumber = matchedSrNumber;
-            const extracted = extractComponentsFromText(restOfText);
-            city = extracted.city;
-            title = extracted.title;
-            width = extracted.width;
-            height = extracted.height;
-            lighting = extracted.lighting;
-            type = extracted.type;
-          }
-          
-          // Clean up extracted values
-          city = city ? city.trim() : '';
-          title = title ? title.trim() : '';
-          lighting = lighting ? lighting.trim() : '';
-          type = type ? type.trim() : '';
-          
-          // Parse dimensions
-          const parsedWidth = parseInt(width);
-          const parsedHeight = parseInt(height);
-          const calculatedSqft = parsedWidth * parsedHeight;
-          const finalSqft = sqft ? parseInt(sqft) : calculatedSqft;
-          
-          // Detect media type and state
-          const { mediaType, facility } = detectMediaType(type || title);
-          const state = detectState(city);
-          
-          // Enhanced visibility detection
-          const visibility = detectVisibility(text) || getFullLighting(lighting);
-          
-          // Create unique key to prevent duplicates
-          const uniqueKey = `${srNumber || 'na'}-${city}-${title}-${parsedWidth}x${parsedHeight}`;
-          
-          if (!seenRecords.has(uniqueKey) && city && (title || type)) {
-            const record = {
-              srNumber: parseInt(srNumber) || records.length + 1,
-              state: state,
-              city: city,
-              mediaType: mediaType,
-              visibility: visibility,
-              title: title,
-              width: parsedWidth || 0,
-              height: parsedHeight || 0,
-              facility: facility,
-              units: 1,
-              sqft: finalSqft || 0,
-              rawText: text.trim(), // Keep original text for better raw text representation
-              slideNumber: slide.slideNumber
-            };
-            
-            records.push(record);
-            seenRecords.add(uniqueKey);
-          }
-          break;
-        }
-      }
-      
-      if (!matched) {
-        const hasNumber = /\d/.test(text);
-        const hasCity = /[A-Za-z]{3,}/.test(text);
-        
-        if (hasNumber && hasCity && text.length > 10) {
-          parseErrors.push({
-            slideNumber: slide.slideNumber,
-            text: text,
-            error: 'No pattern matched but looks like data'
-          });
-        }
-      }
-    });
-  });
-  
-  return {
-    records: records.sort((a, b) => a.srNumber - b.srNumber),
-    parseErrors
-  };
-}
-
-// Helper function to extract number from text
-function extractNumberFromText(text) {
-  const match = text.match(/(\d+)\)/);
-  return match ? match[1] : null;
-}
-
-// Helper function to extract components from complex text
-function extractComponentsFromText(text) {
-  const result = {
-    city: '',
-    title: '',
-    width: 0,
-    height: 0,
-    lighting: '',
-    type: ''
-  };
-  
-  // Extract dimensions
-  const sizeMatch = text.match(/(\d+)\s*[x*]\s*(\d+)/i);
-  if (sizeMatch) {
-    result.width = parseInt(sizeMatch[1]);
-    result.height = parseInt(sizeMatch[2]);
-  }
-  
-  // Extract lighting codes with better detection
-  result.lighting = detectVisibility(text);
-  
-  // Extract city and title (everything before dimensions)
-  const beforeSize = text.split(/\d+\s*[x*]\s*\d+/i)[0].trim();
-  const parts = beforeSize.split(/[-,]/);
-  
-  if (parts.length >= 2) {
-    result.city = parts[0].trim();
-    result.title = parts.slice(1).join(' ').trim();
-  } else if (parts.length === 1) {
-    result.city = parts[0].trim();
-    result.title = parts[0].trim();
-  }
-  
-  // Extract type (everything after dimensions)
-  const afterSize = text.split(/\d+\s*[x*]\s*\d+/i)[1];
-  if (afterSize) {
-    result.type = afterSize.replace(/\b[A-Z]{1,4}\b/gi, '').trim();
-  }
-  
-  return result;
-}
-
-// Enhanced Excel generation with updated design up to column S
-function buildExcel(parseResult) {
-  const { records, parseErrors } = parseResult;
-  const wb = new ExcelJS.Workbook();
-  
-  wb.creator = 'JMD Advertisement - PPT to Excel Converter';
-  wb.created = new Date();
-  wb.company = 'JMD Advertisement';
-
-  // Main data sheet
-  const ws = wb.addWorksheet('JMD Media Quotation', {
-    pageSetup: { paperSize: 9, orientation: 'landscape' }
-  });
-
-  // Company header (From JMD - Advertisement)
-  ws.addRow(['From JMD - Advertisement']);
-  ws.mergeCells('A1:S1');
-  const headerRow = ws.getRow(1);
-  headerRow.font = { bold: true, size: 16, color: { argb: 'FF000000' } };
-  headerRow.alignment = { horizontal: 'left', vertical: 'middle' };
-  headerRow.height = 25;
-
-  // Company address and contact
-  ws.addRow(['B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002) | Phone: +91-9204965321 | Email: info.jmd.jsr@gmail.com']);
-  ws.mergeCells('A2:S2');
-  const detailsRow = ws.getRow(2);
-  detailsRow.font = { size: 10, color: { argb: 'FF000000' } };
-  detailsRow.alignment = { horizontal: 'left' };
-  detailsRow.height = 18;
-
-  // Empty row
-  ws.addRow([]);
-
-  // QUOTATION header
-  ws.addRow(['QUOTATION']);
-  ws.mergeCells('A4:S4');
-  const quotationRow = ws.getRow(4);
-  quotationRow.font = { bold: true, size: 18, color: { argb: 'FF000000' } };
-  quotationRow.alignment = { horizontal: 'center', vertical: 'middle' };
-  quotationRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } }; // Yellow background
-  quotationRow.height = 30;
-
-  // Column headers (up to column S, with Media Availability added back)
-  const headers = [
-    'Sr No',           // A
-    'State',           // B
-    'City',            // C
-    'Medium',          // D
-    'Type',            // E
-    'Location',        // F
-    'hor',             // G
-    'ver',             // H
-    'Faci',            // I
-    'Units',           // J
-    'SQFT',            // K
-    'Display Charges Per Month', // L
-    'Printing',        // M
-    'Mounting',        // N
-    'Total Cost',      // O
-    'GST',             // P
-    'GST cost',        // Q
-    'Total Cost with GST', // R
-    'Media Availability'   // S
-  ];
-  
-  ws.addRow(headers);
-  const headerDataRow = ws.getRow(5);
-  headerDataRow.font = { bold: true, size: 9, color: { argb: 'FF000000' } };
-  headerDataRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } }; // Light gray
-  headerDataRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-  headerDataRow.height = 30;
-
-  // Data rows
-  if (records.length > 0) {
-    records.forEach((record, index) => {
-      const row = ws.addRow([
-        record.srNumber,     // A
-        record.state,        // B
-        record.city,         // C
-        record.mediaType,    // D
-        record.visibility,   // E
-        record.title,        // F
-        record.width,        // G
-        record.height,       // H
-        record.facility,     // I
-        record.units,        // J
-        record.sqft,         // K
-        '',                  // L - Display Charges Per Month (empty)
-        '',                  // M - Printing (empty)
-        '',                  // N - Mounting (empty)
-        '',                  // O - Total Cost (empty)
-        '18%',               // P - GST (18%) - no yellow color
-        '',                  // Q - GST Cost (empty)
-        '',                  // R - Total Cost with GST (empty)
-        ''                   // S - Media Availability (empty)
-      ]);
-      
-      // Alternate row colors
-      if (index % 2 === 1) {
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F8F8' } };
-      }
-      
-      // Cell alignment
-      row.getCell(7).alignment = { horizontal: 'center' }; // hor
-      row.getCell(8).alignment = { horizontal: 'center' }; // ver  
-      row.getCell(9).alignment = { horizontal: 'center' }; // Faci
-      row.getCell(10).alignment = { horizontal: 'center' }; // Units
-      row.getCell(11).alignment = { horizontal: 'center' }; // SQFT
-      
-      // GST cell styling (no yellow color)
-      row.getCell(16).font = { bold: true };
-      row.getCell(16).alignment = { horizontal: 'center' };
-      
-      row.height = 20;
-    });
-
-    // Total row (design starts from column F)
-    const totalRow = ws.addRow([
-      '', '', '', '', '', 'Total', '', '', '', '', 
-      records.reduce((sum, r) => sum + r.sqft, 0), // K - Total SQFT
-      '', '', '', '', '', '', '', '' // L to S empty
-    ]);
-    totalRow.font = { bold: true };
-    totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } }; // Yellow
-    totalRow.alignment = { horizontal: 'center' };
-    totalRow.height = 25;
-  }
-
-  // Column widths (up to column S)
-  ws.columns = [
-    { width: 6 },   // A - Sr No
-    { width: 10 },  // B - State
-    { width: 12 },  // C - City
-    { width: 12 },  // D - Medium
-    { width: 10 },  // E - Type
-    { width: 25 },  // F - Location
-    { width: 6 },   // G - hor
-    { width: 6 },   // H - ver
-    { width: 6 },   // I - Faci
-    { width: 6 },   // J - Units
-    { width: 8 },   // K - SQFT
-    { width: 15 },  // L - Display Charges
-    { width: 10 },  // M - Printing
-    { width: 10 },  // N - Mounting
-    { width: 12 },  // O - Total Cost
-    { width: 6 },   // P - GST
-    { width: 10 },  // Q - GST cost
-    { width: 15 },  // R - Total Cost with GST
-    { width: 15 }   // S - Media Availability
-  ];
-
-  // Add borders
-  ws.eachRow((row, rowNumber) => {
-    if (rowNumber >= 5) { // Start from header row
-      row.eachCell((cell, colNumber) => {
-        if (colNumber <= 19) { // Only up to column S
-          cell.border = {
-            top: { style: 'thin', color: { argb: 'FF000000' } },
-            left: { style: 'thin', color: { argb: 'FF000000' } },
-            bottom: { style: 'thin', color: { argb: 'FF000000' } },
-            right: { style: 'thin', color: { argb: 'FF000000' } }
-          };
-        }
-      });
-    }
-  });
-
-  // Add Terms and Conditions (exactly as in your screenshot)
-  const termsStartRow = ws.lastRow.number + 3;
-  ws.addRow([]);
-  ws.addRow([]);
-  ws.addRow(['Terms and Condition...']);
-  ws.mergeCells(`A${termsStartRow + 2}:S${termsStartRow + 2}`);
-  const termsHeaderRow = ws.getRow(termsStartRow + 2);
-  termsHeaderRow.font = { bold: true, size: 12, color: { argb: 'FF000000' } };
-  termsHeaderRow.alignment = { horizontal: 'left' };
-  
-  const terms = [
-    '1) All Cheques & D.D will be in favour of Jai Mata di',
-    '2) Our Firm will not be responsible for any damage or theft of the flex due to Natural Causes.',
-    '3) For Any Queries ,Call Vishal Tiwari : 9204965321',
-    '4) Also Issue Work Order for this as your acceptance.',
-    '5) Payment to Be Made 100 % in advance',
-    '6) GST Extra as per Govt.Norms',
-    '7) Payment Mode Monthly in Advance',
-    '8) All disputes subject to Jamshedpur Jurisdiction.',
-    '9)All Media Subject to Jamshedpur Jurissdicticn.',
-    '10) 1st Mounting will be free & 2nd Mounting @2.50/-Sqft.',
-    '11) Site Booking And Dropping Mail is Provide By Client.'
-  ];
-  
-  terms.forEach(term => {
-    ws.addRow([term]);
-    ws.mergeCells(`A${ws.lastRow.number}:S${ws.lastRow.number}`);
-    const termRow = ws.getRow(ws.lastRow.number);
-    termRow.font = { size: 10, color: { argb: 'FF000000' } };
-    termRow.alignment = { horizontal: 'left' };
-  });
-
-  // Add waiting section
-  ws.addRow([]);
-  ws.addRow([]);
-  ws.addRow(['Waiting For your Positive Response']);
-  ws.mergeCells(`A${ws.lastRow.number}:S${ws.lastRow.number}`);
-  const waitingRow = ws.getRow(ws.lastRow.number);
-  waitingRow.font = { size: 11, color: { argb: 'FF000000' } };
-  waitingRow.alignment = { horizontal: 'left' };
-
-  ws.addRow(['THANK YOU']);
-  ws.mergeCells(`A${ws.lastRow.number}:S${ws.lastRow.number}`);
-  const thankRow = ws.getRow(ws.lastRow.number);
-  thankRow.font = { bold: true, size: 12, color: { argb: 'FF000000' } };
-  thankRow.alignment = { horizontal: 'left' };
-
-  return wb;
-}
-
+// Main API handler (matches C# btnConvert_Click logic)
 export async function POST(request) {
   try {
     const formData = await request.formData();
@@ -923,26 +139,251 @@ export async function POST(request) {
     }
     
     if (!file.name.toLowerCase().endsWith('.pptx')) {
-      return NextResponse.json({ 
-        error: 'Only .pptx files are supported. Please convert .ppt to .pptx first.' 
-      }, { status: 400 });
+      return NextResponse.json({ error: 'Only .pptx files are supported.' }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const slideTexts = await extractSlideTexts(buffer);
+    const allTexts = await extractSlideTexts(buffer);
 
-    if (slideTexts.length === 0) {
-      return NextResponse.json({ 
-        error: 'No text could be extracted from the PPTX file',
-        suggestion: 'Ensure the PPTX contains text content and is not corrupted'
-      }, { status: 400 });
+    let data = [];
+    let terms = [];
+    let parseLogs = [];
+    let nonMatchingLines = [];
+    let isTermsSection = false;
+    let autoSerialNumber = { value: 0 }; // Use object to pass by reference
+    let lastData = null;
+
+    // Process each line (same logic as C# foreach loop)
+    for (const text of allTexts) {
+      parseLogs.push(`Processing line: '${text}'`);
+
+      // Check for terms and conditions section (same regex as C#)
+      if (/\*?\s*(GENERAL|BUSINESS)?\s*TERMS\s*(&|AND)?\s*CONDITIONS?\s*[:-]?\s*-?/i.test(text)) {
+        isTermsSection = true;
+        parseLogs.push("Detected start of terms section.");
+        continue;
+      }
+
+      // Collect terms if in terms section (same logic as C#)
+      if (isTermsSection) {
+        if (text && text.trim() && !/^image\d+\.\w+$/i.test(text)) {
+          terms.push(text);
+          parseLogs.push("Added to terms.");
+        } else {
+          parseLogs.push("Skipped (empty or image reference).");
+        }
+        continue;
+      }
+
+      // Try parsing as data line (same logic as C#)
+      const result = parseLine(text, autoSerialNumber);
+      if (result) {
+        data.push(result);
+        lastData = result;
+        parseLogs.push("Match found.");
+        continue;
+      }
+
+      // Check for availability (same logic as C#)
+      if (lastData && isAvailability(text)) {
+        lastData["Media availability"] = text;
+        parseLogs.push("Added availability to last data.");
+        continue;
+      }
+
+      // Non-matching potential data line (same regex as C#)
+      if (/^(\d+\)\s*)?[\w]+.*[-–].*\d+\s*[*x]\s*\d+/.test(text)) {
+        nonMatchingLines.push(text);
+        parseLogs.push("No match, but looks like potential data line.");
+      } else {
+        parseLogs.push("Skipped, not a data line.");
+      }
     }
 
-    const parseResult = parseSlideContent(slideTexts);
-    const workbook = buildExcel(parseResult);
-    const excelBuffer = await workbook.xlsx.writeBuffer();
+    // Set default availability if not set (same logic as C#)
+    data.forEach(d => {
+      if (!d["Media availability"]) {
+        d["Media availability"] = "IMMEDIATE AVAILABLE";
+      }
+    });
+
+    // Save logs for debugging (same as C#)
+    try {
+      const logsPath = path.join(process.cwd(), 'parse_logs.txt');
+      await fs.writeFile(logsPath, parseLogs.join('\n'));
+    } catch (ex) {
+      console.error('Error saving parse logs:', ex.message);
+    }
+
+    if (data.length === 0) {
+      let errorMsg = "No valid data found in the PPTX. Ensure the PPTX follows the expected format (e.g., '[optional number)] City - Description - Width*Height [or WidthxHeight] - Type' or '1) Jamshedpur - Station main road - 62*16 - 992sqft - NL').";
+      if (nonMatchingLines.length > 0) {
+        errorMsg += "\n\nNon-matching potential data lines:\n" + nonMatchingLines.join('\n');
+      }
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
+    }
+
+    // Generate Excel with exact same structure as C#
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('JMD Quotation');
+
+    // Set column widths (same as C# columns setup)
+    worksheet.columns = [
+      { key: 'srno', width: 5 },
+      { key: 'state', width: 15 },
+      { key: 'city', width: 15 },
+      { key: 'medium', width: 15 },
+      { key: 'type', width: 15 },
+      { key: 'location', width: 50 }, // Wider column for Location (same as C#)
+      { key: 'hor', width: 15 },
+      { key: 'ver', width: 15 },
+      { key: 'faci', width: 15 },
+      { key: 'units', width: 15 },
+      { key: 'sqft', width: 15 },
+      { key: 'display', width: 23 },
+      { key: 'printing', width: 15 },
+      { key: 'mounting', width: 15 },
+      { key: 'total', width: 15 },
+      { key: 'gst', width: 15 },
+      { key: 'gstcost', width: 15 },
+      { key: 'totalwithgst', width: 17 },
+      { key: 'availability', width: 25 }
+    ];
+
+    // Add header rows (exact same as C#)
+    worksheet.addRow(['From JMD - Advertisement']);
+    worksheet.mergeCells('A1:S1');
+    worksheet.getCell('A1').font = { bold: true };
     
-    const outputFileName = file.name.replace(/\.pptx$/i, '_JMD_Quotation.xlsx');
+    worksheet.addRow(['B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002) | Phone: +91-9204965321 | Email: info.jmd.jsr@gmail.com']);
+    worksheet.mergeCells('A2:S2');
+    worksheet.getCell('A2').font = { bold: true };
+    
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+    
+    worksheet.addRow(['QUOTATION']);
+    worksheet.mergeCells('A5:S5');
+    worksheet.getCell('A5').font = { bold: true };
+
+    // Add table headers with exact same columns as C#
+    const headers = [
+      "Sr No", "State", "City", "Medium", "Type", "Location", 
+      "hor", "ver", "Faci", "Units", "SQFT", 
+      "Display Charges Per Month", "Printing", "Mounting", 
+      "Total Cost", "GST", "GST cost", "Total Cost with GST", 
+      "Media availability"
+    ];
+    
+    const headerRow = worksheet.addRow(headers);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFADD8E6' } // Light blue (same as C#)
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+
+    // Add data rows (same structure as C#)
+    data.forEach(row => {
+      const dataRow = worksheet.addRow([
+        row["Sr No"], row["State"], row["City"], row["Medium"], 
+        row["Type"], row["Location"], row["hor"], row["ver"], 
+        row["Faci"], row["Units"], row["SQFT"], 
+        row["Display Charges Per Month"], row["Printing"], 
+        row["Mounting"], row["Total Cost"], row["GST"], 
+        row["GST cost"], row["Total Cost with GST"], 
+        row["Media availability"]
+      ]);
+      
+      // Add borders to data cells (same as C#)
+      dataRow.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+    });
+
+    // Add total row (same calculation and position as C#)
+    const totalSqft = data.reduce((sum, d) => sum + d["SQFT"], 0);
+    const totalRowValues = new Array(19).fill('');
+    totalRowValues[9] = 'Total'; // Column J (Units)
+    totalRowValues[10] = totalSqft; // Column K (SQFT)
+
+    const totalRow = worksheet.addRow(totalRowValues);
+    totalRow.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+
+    // Skip rows for terms (same as C#)
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+
+    // Add terms and conditions section header
+    const termsHeaderRow = worksheet.addRow(['Terms and Condition...']);
+    termsHeaderRow.getCell(1).font = { bold: true };
+    
+    // Add terms from PPT if any
+    if (terms.length > 0) {
+      terms.forEach(term => {
+        const termRow = worksheet.addRow([term]);
+        termRow.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+      });
+    }
+
+    // Add default JMD terms and conditions
+    const defaultTerms = [
+      "1. Inventries will be provided absolutely on First Come n' First Serve basis",
+      "2. To prevent loosing a perticular inventory, quick booking is advisable.",
+      "3. Please confirm the availability at the time of booking.",
+      "4. Please inform atleast 10 days before to drop out the inventory by mail only.",
+      "5. Raise an Work Order duly Sealed n' Signature by the client at the time of booking confirmation.",
+      "6. The company will not been responsible for any damage or lost of the flex once installed.",
+      "7. Except Authorised mail all other medium of conversation will be treated as null n' void.",
+      "8. 50% advance along with a Security Cheque along with xerox copy of Aadhar and GST Certificate is required",
+      "9. Any payment made is only in favour of \"JAI MATA DI\" only.",
+      "10. Any dispute is subject to Jamshedpur Juridiction only."
+    ];
+
+    defaultTerms.forEach(term => {
+      const termRow = worksheet.addRow([term]);
+      termRow.eachCell((cell, colNumber) => {
+        if (colNumber === 1) {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        }
+      });
+    });
+
+    // Generate Excel buffer and return (same as C# save functionality)
+    const excelBuffer = await workbook.xlsx.writeBuffer();
+    const outputFileName = 'JMD_Quotation.xlsx'; // Same default name as C#
 
     return new NextResponse(excelBuffer, {
       status: 200,
@@ -954,36 +395,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('PPT Conversion Error:', error);
-    console.error('Error stack:', error.stack);
-    return NextResponse.json(
-      { 
-        error: 'Failed to convert PPTX to Excel', 
-        details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      },
-      { status: 500 }
-    );
+    console.error('Error in PPT conversion:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
-
-export async function GET() {
-  return NextResponse.json({
-    service: 'JMD Enhanced PPT to Excel Converter',
-    version: '4.1',
-    supportedFormats: [
-      'n) City - Title - Size - Lighting',
-      'City, Location SizexSize Lighting Type',
-      'Mixed formats with automatic detection'
-    ],
-    enhancements: [
-      'Enhanced state and city mapping for all Indian states',
-      'Improved raw text extraction for all slides',
-      'Better text preservation and formatting',
-      'Comprehensive error handling',
-      'Removed console logs except errors'
-    ],
-    outputColumns: ['Sr No', 'State', 'City', 'Media Type', 'Visibility', 'Title', 'Width', 'Height', 'Facility', 'Units', 'SQFT', 'Raw Text'],
-    usage: 'POST multipart/form-data with "file" field containing .pptx'
-  });
 }

@@ -1,0 +1,380 @@
+Processing line: 'ADVERTISEMENT'
+Skipped, not a data line.
+Processing line: 'OOH JAMSHEDPUR'
+Skipped, not a data line.
+Processing line: 'STATION AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-Station Main Road- 62x16- NL'
+Match found.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'Jamshedpur-Station in Gate -16x8 -NL'
+Match found.
+Processing line: 'AVAILABLE FROM 15.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-Station Main road Towards In Gate - 20x12- NL'
+Match found.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'Jamshedpur-Station Main Road'
+Skipped, not a data line.
+Processing line: 'Sankata'
+Skipped, not a data line.
+Processing line: 'Singh Petrol Pump -20x10- NL'
+No match, but looks like potential data line.
+Processing line: 'Available From 15.09.25'
+Added availability to last data.
+Processing line: 'KARANDIH AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Karandih'
+Skipped, not a data line.
+Processing line: 'Main Road -30x25- NL'
+No match, but looks like potential data line.
+Processing line: 'AVAILABLE FROM 20.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Karandih'
+Skipped, not a data line.
+Processing line: 'Market Facing'
+Skipped, not a data line.
+Processing line: 'Sundernagar'
+Skipped, not a data line.
+Processing line: '- 20x16- NL'
+Skipped, not a data line.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'PARSUDIH AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Parsudih'
+Skipped, not a data line.
+Processing line: 'Police Station- 20x20- NL'
+No match, but looks like potential data line.
+Processing line: 'JUGSALAI AREA'
+Skipped, not a data line.
+Processing line: 'Jamashedpur-Jugsalai Market Nr Veer Kuwar Singh Chowk- 16x8- NL'
+Match found.
+Processing line: 'BISTUPUR AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-Bistupur Voltas circle- 20x20- NL'
+Match found.
+Processing line: 'ADITYAPUR AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: 'Bridge Facing Bistupur -45x30- NL'
+No match, but looks like potential data line.
+Processing line: 'AVAILABLE FROM 22.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: 'Bridge facing Bistupur- 20x20- NL'
+No match, but looks like potential data line.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: 'indodenish'
+Skipped, not a data line.
+Processing line: 'college facing'
+Skipped, not a data line.
+Processing line: 'gamharia'
+Skipped, not a data line.
+Processing line: '- 20x15- NL'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Aditayapur'
+Skipped, not a data line.
+Processing line: 'Nr NIIt More Facing'
+Skipped, not a data line.
+Processing line: 'Aditayapur'
+Skipped, not a data line.
+Processing line: 'Bridge- 20x15-NL'
+No match, but looks like potential data line.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Aditayapur'
+Skipped, not a data line.
+Processing line: 'Nr Teacher training More Facing Aditayapur-20x15 -NL'
+No match, but looks like potential data line.
+Processing line: 'AVAILABLE FROM 25.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Gamahriya'
+Skipped, not a data line.
+Processing line: 'Lal Building facing'
+Skipped, not a data line.
+Processing line: 'gamharia'
+Skipped, not a data line.
+Processing line: '-20x15-NL'
+Skipped, not a data line.
+Processing line: 'AVAILABLE FROM 15.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Gamahriya'
+Skipped, not a data line.
+Processing line: 'Lal Building facing'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: '-20x15-NL'
+Skipped, not a data line.
+Processing line: 'AVAILABLE FROM 30.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: 'indodenish'
+Skipped, not a data line.
+Processing line: 'college facing'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: '-20x15- NL'
+Skipped, not a data line.
+Processing line: 'AVAILABLE FROM 25.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-Adityapur Shere Punjab Chowk- 30x20- NL'
+Match found.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: 'Shere'
+Skipped, not a data line.
+Processing line: 'punjab'
+Skipped, not a data line.
+Processing line: 'Chowk- 30x25- NL'
+No match, but looks like potential data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: 'Toll Bridge facing'
+Skipped, not a data line.
+Processing line: 'Kadma'
+Skipped, not a data line.
+Processing line: '-20x20- NL'
+Skipped, not a data line.
+Processing line: 'AVAILABLE FROM 12.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Adityapur'
+Skipped, not a data line.
+Processing line: 'Imli'
+Skipped, not a data line.
+Processing line: 'Chowk Nr S Type More- 60x30- NL'
+No match, but looks like potential data line.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'SAKCHI AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-Sakchi Circle- 45x20- FL'
+Match found.
+Processing line: 'AVAILABLE FROM 19.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Sakchi'
+Skipped, not a data line.
+Processing line: 'Main Circle- 20x10- BL'
+No match, but looks like potential data line.
+Processing line: 'IMMIDIATE AVAILABLE'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Burmamines'
+Skipped, not a data line.
+Processing line: 'Cable Town -20x20- NL'
+No match, but looks like potential data line.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Sakchi'
+Skipped, not a data line.
+Processing line: 'Thana Gate -20x20- NL'
+No match, but looks like potential data line.
+Processing line: 'AVAILABLE FROM 01.10.25'
+Added availability to last data.
+Processing line: 'AGRICO AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-Agrico Signal -20x20- FL'
+Match found.
+Processing line: 'Immediate Available'
+Added availability to last data.
+Processing line: 'Jamshedpur-Agrico Signal- 20x20 -NL'
+Match found.
+Processing line: 'Available from 30.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-Agrico Signal -20x25- NL'
+Match found.
+Processing line: 'Available from 30.09.25'
+Added availability to last data.
+Processing line: 'MANGO AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-Mango near'
+Skipped, not a data line.
+Processing line: 'ulidhi'
+Skipped, not a data line.
+Processing line: 'thana'
+Skipped, not a data line.
+Processing line: '- 20x10x2- NL'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-Mango Nr workers college facing mango chowk- 20x20- NL'
+Match found.
+Processing line: 'Jamshedpur-Mango Nr workers college facing old'
+Skipped, not a data line.
+Processing line: 'purulia'
+Skipped, not a data line.
+Processing line: 'road- 20x20- NL'
+No match, but looks like potential data line.
+Processing line: 'Jamshedpur-Mango'
+Skipped, not a data line.
+Processing line: 'Pardih'
+Skipped, not a data line.
+Processing line: 'City Entry- 20x20 -NL'
+No match, but looks like potential data line.
+Processing line: 'AVAILABLE FROM 12.09.25'
+Added availability to last data.
+Processing line: 'Jamshedpur-Mango Old Purulia Road- 25x20- FL'
+Match found.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'Jamshedpur-Mango old Purulia Road near'
+Skipped, not a data line.
+Processing line: 'Yesu'
+Skipped, not a data line.
+Processing line: 'Bhawan -20x10 -NL'
+No match, but looks like potential data line.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: 'KADMA AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Kadma'
+Skipped, not a data line.
+Processing line: 'PS campus toward'
+Skipped, not a data line.
+Processing line: 'tulsi'
+Skipped, not a data line.
+Processing line: 'bhawan'
+Skipped, not a data line.
+Processing line: '- 20x20- NL'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Kadma'
+Skipped, not a data line.
+Processing line: 'PS campus- 30x10- NL'
+No match, but looks like potential data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Kadma'
+Skipped, not a data line.
+Processing line: 'Market -30x15- NL'
+No match, but looks like potential data line.
+Processing line: 'SONARI AREA'
+Skipped, not a data line.
+Processing line: 'Jamshedpur-'
+Skipped, not a data line.
+Processing line: 'Sonari'
+Skipped, not a data line.
+Processing line: 'Market- 20x20 -NL'
+No match, but looks like potential data line.
+Processing line: 'IMMEDIATE AVAILABLE'
+Added availability to last data.
+Processing line: '*'
+Skipped, not a data line.
+Processing line: 'GENERAL TERMS &amp; CONDITIONS'
+Skipped, not a data line.
+Processing line: ': -'
+Skipped, not a data line.
+Processing line: '1) Display Location is Subject to Availability at The Time of Receiving Your Confirm Written Orders .'
+Skipped, not a data line.
+Processing line: '2) Media Display Extension through Written Mail .'
+Skipped, not a data line.
+Processing line: '3) Site Once Booked Can’t be Cancelled / Postponed.'
+Skipped, not a data line.
+Processing line: '4) Billing For All The Sites Will Be From Date of Booking &amp; Won’t Be Postponed Due to Delay in Supply of Creative From Your Side .'
+Skipped, not a data line.
+Processing line: '*'
+Skipped, not a data line.
+Processing line: 'BUSINESS TERMS'
+Skipped, not a data line.
+Processing line: ':-'
+Skipped, not a data line.
+Processing line: '1)  Payment to Be Made 100 % in advance'
+Skipped, not a data line.
+Processing line: '2) 18% Advertisement Service Tax Shall Be Charged Extra on Mounting / Installation Billing.'
+Skipped, not a data line.
+Processing line: '3) Additional Taxes Shall Be Charged if Levied By The Government .'
+Skipped, not a data line.
+Processing line: '4) Any Special Photography / Monitoring'
+Skipped, not a data line.
+Processing line: 'etc'
+Skipped, not a data line.
+Processing line: 'Will Attract Additional Cost .'
+Skipped, not a data line.
+Processing line: '5) Flex Printing Charges Will Be Extra'
+Skipped, not a data line.
+Processing line: 'i.e'
+Skipped, not a data line.
+Processing line: 'For'
+Skipped, not a data line.
+Processing line: 'NonLit'
+Skipped, not a data line.
+Processing line: '/'
+Skipped, not a data line.
+Processing line: 'Frontlit'
+Skipped, not a data line.
+Processing line: 'Flex @'
+Skipped, not a data line.
+Processing line: 'Rs'
+Skipped, not a data line.
+Processing line: '. 11 /- Per'
+Skipped, not a data line.
+Processing line: 'Sqft'
+Skipped, not a data line.
+Processing line: '&amp; For Backlit Flex @'
+Skipped, not a data line.
+Processing line: 'Rs'
+Skipped, not a data line.
+Processing line: '. 30 Per'
+Skipped, not a data line.
+Processing line: 'Sqft'
+Skipped, not a data line.
+Processing line: '.'
+Skipped, not a data line.
+Processing line: '6) Flex Mounting Charges Will Be Extra .'
+Skipped, not a data line.
+Processing line: '7) Sites Once Confirmed (Verbally or Written ) Can Be Cancelled only After Giving 3 Days Clear Prior Notice ( From Campaign Start Date )in Writing , in Case its Unavoidable Client Agrees To Suitably Compensate M/S Jai Mata Di. If Cancellation is Made 4- 5 Days Prior to Campaign Start Date Client Agrees To Pay For 7 Days Display Charges + Taxes There on .'
+Skipped, not a data line.
+Processing line: '8 ) if Cancellation is Made After The Start Date of Campaign Client Agrees to Pay For 15 Days Display Charges + Taxes There on.'
+Skipped, not a data line.
+Processing line: '5 ) Site Booking And Dropping Mail is Provide By Client.'
+Skipped, not a data line.
+Processing line: '</a14:hiddenLine></a:ext></a:extLst></p:spPr></p:pic><p:sp><p:nvSpPr><p:cNvPr id="4" name="TextBox 3"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="3314700" y="904973"/><a:ext cx="5276850" cy="369332"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0"><a:spAutoFit/></a:bodyPr><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="en-US" b="1" dirty="0"><a:solidFill><a:srgbClr val="FF0000"/></a:solidFill><a:latin typeface="comic"/></a:rPr><a:t>Waiting For your Positive Response'
+Skipped, not a data line.
+Processing line: 'THANK YOU'
+Skipped, not a data line.

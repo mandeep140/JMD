@@ -202,7 +202,7 @@ const PPTConverter = () => {
         </div>
 
         {/* Required Format Info */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+        {/* <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
           <div className="flex items-start gap-3">
             <FaInfoCircle className="text-blue-500 text-xl mt-1 flex-shrink-0" />
             <div>
@@ -244,7 +244,7 @@ const PPTConverter = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* File Upload Area */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
