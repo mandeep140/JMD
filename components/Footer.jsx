@@ -22,17 +22,17 @@ const Footer = () => {
                         <p className='mt-4 text-sm font-extralight text-white text-left'>Jai Mata Di Advertising, based in Harhargutu, Jamshedpur, is a decade strong and the fastest growing advertising agency in East India, committed to delivering effective, result-driven campaigns. With a deep understanding of client needs,
                             we focus on crafting impactful outdoor advertising solutions marked by quality, consistency, and commitment.</p>
                         <span className='w-full flex items-start justify-start mt-8 text-black/70 text-2xl gap-4'>
-                            <a href="https://www.facebook.com/people/Jmd-Advertisement/pfbid08LDt9iuyyaVvj23j1mFre394HAvkriZktnYQUNjtgmM6nLGa8zPWRVkX9ZbSbRm6l/" target='_blank'><FaFacebookSquare className='hover:text-black duration-100 cursor-pointer' /></a>
-                            <a href="https://www.instagram.com/jmd_advertisement/" target='_blank'><FaSquareInstagram className='hover:text-black duration-100 cursor-pointer' /></a>
-                            <a href="https://x.com/JMDAdds" target='_blank'><FaSquareXTwitter className='hover:text-black duration-100 cursor-pointer' /></a>
-                            <a href="https://www.linkedin.com/company/jmd-advertisement/" target='_blank'><FaLinkedin className='hover:text-black duration-100 cursor-pointer' /></a>
+                            <a href="https://www.facebook.com/people/Jmd-Advertisement/pfbid08LDt9iuyyaVvj23j1mFre394HAvkriZktnYQUNjtgmM6nLGa8zPWRVkX9ZbSbRm6l/" target='_blank' rel="noopener noreferrer" aria-label="Visit our Facebook page"><FaFacebookSquare className='hover:text-black duration-100 cursor-pointer' aria-hidden="true" /></a>
+                            <a href="https://www.instagram.com/jmd_advertisement/" target='_blank' rel="noopener noreferrer" aria-label="Visit our Instagram page"><FaSquareInstagram className='hover:text-black duration-100 cursor-pointer' aria-hidden="true" /></a>
+                            <a href="https://x.com/JMDAdds" target='_blank' rel="noopener noreferrer" aria-label="Visit our Twitter/X page"><FaSquareXTwitter className='hover:text-black duration-100 cursor-pointer' aria-hidden="true" /></a>
+                            <a href="https://www.linkedin.com/company/jmd-advertisement/" target='_blank' rel="noopener noreferrer" aria-label="Visit our LinkedIn page"><FaLinkedin className='hover:text-black duration-100 cursor-pointer' aria-hidden="true" /></a>
                         </span>
                     </div>
 
                     {/* Quick Links */}
                     <div className='h-auto w-full max-w-[180px] mt-8 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col'>
-                        <h1 className='mb-auto text-xl font-bold text-black/60 w-full flex justify-start'>QUICK LINKS</h1>
-                        <span className='w-full flex mt-2 items-start justify-start flex-col gap-2 text-black/70 mb-auto'>
+                        <h1 className='mb-auto text-xl font-bold text-gray-800 w-full flex justify-start'>QUICK LINKS</h1>
+                        <span className='w-full flex mt-2 items-start justify-start flex-col gap-2 text-gray-700 mb-auto'>
                             <Link href='/'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Home</p></Link>
                             <Link href='#services'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Services</p></Link>
                             <Link href='/about'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>About Us</p></Link>
@@ -42,8 +42,8 @@ const Footer = () => {
 
                     {/* Explore Services */}
                     <div className='h-auto w-full max-w-[200px] mt-8 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col'>
-                        <h1 className='mb-auto text-lg font-bold text-black/60 w-full flex justify-start'>EXPLORE SERVICES</h1>
-                        <span className='w-full flex items-start mt-2 justify-start flex-col gap-2 text-black/70 mb-auto'>
+                        <h1 className='mb-auto text-lg font-bold text-gray-800 w-full flex justify-start'>EXPLORE SERVICES</h1>
+                        <span className='w-full flex items-start mt-2 justify-start flex-col gap-2 text-gray-700 mb-auto'>
                             <Link href='/find-hoardings?type=Hoarding'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Hoarding</p></Link>
                             <Link href='/find-hoardings?type=digital_Hoarding'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Digital Hoarding</p></Link>
                             <Link href='/find-hoardings?type=airport_branding'><p className='font-extralight text-white cursor-pointer hover:text-black duration-100'>Airport Branding</p></Link>
@@ -60,20 +60,20 @@ const Footer = () => {
 
                     {/* Contact Info */}
                     <div className='min-h-[17rem] w-full max-w-[220px] mt-8 z-1 flex items-start justify-start lg:items-center lg:justify-center flex-col gap-4'>
-                        <h1 className='mb-auto text-lg font-bold text-black/60 w-full flex justify-start'>CONTACT INFO</h1>
-                        <span className='w-full flex items-start justify-start flex-col gap-2 text-black/70 mb-auto'>
+                        <h1 className='mb-auto text-lg font-bold text-gray-800 w-full flex justify-start'>CONTACT INFO</h1>
+                        <span className='w-full flex items-start justify-start flex-col gap-2 text-gray-700 mb-auto'>
                             <span>
-                                <p className='font-bold text-black/60'>Phone:</p>
+                                <p className='font-bold text-gray-800'>Phone:</p>
                                 <p className='font-extralight text-white'>+91-9204965321</p>
                                 <p className='font-extralight text-white'>+91-7368810121</p>
                                 <p className='font-extralight text-white'>+91-7368810125</p>
                             </span>
                             <span>
-                                <p className='font-bold text-black/60'>Email:</p>
+                                <p className='font-bold text-gray-800'>Email:</p>
                                 <p className='font-extralight text-white'>info.jmd.jsr@gmail.com</p>
                             </span>
                             <span>
-                                <p className='font-bold text-black/60'>Address:</p>
+                                <p className='font-bold text-gray-800'>Address:</p>
                                 <p className='font-extralight text-white'>B-5 Murli Garden, TRF Colony, Harhargutu Jamshedpur, Jharkhand (831002)</p>
                             </span>
                             <span>

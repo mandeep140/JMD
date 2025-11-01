@@ -395,7 +395,10 @@ const Home = () => {
               }
             }}
             webkit-playsinline="true"
-          ></video>
+            aria-label="Background promotional video showcasing outdoor advertising"
+          >
+            <track kind="captions" srcLang="en" label="English" />
+          </video>
         </div>
         <div className='w-[40vw] absolute top-70 pt-50 md:pt-0 left-31 text-white max-lg:w-[70vw] max-lg:top-24 max-lg:left-6 max-md:w-[90vw] max-md:top-16 max-md:left-2'>
           <span>
@@ -414,12 +417,12 @@ const Home = () => {
             </span>
           </span>
           <span className='flex items-center gap-4 mt-6 text-lg font-semibold md:gap-2 md:mt-3 md:text-base'>
-            <Link href="find-hoardings" className="relative group overflow-hidden flex gap-8 border-2 rounded-4xl px-4 py-2 hover:border-red-500 duration-200 md:gap-6 md:px-10  md:py-3 md:text-xl">
+            <Link href="find-hoardings" className="relative group overflow-hidden flex gap-8 border-2 rounded-4xl px-4 py-2 hover:border-red-500 duration-200 md:gap-6 md:px-10  md:py-3 md:text-xl" aria-label="Make your plan - Find hoardings">
               <span className="absolute inset-0 bg-white scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100 z-0"></span>
               <span className="relative z-10 text-white group-hover:text-red-500 transition-colors duration-300">Make your plan</span>
-              <FaLongArrowAltRight className="text-white h-6 w-6 group-hover:text-red-500 z-10 my-auto transition-colors duration-300" />
+              <FaLongArrowAltRight className="text-white h-6 w-6 group-hover:text-red-500 z-10 my-auto transition-colors duration-300" aria-hidden="true" />
             </Link>
-            <a href="#contact-us" className='scale-80 hover:scale-100 duration-100'>
+            <a href="#contact-us" className='scale-80 hover:scale-100 duration-100' aria-label="Contact us by phone">
               <Image src="/svg/dialer.svg" alt="Contact dialer" width={48} height={48} className='w-12 md:w-15' />
             </a>
           </span>
@@ -450,9 +453,9 @@ const Home = () => {
                 >
                   <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
                   <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
-                    <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
-                    <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
-                      Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
+                    <h1 className="font-bold text-gray-800 text-base mb-3">{card.title}</h1>
+                    <p className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 text-sm duration-200">
+                      Learn More <Image src="/svg/black_arrow.svg" alt="" width={12} height={12} className='w-3' aria-hidden="true" />
                     </p>
                   </div>
                 </div>
@@ -475,9 +478,9 @@ const Home = () => {
                 >
                   <Image src={card.image} alt={card.title} width={220} height={180} className="w-full h-3/5 object-cover" />
                   <div className="p-4 text-center flex flex-col items-center justify-center h-2/5">
-                    <h1 className="font-bold text-black/70 text-base mb-3">{card.title}</h1>
-                    <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-sm duration-200">
-                      Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={12} height={12} className='w-3' />
+                    <h1 className="font-bold text-gray-800 text-base mb-3">{card.title}</h1>
+                    <p className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 text-sm duration-200">
+                      Learn More <Image src="/svg/black_arrow.svg" alt="" width={12} height={12} className='w-3' aria-hidden="true" />
                     </p>
                   </div>
                 </div>
@@ -501,9 +504,9 @@ const Home = () => {
                     <div className="w-full bg-white backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden">
                       <Image src={card.image} alt={card.title} width={320} height={192} className="w-full h-48 object-cover" />
                       <div className="w-full p-6 text-center">
-                        <h1 className="font-bold text-black/70 text-xl mb-4">{card.title}</h1>
-                        <p className="text-black/70 hover:text-black flex items-center justify-center gap-2 text-base duration-300 hover:scale-105">
-                          Learn More <Image src="/svg/black_arrow.svg" alt="Arrow" width={16} height={16} className='w-4' />
+                        <h1 className="font-bold text-gray-800 text-xl mb-4">{card.title}</h1>
+                        <p className="text-gray-700 hover:text-gray-900 flex items-center justify-center gap-2 text-base duration-300 hover:scale-105">
+                          Learn More <Image src="/svg/black_arrow.svg" alt="" width={16} height={16} className='w-4' aria-hidden="true" />
                         </p>
                       </div>
                     </div>
@@ -520,6 +523,7 @@ const Home = () => {
                     ? 'bg-white w-8 shadow-lg'
                     : 'bg-white/50 w-3 hover:bg-white/70'
                     }`}
+                  aria-label={`Go to service slide ${index + 1}`}
                 />
               ))}
             </div>
@@ -531,8 +535,8 @@ const Home = () => {
       <div className='w-full h-[105vh] md:min-h-[100vh] bg-[#FFF4F4] flex items-center justify-center flex-row max-lg:flex-col max-lg:gap-8 max-md:min-h-[80vh]'>
         <div className='w-[50vw] me-auto mb-auto text-center max-lg:w-full max-lg:mb-0'>
           <span className='flex flex-col items-center gap-0 md:gap-2 mt-25 max-md:mt-'>
-            <h1 className='text-5xl font-black text-black max-lg:text-3xl max-md:text-3xl'>Why To Choose</h1>
-            <h1 className='text-4xl font-extrabold text-black max-lg:text-2xl max-md:text-lg'><span className='text-red-500'>JMD Advertisement</span>?</h1>
+            <h1 className='text-5xl font-black text-gray-900 max-lg:text-3xl max-md:text-3xl'>Why To Choose</h1>
+            <h1 className='text-4xl font-extrabold text-gray-900 max-lg:text-2xl max-md:text-lg'><span className='text-red-600'>JMD Advertisement</span>?</h1>
           </span>
           <div className='h-[15vh] w-full flex items-center justify-center mt-8 bg-red-600 md:rounded-e-2xl lg:h-[35vh] md:h-[25vh] md:mt-4'>
             <p className='px-10 md:ms-18 md:text-start  text-[17px] tracking-wide font-light max-lg:px-4 max-md:px-2 max-md:text-xs text-white'>At JMD, we're not just another outdoor advertising company. We are your strategic partner in putting your brand in front of millions — right where it can't be missed. Our approach blends location intelligence, bold creative execution, and proven reach to deliver unmatched visibility.</p>
@@ -543,7 +547,7 @@ const Home = () => {
                 <span className='flex items-center justify-center w-full h-[60%] rounded-t-lg bg-red-500'>
                   <Image src={item.img} alt={item.text} width={64} height={64} className='w-16 h-16 max-lg:w-10 max-lg:h-10 max-md:w-7 max-md:h-7' />
                 </span>
-                <h1 className='mx-3 text-xs text-black/70 max-md:text-[10px]'>{item.text}</h1>
+                <h1 className='mx-3 text-xs text-gray-700 max-md:text-[10px]'>{item.text}</h1>
               </div>
             ))}
           </div>
@@ -557,8 +561,8 @@ const Home = () => {
       {/* Section 4: City Listing */}
       <div className='w-full min-h-[100vh] bg-[#FFF4F4] flex flex-col items-center justify-center relative max-md:min-h-[60vh]' id='city'>
         <div className='w-full h-[30%] mt-35 mb-auto flex flex-col items-center justify-center text-center z-1  max-md:mt-8'>
-          <h1 className='text-red-500 text-4xl font-extrabold md:text-5xl'>Explore Your City Listing</h1>
-          <p className='text-black/70 tracking-wide mt-4 mb-10 w-[30%] max-md:w-[80%] max-md:text-xs'>Discover premium outdoor ad spaces across India's major cities and boost your brand visibility where it matters most.</p>
+          <h1 className='text-red-600 text-4xl font-extrabold md:text-5xl'>Explore Your City Listing</h1>
+          <p className='text-gray-700 tracking-wide mt-4 mb-10 w-[30%] max-md:w-[80%] max-md:text-xs'>Discover premium outdoor ad spaces across India's major cities and boost your brand visibility where it matters most.</p>
         </div>
         {/* City Images with State Buttons and Scroll Buttons */}
         <div className='z-1 flex flex-row items-center justify-center gap-4 max-md:gap-1'>
@@ -569,7 +573,7 @@ const Home = () => {
             aria-label="Scroll cities left"
             disabled={(stateToCities[stateList[cityStateIdx]] || []).length <= 3}
           >
-            <Image src="/svg/left-arr.svg" alt="Left arrow" width={24} height={24} className='max-md:w-4' />
+            <Image src="/svg/left-arr.svg" alt="" width={24} height={24} className='max-md:w-4' aria-hidden="true" />
           </button>
           <div className='flex flex-col items-center'>
             {/* City Images for selected state, with left/right nav, 3 visible at a time */}
@@ -581,6 +585,7 @@ const Home = () => {
                     key={state}
                     className={`px-4 md:px-5 py-2 rounded-full font-semibold  ${cityStateIdx === idx ? 'bg-white text-red-600' : 'bg-red-400 text-white'} hover:bg-white/50 duration-200`}
                     onClick={() => setCityStateIdx(idx)}
+                    aria-label={`Show cities in ${state}`}
                   >
                     {state}
                   </button>
@@ -623,7 +628,7 @@ const Home = () => {
             aria-label="Scroll cities right"
             disabled={(stateToCities[stateList[cityStateIdx]] || []).length <= 3}
           >
-            <Image src="/svg/right-arr.svg" alt="Right arrow" width={24} height={24} className='max-md:w-4' />
+            <Image src="/svg/right-arr.svg" alt="" width={24} height={24} className='max-md:w-4' aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -689,8 +694,9 @@ const Home = () => {
                 className={`mb-auto mt-35 me-3 hidden md:block cursor-pointer max-md:mt-4 max-md:me-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={decVideoNav}
                 disabled={videoCards.length <= 3}
+                aria-label="Previous videos"
               >
-                <Image src="/svg/left-arr.svg" alt="Left arrow" width={24} height={24} className='max-md:w-4' />
+                <Image src="/svg/left-arr.svg" alt="" width={24} height={24} className='max-md:w-4' aria-hidden="true" />
               </button>
 
               {/* Videos Container */}
@@ -730,8 +736,9 @@ const Home = () => {
                 className={`mb-auto mt-35 ms-3 hidden md:block cursor-pointer max-md:mt-4 max-md:ms-1 ${videoCards.length <= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={incVideoNav}
                 disabled={videoCards.length <= 3}
+                aria-label="Next videos"
               >
-                <Image src="/svg/right-arr.svg" alt="Right arrow" width={24} height={24} className='max-md:w-4' />
+                <Image src="/svg/right-arr.svg" alt="" width={24} height={24} className='max-md:w-4' aria-hidden="true" />
               </button>
             </div>
           )}
@@ -744,7 +751,7 @@ const Home = () => {
               <button
                 className="absolute top-2 right-2 text-white text-3xl font-bold z-10 cursor-pointer"
                 onClick={() => setActiveVideo(null)}
-                aria-label="Close"
+                aria-label="Close video"
               >
                 &times;
               </button>
@@ -766,7 +773,7 @@ const Home = () => {
 
       {/* Media Coverage Section - Updated to use database */}
       <div className='w-full min-h-[100vh] bg-gradient-to-b from-white to-[#FFF4F4] flex items-center justify-start flex-col relative md:min-h-[100vh]' id='media'>
-        <h1 className='text-4xl mb-10 md:mb-0 md:text-6xl text-red-500 font-extrabold mt-30'>Media Coverage</h1>
+        <h1 className='text-4xl mb-10 md:mb-0 md:text-6xl text-red-600 font-extrabold mt-30'>Media Coverage</h1>
         
         {/* Loading State */}
         {mediaCoverageLoading ? (
@@ -795,7 +802,7 @@ const Home = () => {
                     className='w-full h-[70%] object-cover rounded-lg'
                     onError={handleImageError}
                   />
-                  <h1 className='text-xl font-bold text-black/70'>{item.title}</h1>
+                  <h1 className='text-xl font-bold text-gray-800'>{item.title}</h1>
                 </div>
               ))
             )}
@@ -809,7 +816,7 @@ const Home = () => {
               <button
                 className="absolute top-2 right-2 text-black text-3xl font-bold z-10 cursor-pointer"
                 onClick={() => setActiveMedia(null)}
-                aria-label="Close"
+                aria-label="Close media"
               >
                 &times;
               </button>
@@ -821,7 +828,7 @@ const Home = () => {
                 className="w-full max-w-[500px] max-h-[60vh] object-contain rounded-lg mb-4"
                 onError={handleImageError}
               />
-              <h1 className='text-2xl font-bold text-black/80 mb-2'>{activeMedia.title}</h1>
+              <h1 className='text-2xl font-bold text-gray-900 mb-2'>{activeMedia.title}</h1>
             </div>
           </div>
         )}
@@ -831,9 +838,9 @@ const Home = () => {
       {testimonials.length > 0 && (
         <div className='w-full min-h-[60vh] bg-[#FFF4F4] flex flex-col items-center justify-center py-16 max-md:py-8'>
           <div className='text-center mb-12 max-md:mb-6'>
-            <h1 className='text-4xl font-black text-black/70 max-md:text-2xl mb-4'>Testimonials</h1>
-            <h2 className='text-2xl font-bold text-red-500 max-md:text-lg'>HEAR FROM OUR HAPPY CLIENTS</h2>
-            <div className='h-1 w-[13vw] bg-red-500/50 rounded-md mx-auto mt-4 max-md:w-[30vw]'></div>
+            <h1 className='text-4xl font-black text-gray-800 max-md:text-2xl mb-4'>Testimonials</h1>
+            <h2 className='text-2xl font-bold text-red-600 max-md:text-lg'>HEAR FROM OUR HAPPY CLIENTS</h2>
+            <div className='h-1 w-[13vw] bg-red-600 rounded-md mx-auto mt-4 max-md:w-[30vw]'></div>
           </div>
 
           <div className='w-full max-w-6xl mx-auto px-4 relative'>
@@ -846,15 +853,17 @@ const Home = () => {
                     onClick={() => setTestimonialStartIndex(prev => prev > 0 ? prev - 3 : Math.max(0, testimonials.length - 3))}
                     className='absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 hover:scale-110'
                     disabled={testimonialStartIndex === 0}
+                    aria-label="Previous testimonials"
                   >
-                    <FaChevronLeft className={`text-lg ${testimonialStartIndex === 0 ? 'text-gray-300' : 'text-red-500'}`} />
+                    <FaChevronLeft className={`text-lg ${testimonialStartIndex === 0 ? 'text-gray-300' : 'text-red-500'}`} aria-hidden="true" />
                   </button>
                   <button
                     onClick={() => setTestimonialStartIndex(prev => prev + 3 < testimonials.length ? prev + 3 : 0)}
                     className='absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300 hover:scale-110'
                     disabled={testimonialStartIndex + 3 >= testimonials.length}
+                    aria-label="Next testimonials"
                   >
-                    <FaChevronRight className={`text-lg ${testimonialStartIndex + 3 >= testimonials.length ? 'text-gray-300' : 'text-red-500'}`} />
+                    <FaChevronRight className={`text-lg ${testimonialStartIndex + 3 >= testimonials.length ? 'text-gray-300' : 'text-red-500'}`} aria-hidden="true" />
                   </button>
                 </>
               )}
@@ -868,11 +877,11 @@ const Home = () => {
                         <FaUser className='text-white text-lg' />
                       </div>
                       <div>
-                        <h3 className='font-bold text-black/80 text-lg'>{testimonial.name}</h3>
-                        <p className='text-sm text-red-600 font-medium'>{testimonial.designation}</p>
+                        <h3 className='font-bold text-gray-900 text-lg'>{testimonial.name}</h3>
+                        <p className='text-sm text-red-700 font-medium'>{testimonial.designation}</p>
                       </div>
                     </div>
-                    <p className='text-black/70 text-sm leading-relaxed italic'>"{testimonial.message}"</p>
+                    <p className='text-gray-700 text-sm leading-relaxed italic'>"{testimonial.message}"</p>
                   </div>
                 ))}
               </div>
@@ -888,6 +897,7 @@ const Home = () => {
                         ? 'bg-red-500 w-8'
                         : 'bg-red-300 w-3 hover:bg-red-400'
                         }`}
+                      aria-label={`Go to testimonial group ${index + 1}`}
                     />
                   ))}
                 </div>
@@ -903,14 +913,16 @@ const Home = () => {
                     <button
                       onClick={() => setCurrentTestimonial(prev => prev > 0 ? prev - 1 : testimonials.length - 1)}
                       className='absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300'
+                      aria-label="Previous testimonial"
                     >
-                      <FaChevronLeft className='text-red-500' />
+                      <FaChevronLeft className='text-red-500' aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => setCurrentTestimonial(prev => prev < testimonials.length - 1 ? prev + 1 : 0)}
                       className='absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center hover:bg-red-50 transition-all duration-300'
+                      aria-label="Next testimonial"
                     >
-                      <FaChevronRight className='text-red-500' />
+                      <FaChevronRight className='text-red-500' aria-hidden="true" />
                     </button>
                   </>
                 )}
@@ -922,11 +934,11 @@ const Home = () => {
                       <FaUser className='text-white text-lg' />
                     </div>
                     <div>
-                      <h3 className='font-bold text-black/80 text-lg'>{testimonials[currentTestimonial]?.name}</h3>
-                      <p className='text-sm text-red-600 font-medium'>{testimonials[currentTestimonial]?.designation}</p>
+                      <h3 className='font-bold text-gray-900 text-lg'>{testimonials[currentTestimonial]?.name}</h3>
+                      <p className='text-sm text-red-700 font-medium'>{testimonials[currentTestimonial]?.designation}</p>
                     </div>
                   </div>
-                  <p className='text-black/70 text-sm leading-relaxed italic'>"{testimonials[currentTestimonial]?.message}"</p>
+                  <p className='text-gray-700 text-sm leading-relaxed italic'>"{testimonials[currentTestimonial]?.message}"</p>
                 </div>
               </div>
 
@@ -941,6 +953,7 @@ const Home = () => {
                         ? 'bg-red-500 w-8'
                         : 'bg-red-300 w-3 hover:bg-red-400'
                         }`}
+                      aria-label={`Go to testimonial ${index + 1}`}
                     />
                   ))}
                 </div>
@@ -954,7 +967,7 @@ const Home = () => {
       <div className='w-full min-h-[100vh] bg-gradient-to-b from-[#FFF4F4] to-white mb-10 flex items-center justify-center max-md:min-h-[60vh]' id='contact-us'>
         <div className='w-[100%] mb-auto text-center'>
           <span className='flex flex-col items-center gap-2 mt-23 max-md:mt-8'>
-            <h1 className='text-4xl font-extrabold text-black/70 max-md:text-xl'><span className='text-red-500/80'>Connect</span> With Us!</h1>
+            <h1 className='text-4xl font-extrabold text-gray-800 max-md:text-xl'><span className='text-red-600'>Connect</span> With Us!</h1>
           </span>
           <div className='h-[90vh] w-[80%] mx-auto flex flex-row items-center justify-center mt-8 bg-[#E2CFCF] rounded-4xl max-lg:flex-col md:h-[70vh]  max-md:w-[98vw] max-md:mt-4'>
             <div className='w-[100%] h-full flex flex-col p-5 items-center justify-center text-start bg-red-500 rounded-4xl mx-auto md:mx-0 me-auto lg:w-[35%] max-lg:mb-4 max-md:p-2'>
@@ -962,7 +975,7 @@ const Home = () => {
               <div className='h-[3px] w-[13vw] bg-white rounded-md me-auto mt-6 max-md:w-[30vw] max-md:mt-2'></div>
               <p className='mt-10 tracking-wide max-md:mt-4 max-md:text-xs text-white'>Whether you're launching a new product, boosting brand awareness, or driving local footfall — JMD Advertisement helps you connect with your audience through impactful outdoor media. From strategic billboard placements to dynamic transit advertising, we make sure your message is seen, remembered, and acted upon.</p>
             </div>
-            <div className='w-[65%] h-full flex flex-col items-center text-black/80 justify-center ps-15 mt-6 p-5 max-lg:w-[90%] max-lg:mt-0 max-md:p-2'>
+            <div className='w-[65%] h-full flex flex-col items-center text-gray-900 justify-center ps-15 mt-6 p-5 max-lg:w-[90%] max-lg:mt-0 max-md:p-2'>
               <p className='text-[10px] me-auto mb-auto'>*Please fill all the details</p>
               <div className='w-[90%] mb-auto me-auto'>
                 <form onSubmit={handleSubmit}>
@@ -1022,7 +1035,7 @@ const Home = () => {
 
       {/* Google map */}
       <div className='w-[80vw] h-[400px] mx-auto mb-50'>
-        <h1 className='text-4xl font-extrabold text-black/70 text-center mb-6'>Our Office <span className='text-red-500'>Location</span></h1>
+        <h1 className='text-4xl font-extrabold text-gray-800 text-center mb-6'>Our Office <span className='text-red-600'>Location</span></h1>
         <div className='border-2 border-red-500'>
           <GoogleMap
             coordinates={officeCordinates}
